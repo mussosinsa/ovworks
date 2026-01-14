@@ -4,18 +4,16 @@ import org.ovirt.engine.ui.common.view.AbstractPopupView;
 import org.ovirt.engine.ui.common.widget.dialog.PopupNativeKeyPressHandler;
 import org.ovirt.engine.ui.common.widget.dialog.SimpleDialogButton;
 import org.ovirt.engine.ui.common.widget.dialog.SimpleDialogPanel;
-import org.ovirt.engine.ui.webadmin.ApplicationConstants;
-import org.ovirt.engine.ui.webadmin.gin.AssetProvider;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.SecuritySettingsPopupPresenterWidget;
+import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.ClientManagementView;
+import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.IntegrityCheckView;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.shared.EventBus;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
-import com.google.gwt.uibinder.client.UiHandler;
 import com.google.inject.Inject;
 
 public class SecuritySettingsPopupView extends AbstractPopupView<SimpleDialogPanel> implements SecuritySettingsPopupPresenterWidget.ViewDef {
@@ -24,53 +22,34 @@ public class SecuritySettingsPopupView extends AbstractPopupView<SimpleDialogPan
         ViewUiBinder uiBinder = GWT.create(ViewUiBinder.class);
     }
 
-    private static final ApplicationConstants constants = AssetProvider.getConstants();
-
-    @UiField
-    SimpleDialogButton integrityCheckButton;
-
-    @UiField
-    SimpleDialogButton clientManagementButton;
-
     @UiField
     SimpleDialogButton closeButton;
 
-    private Runnable integrityCheckHandler;
-    private Runnable clientManagementHandler;
+    @UiField(provided=true)
+    IntegrityCheckView integrityCheckView;
+
+    @UiField(provided=true)
+    ClientManagementView clientManagementView;
 
     @Inject
-    public SecuritySettingsPopupView(EventBus eventBus) {
+    public SecuritySettingsPopupView(
+            EventBus eventBus,
+            IntegrityCheckView integrityCheckView,
+            ClientManagementView clientManagementView) {
         super(eventBus);
+        this.integrityCheckView = integrityCheckView;
+        this.clientManagementView = clientManagementView;
         initWidget(ViewUiBinder.uiBinder.createAndBindUi(this));
     }
 
     @Override
     public void setIntegrityCheckHandler(Runnable handler) {
-        this.integrityCheckHandler = handler;
+        // Not needed with tab-based navigation
     }
 
     @Override
     public void setClientManagementHandler(Runnable handler) {
-        this.clientManagementHandler = handler;
-    }
-
-    @UiHandler("integrityCheckButton")
-    void onIntegrityCheckClick(ClickEvent event) {
-        if (integrityCheckHandler != null) {
-            integrityCheckHandler.run();
-        }
-    }
-
-    @UiHandler("clientManagementButton")
-    void onClientManagementClick(ClickEvent event) {
-        if (clientManagementHandler != null) {
-            clientManagementHandler.run();
-        }
-    }
-
-    @UiHandler("closeButton")
-    void onCloseClick(ClickEvent event) {
-        hide();
+        // Not needed with tab-based navigation
     }
 
     @Override
