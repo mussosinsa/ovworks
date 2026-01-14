@@ -1,7 +1,6 @@
 package org.ovirt.engine.ui.webadmin.section.main.presenter.popup;
 
 import org.ovirt.engine.ui.common.presenter.AbstractPopupPresenterWidget;
-import org.ovirt.engine.ui.webadmin.place.WebAdminApplicationPlaces;
 
 import com.google.gwt.event.shared.EventBus;
 import com.google.inject.Inject;
