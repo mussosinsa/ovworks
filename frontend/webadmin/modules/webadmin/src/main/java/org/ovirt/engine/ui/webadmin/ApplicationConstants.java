@@ -3618,4 +3618,12 @@ public interface ApplicationConstants extends CommonApplicationConstants {
     String cleanupFinishedTasks();
 
     String accountSettings();
+
+    String securitySettings();
+
+    String securitySettingsMainViewLabel();
+
+    String integrityCheckMainViewLabel();
+
+    String clientManagementMainViewLabel();
 }
