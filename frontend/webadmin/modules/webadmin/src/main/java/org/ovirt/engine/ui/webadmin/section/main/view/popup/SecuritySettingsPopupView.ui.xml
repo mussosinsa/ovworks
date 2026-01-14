@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder
+    xmlns:ui="urn:ui:com.google.gwt.uibinder"
+    xmlns:d="urn:import:org.ovirt.engine.ui.common.widget.dialog"
+    xmlns:b="urn:import:org.gwtbootstrap3.client.ui">
+
+    <ui:with field='constants' type='org.ovirt.engine.ui.webadmin.ApplicationConstants' />
+
+    <d:SimpleDialogPanel header="{constants.securitySettings}" height="400px" width="600px">
+        <d:content>
+            <b:Container fluid="true">
+                <b:Row>
+                    <b:Column size="XS_12" addStyleNames="text-center">
+                        <b:Heading size="H4" addStyleNames="margin-top-20">
+                            <ui:text from="{constants.securitySettings}" />
+                        </b:Heading>
+                    </b:Column>
+                </b:Row>
+                <b:Row addStyleNames="margin-top-30">
+                    <b:Column size="XS_12" addStyleNames="text-center">
+                        <d:SimpleDialogButton ui:field="integrityCheckButton"
+                                              text="{constants.integrityCheckMainViewLabel}"
+                                              addStyleNames="btn btn-primary btn-lg"
+                                              width="300px" />
+                    </b:Column>
+                </b:Row>
+                <b:Row addStyleNames="margin-top-20">
+                    <b:Column size="XS_12" addStyleNames="text-center">
+                        <d:SimpleDialogButton ui:field="clientManagementButton"
+                                              text="{constants.clientManagementMainViewLabel}"
+                                              addStyleNames="btn btn-primary btn-lg"
+                                              width="300px" />
+                    </b:Column>
+                </b:Row>
+            </b:Container>
+        </d:content>
+
+        <d:footerButton>
+            <d:SimpleDialogButton ui:field="closeButton" text="{constants.closeButtonLabel}" />
+        </d:footerButton>
+    </d:SimpleDialogPanel>
+
+</ui:UiBinder>

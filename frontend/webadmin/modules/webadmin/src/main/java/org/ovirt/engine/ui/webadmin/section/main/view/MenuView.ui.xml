@@ -197,22 +197,8 @@
                     </b:ListGroup>
                     <b:ListGroup>
                         <b:ListGroupItem>
-                            <b:Anchor href="#security" targetHistoryToken="security" ui:field="securityAnchor">
+                            <b:Anchor ui:field="securityAnchor">
                                 <span class="list-group-item-value"><ui:text from="{constants.securitySettings}" /></span>
-                            </b:Anchor>
-                        </b:ListGroupItem>
-                    </b:ListGroup>
-                    <b:ListGroup>
-                        <b:ListGroupItem>
-                            <b:Anchor href="#integrityCheck" targetHistoryToken="integrityCheck" ui:field="integrityCheckAnchor">
-                                <span class="list-group-item-value"><ui:text from="{constants.integrityCheckMainViewLabel}" /></span>
-                            </b:Anchor>
-                        </b:ListGroupItem>
-                    </b:ListGroup>
-                    <b:ListGroup>
-                        <b:ListGroupItem>
-                            <b:Anchor href="#clientManagement" targetHistoryToken="clientManagement" ui:field="clientManagementAnchor">
-                                <span class="list-group-item-value"><ui:text from="{constants.clientManagementMainViewLabel}" /></span>
                             </b:Anchor>
                         </b:ListGroupItem>
                     </b:ListGroup>

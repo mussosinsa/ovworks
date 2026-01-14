@@ -156,12 +156,6 @@ public class MenuView extends AbstractView implements MenuPresenterWidget.ViewDe
     @WithElementId
     @UiField
     Anchor securityAnchor;
-    @WithElementId
-    @UiField
-    Anchor integrityCheckAnchor;
-    @WithElementId
-    @UiField
-    Anchor clientManagementAnchor;
 
     private final Map<String, ListGroupItem> hrefToGroupLabelMap = new HashMap<>();
     private final List<Anchor> anchorList = new ArrayList<>();
@@ -239,6 +233,11 @@ public class MenuView extends AbstractView implements MenuPresenterWidget.ViewDe
     @Override
     public HasClickHandlers getAccountSettingsItem() {
         return accountSettingsAnchor;
+    }
+
+    @Override
+    public HasClickHandlers getSecuritySettingsItem() {
+        return securityAnchor;
     }
 
     private String hashifyString(String original) {
