@@ -3621,8 +3621,6 @@ public interface ApplicationConstants extends CommonApplicationConstants {
 
     String securitySettings();
 
-    String securitySettingsMainViewLabel();
-
     String integrityCheckMainViewLabel();
 
     String clientManagementMainViewLabel();
