@@ -1,6 +1,7 @@
 package org.ovirt.engine.ui.webadmin.section.main.view.popup;
 
-import org.ovirt.engine.ui.common.view.popup.AbstractDialogPopupView;
+import org.ovirt.engine.ui.common.view.AbstractPopupView;
+import org.ovirt.engine.ui.common.widget.dialog.PopupNativeKeyPressHandler;
 import org.ovirt.engine.ui.common.widget.dialog.SimpleDialogButton;
 import org.ovirt.engine.ui.common.widget.dialog.SimpleDialogPanel;
 import org.ovirt.engine.ui.webadmin.ApplicationConstants;
@@ -9,13 +10,15 @@ import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.SecuritySetting
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.shared.EventBus;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.inject.Inject;
 
-public class SecuritySettingsPopupView extends AbstractDialogPopupView implements SecuritySettingsPopupPresenterWidget.ViewDef {
+public class SecuritySettingsPopupView extends AbstractPopupView<SimpleDialogPanel> implements SecuritySettingsPopupPresenterWidget.ViewDef {
 
     interface ViewUiBinder extends UiBinder<SimpleDialogPanel, SecuritySettingsPopupView> {
         ViewUiBinder uiBinder = GWT.create(ViewUiBinder.class);
@@ -68,5 +71,20 @@ public class SecuritySettingsPopupView extends AbstractDialogPopupView implement
     @UiHandler("closeButton")
     void onCloseClick(ClickEvent event) {
         hide();
+    }
+
+    @Override
+    public HasClickHandlers getCloseButton() {
+        return closeButton;
+    }
+
+    @Override
+    public HasClickHandlers getCloseIconButton() {
+        return asWidget().getCloseIconButton();
+    }
+
+    @Override
+    public HandlerRegistration setPopupKeyPressHandler(PopupNativeKeyPressHandler handler) {
+        return asWidget().setKeyPressHandler(handler);
     }
 }
