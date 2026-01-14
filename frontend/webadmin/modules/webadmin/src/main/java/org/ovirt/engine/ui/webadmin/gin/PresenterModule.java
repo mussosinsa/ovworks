@@ -336,7 +336,6 @@ import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.quota.SubTabQuota
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.quota.SubTabQuotaTemplatePresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.quota.SubTabQuotaUserPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.quota.SubTabQuotaVmPresenter;
-import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.SecuritySettingsActionPanelPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.storage.StorageSubTabPanelPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.storage.SubTabStorageDRPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.storage.SubTabStorageDataCenterPresenter;
@@ -386,6 +385,7 @@ import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.virtualMachine.Su
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.virtualMachine.SubTabVirtualMachineVirtualDiskPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.virtualMachine.SubTabVirtualMachineVmDevicePresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.virtualMachine.VirtualMachineSubTabPanelPresenter;
+import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.SecuritySettingsActionPanelPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.view.AboutPopupView;
 import org.ovirt.engine.ui.webadmin.section.main.view.HeaderView;
 import org.ovirt.engine.ui.webadmin.section.main.view.MainClusterView;
