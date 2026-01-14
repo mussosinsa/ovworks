@@ -80,6 +80,7 @@ import org.ovirt.engine.ui.common.view.popup.HostRestartConfirmationPopupView;
 import org.ovirt.engine.ui.common.view.popup.HostUpgradePopupView;
 import org.ovirt.engine.ui.common.widget.MenuDetailsProvider;
 import org.ovirt.engine.ui.uicommonweb.models.EngineErrataListModel;
+import org.ovirt.engine.ui.uicommonweb.models.SecuritySettingsListModel;
 import org.ovirt.engine.ui.uicommonweb.models.SessionListModel;
 import org.ovirt.engine.ui.uicommonweb.models.clusters.ClusterListModel;
 import org.ovirt.engine.ui.uicommonweb.models.datacenters.DataCenterListModel;
@@ -92,7 +93,6 @@ import org.ovirt.engine.ui.uicommonweb.models.pools.PoolListModel;
 import org.ovirt.engine.ui.uicommonweb.models.profiles.VnicProfileListModel;
 import org.ovirt.engine.ui.uicommonweb.models.providers.ProviderListModel;
 import org.ovirt.engine.ui.uicommonweb.models.quota.QuotaListModel;
-import org.ovirt.engine.ui.uicommonweb.models.SecuritySettingsListModel;
 import org.ovirt.engine.ui.uicommonweb.models.storage.StorageListModel;
 import org.ovirt.engine.ui.uicommonweb.models.templates.TemplateListModel;
 import org.ovirt.engine.ui.uicommonweb.models.users.UserListModel;
@@ -100,7 +100,6 @@ import org.ovirt.engine.ui.uicommonweb.models.vms.DiskModel;
 import org.ovirt.engine.ui.uicommonweb.models.vms.VmDeviceFeEntity;
 import org.ovirt.engine.ui.uicommonweb.models.vms.VmListModel;
 import org.ovirt.engine.ui.uicommonweb.models.volumes.VolumeListModel;
-import org.ovirt.engine.ui.webadmin.gin.ClientGinjectorProvider;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.AboutPopupPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.HeaderPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.MainClusterPresenter;
@@ -329,6 +328,7 @@ import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.provider.Provider
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.provider.SubTabProviderGeneralPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.provider.SubTabProviderNetworkPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.provider.SubTabProviderSecretPresenter;
+import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.SecuritySettingsActionPanelPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.quota.QuotaSubTabPanelPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.quota.SubTabQuotaClusterPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.quota.SubTabQuotaEventPresenter;
@@ -337,7 +337,6 @@ import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.quota.SubTabQuota
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.quota.SubTabQuotaTemplatePresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.quota.SubTabQuotaUserPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.quota.SubTabQuotaVmPresenter;
-import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.SecuritySettingsActionPanelPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.storage.StorageSubTabPanelPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.storage.SubTabStorageDRPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.storage.SubTabStorageDataCenterPresenter;
@@ -677,7 +676,6 @@ import org.ovirt.engine.ui.webadmin.section.main.view.tab.virtualMachine.SubTabV
 import org.ovirt.engine.ui.webadmin.section.main.view.tab.virtualMachine.SubTabVirtualMachineVmDevicesView;
 import org.ovirt.engine.ui.webadmin.section.main.view.tab.virtualMachine.VirtualMachineSubTabPanelView;
 
-import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.gwtplatform.mvp.client.PresenterWidget;
@@ -777,7 +775,7 @@ public class PresenterModule extends BasePresenterModule {
                 MainSecuritySettingsPresenter.ViewDef.class,
                 MainSecuritySettingsView.class,
                 MainSecuritySettingsPresenter.ProxyDef.class);
-	bind(SecuritySettingsActionPanelPresenterWidget.class);
+        bind(SecuritySettingsActionPanelPresenterWidget.class);
         bindPresenter(MainStoragePresenter.class,
                 MainStoragePresenter.ViewDef.class,
                 MainStorageView.class,
@@ -1572,7 +1570,7 @@ public class PresenterModule extends BasePresenterModule {
                 DataCenterForceRemovePopupPresenterWidget.ViewDef.class,
                 DataCenterForceRemovePopupView.class);
 
-	// Security Settings
+        // Security Settings
         bindSingletonPresenterWidget(
                 new TypeLiteral<SearchPanelPresenterWidget<Object, SecuritySettingsListModel>>(){},
                 new TypeLiteral<SearchPanelPresenterWidget.ViewDef<SecuritySettingsListModel>>(){},
