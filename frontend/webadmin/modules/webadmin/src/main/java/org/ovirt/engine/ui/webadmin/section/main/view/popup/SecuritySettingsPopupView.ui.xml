@@ -10,14 +10,7 @@
     <d:SimpleDialogPanel header="{constants.securitySettings}" height="400px" width="600px">
         <d:content>
             <b:Container fluid="true">
-                <b:Row>
-                    <b:Column size="XS_12" addStyleNames="text-center">
-                        <b:Heading size="H4" addStyleNames="margin-top-20">
-                            <ui:text from="{constants.securitySettings}" />
-                        </b:Heading>
-                    </b:Column>
-                </b:Row>
-                <b:Row addStyleNames="margin-top-30">
+                <b:Row addStyleNames="margin-top-50">
                     <b:Column size="XS_12" addStyleNames="text-center">
                         <d:SimpleDialogButton ui:field="integrityCheckButton"
                                               text="{constants.integrityCheckMainViewLabel}"
@@ -25,7 +18,7 @@
                                               width="300px" />
                     </b:Column>
                 </b:Row>
-                <b:Row addStyleNames="margin-top-20">
+                <b:Row addStyleNames="margin-top-30">
                     <b:Column size="XS_12" addStyleNames="text-center">
                         <d:SimpleDialogButton ui:field="clientManagementButton"
                                               text="{constants.clientManagementMainViewLabel}"
