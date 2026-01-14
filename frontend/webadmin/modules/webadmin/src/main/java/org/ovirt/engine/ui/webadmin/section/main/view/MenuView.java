@@ -153,6 +153,15 @@ public class MenuView extends AbstractView implements MenuPresenterWidget.ViewDe
     @WithElementId
     @UiField
     Anchor accountSettingsAnchor;
+    @WithElementId
+    @UiField
+    Anchor securityAnchor;
+    @WithElementId
+    @UiField
+    Anchor integrityCheckAnchor;
+    @WithElementId
+    @UiField
+    Anchor clientManagementAnchor;
 
     private final Map<String, ListGroupItem> hrefToGroupLabelMap = new HashMap<>();
     private final List<Anchor> anchorList = new ArrayList<>();
