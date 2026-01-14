@@ -29,11 +29,11 @@ public class SecuritySettingsPopupPresenterWidget extends AbstractPopupPresenter
     protected void onReveal() {
         super.onReveal();
         getView().setIntegrityCheckHandler(() -> {
-            hide();
+            getView().hide();
             placeManager.revealPlace(new PlaceRequest.Builder().nameToken("integrityCheck").build());
         });
         getView().setClientManagementHandler(() -> {
-            hide();
+            getView().hide();
             placeManager.revealPlace(new PlaceRequest.Builder().nameToken("clientManagement").build());
         });
     }
