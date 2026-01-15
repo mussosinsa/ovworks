@@ -33,7 +33,7 @@
 
     <!-- Supported locales (defined via maven property) -->
     <extend-property name="locale" values="ko_KR" />
-    <set-property name="locale" value="${gwt.locale}" />
+    <set-property name="locale" value="ko_KR" />
     <set-property-fallback name="locale" value="ko_KR" />
 
     <!-- GWT CSS obfuscation style -->
