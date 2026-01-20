@@ -236,6 +236,7 @@ import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.template.Import
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.template.TemplateEditPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.template.TemplateInterfacePopupPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.user.ManageEventsPopupPresenterWidget;
+import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.user.UserPasswordResetPopupPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.user.UserRolesPopupPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.vm.CloneVmPopupPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.vm.ImportVmFromExternalProviderPopupPresenterWidget;
@@ -523,6 +524,7 @@ import org.ovirt.engine.ui.webadmin.section.main.view.popup.template.ImportTempl
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.template.TemplateEditPopupView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.template.TemplateInterfacePopupView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.user.ManageEventsPopupView;
+import org.ovirt.engine.ui.webadmin.section.main.view.popup.user.UserPasswordResetPopupView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.user.UserRolesPopupView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.vm.AddVmHostDevicePopupView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.vm.CloneVmPopupView;
@@ -1279,6 +1281,8 @@ public class PresenterModule extends BasePresenterModule {
                 SubTabUserQuotaPresenter.ProxyDef.class);
         bindPresenterWidget(UserRolesPopupPresenterWidget.class, UserRolesPopupPresenterWidget.ViewDef.class,
                 UserRolesPopupView.class);
+        bindPresenterWidget(UserPasswordResetPopupPresenterWidget.class, UserPasswordResetPopupPresenterWidget.ViewDef.class,
+                UserPasswordResetPopupView.class);
         bindSingletonPresenterWidget(
                 new TypeLiteral<SearchPanelPresenterWidget<DbUser, UserListModel>>(){},
                 new TypeLiteral<SearchPanelPresenterWidget.ViewDef<UserListModel>>(){},
