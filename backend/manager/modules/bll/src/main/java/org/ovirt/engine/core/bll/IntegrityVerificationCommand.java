@@ -22,10 +22,10 @@ import org.ovirt.engine.core.common.VdcObjectType;
 import org.ovirt.engine.core.common.action.ActionParametersBase;
 import org.ovirt.engine.core.common.businessentities.ActionGroup;
 import org.ovirt.engine.core.compat.Guid;
-import org.ovirt.engine.core.dao.AuditLogDao;
 import org.ovirt.engine.core.dal.dbbroker.auditloghandling.AuditLogDirector;
 import org.ovirt.engine.core.dal.dbbroker.auditloghandling.AuditLogable;
 import org.ovirt.engine.core.dal.dbbroker.auditloghandling.AuditLogableImpl;
+import org.ovirt.engine.core.dao.AuditLogDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
