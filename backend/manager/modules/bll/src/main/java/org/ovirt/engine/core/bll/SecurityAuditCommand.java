@@ -41,21 +41,26 @@ public class SecurityAuditCommand<T extends ActionParametersBase> extends Comman
 
     @Override
     protected boolean validate() {
-        // Check if script exists and is executable
-        java.io.File scriptFile = new java.io.File(SECURITY_AUDIT_SCRIPT);
-        if (!scriptFile.exists()) {
-            log.error("Security audit script not found: {}", SECURITY_AUDIT_SCRIPT);
-            return failValidation(org.ovirt.engine.core.common.errors.EngineMessage.ACTION_TYPE_FAILED_SCRIPT_NOT_FOUND);
-        }
-        if (!scriptFile.canExecute()) {
-            log.error("Security audit script is not executable: {}", SECURITY_AUDIT_SCRIPT);
-            return failValidation(org.ovirt.engine.core.common.errors.EngineMessage.ACTION_TYPE_FAILED_SCRIPT_NOT_EXECUTABLE);
-        }
         return true;
     }
 
     @Override
     protected void executeCommand() {
+        // Check if script exists and is executable
+        java.io.File scriptFile = new java.io.File(SECURITY_AUDIT_SCRIPT);
+        if (!scriptFile.exists()) {
+            log.error("Security audit script not found: {}", SECURITY_AUDIT_SCRIPT);
+            logAuditEvent(AuditLogType.SECURITY_AUDIT_FAILED, "Security audit script not found: " + SECURITY_AUDIT_SCRIPT);
+            setSucceeded(false);
+            return;
+        }
+        if (!scriptFile.canExecute()) {
+            log.error("Security audit script is not executable: {}", SECURITY_AUDIT_SCRIPT);
+            logAuditEvent(AuditLogType.SECURITY_AUDIT_FAILED, "Security audit script is not executable: " + SECURITY_AUDIT_SCRIPT);
+            setSucceeded(false);
+            return;
+        }
+
         logAuditEvent(AuditLogType.SECURITY_AUDIT_STARTED, "Security audit started");
 
         try {
