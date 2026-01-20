@@ -1672,6 +1672,10 @@ public interface ApplicationConstants extends CommonApplicationConstants {
 
     String assignTagsUser();
 
+    String resetPasswordUser();
+
+    String resetPasswordTitle();
+
     String userUser();
 
     String inheritedFromUser();
