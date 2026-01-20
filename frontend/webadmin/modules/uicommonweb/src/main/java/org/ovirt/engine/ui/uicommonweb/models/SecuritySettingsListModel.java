@@ -1,5 +1,8 @@
 package org.ovirt.engine.ui.uicommonweb.models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.ovirt.engine.core.common.action.ActionParametersBase;
 import org.ovirt.engine.core.common.action.ActionType;
 import org.ovirt.engine.ui.frontend.Frontend;
@@ -35,6 +38,15 @@ public class SecuritySettingsListModel extends ListWithDetailsModel {
         // Initialize commands
         setSecurityAuditCommand(new UICommand("SecurityAudit", this)); //$NON-NLS-1$
         setIntegrityVerificationCommand(new UICommand("IntegrityVerification", this)); //$NON-NLS-1$
+
+        // Initialize with dummy items to display the view
+        initializeItems();
+    }
+
+    private void initializeItems() {
+        List<Object> items = new ArrayList<>();
+        items.add(new Object()); // Add a placeholder item to make the view visible
+        setItems(items);
     }
 
     @Override
@@ -45,6 +57,8 @@ public class SecuritySettingsListModel extends ListWithDetailsModel {
     @Override
     protected void syncSearch() {
         super.syncSearch();
+        // Refresh items
+        initializeItems();
     }
 
     @Override
