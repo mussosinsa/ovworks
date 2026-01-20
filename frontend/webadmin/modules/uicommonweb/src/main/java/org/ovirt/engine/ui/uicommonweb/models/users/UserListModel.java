@@ -13,6 +13,7 @@ import org.ovirt.engine.core.common.action.AddGroupParameters;
 import org.ovirt.engine.core.common.action.AddUserParameters;
 import org.ovirt.engine.core.common.action.AttachEntityToTagParameters;
 import org.ovirt.engine.core.common.action.IdParameters;
+import org.ovirt.engine.core.common.action.UserPasswordResetParameters;
 import org.ovirt.engine.core.common.businessentities.Tags;
 import org.ovirt.engine.core.common.businessentities.aaa.DbGroup;
 import org.ovirt.engine.core.common.businessentities.aaa.DbUser;
@@ -76,6 +77,16 @@ public class UserListModel extends ListWithSimpleDetailsModel<Void, DbUser> impl
         privateAssignTagsCommand = value;
     }
 
+    private UICommand privateResetPasswordCommand;
+
+    public UICommand getResetPasswordCommand() {
+        return privateResetPasswordCommand;
+    }
+
+    private void setResetPasswordCommand(UICommand value) {
+        privateResetPasswordCommand = value;
+    }
+
 
     private final UserSettingsModel userSettingsModel;
     private final UserGroupListModel groupListModel;
@@ -112,6 +123,7 @@ public class UserListModel extends ListWithSimpleDetailsModel<Void, DbUser> impl
         setAddCommand(new UICommand("Add", this)); //$NON-NLS-1$
         setRemoveCommand(new UICommand("Remove", this)); //$NON-NLS-1$
         setAssignTagsCommand(new UICommand("AssignTags", this)); //$NON-NLS-1$
+        setResetPasswordCommand(new UICommand("ResetPassword", this)); //$NON-NLS-1$
 
         updateActionAvailability();
 
@@ -342,6 +354,49 @@ public class UserListModel extends ListWithSimpleDetailsModel<Void, DbUser> impl
         model.getCommands().add(tempVar2);
     }
 
+    public void resetPassword() {
+        if (getWindow() != null) {
+            return;
+        }
+
+        UserPasswordResetModel model = new UserPasswordResetModel();
+        setWindow(model);
+        model.setTitle(ConstantsManager.getInstance().getConstants().resetPasswordTitle());
+        model.setHelpTag(HelpTag.reset_password);
+        model.setHashName("reset_password"); //$NON-NLS-1$
+
+        UICommand okCommand = UICommand.createDefaultOkUiCommand("OnResetPassword", this); //$NON-NLS-1$
+        model.getCommands().add(okCommand);
+        UICommand cancelCommand = UICommand.createCancelUiCommand("Cancel", this); //$NON-NLS-1$
+        model.getCommands().add(cancelCommand);
+    }
+
+    public void onResetPassword() {
+        UserPasswordResetModel model = (UserPasswordResetModel) getWindow();
+
+        if (!model.validate()) {
+            return;
+        }
+
+        if (getSelectedItem() == null) {
+            return;
+        }
+
+        DbUser user = getSelectedItem();
+        String newPassword = model.getPassword().getEntity();
+
+        model.startProgress();
+
+        Frontend.getInstance().runAction(ActionType.ResetUserPassword,
+                new UserPasswordResetParameters(user.getId(), newPassword),
+                result -> {
+                    UserPasswordResetModel localModel = (UserPasswordResetModel) result.getState();
+                    localModel.stopProgress();
+                    cancel();
+                },
+                model);
+    }
+
     @Override
     public boolean isSearchStringMatch(String searchString) {
         return searchString.trim().toLowerCase().startsWith("user"); //$NON-NLS-1$
@@ -510,6 +565,14 @@ public class UserListModel extends ListWithSimpleDetailsModel<Void, DbUser> impl
                 && ActionUtils.canExecute(items, DbUser.class, ActionType.RemoveUser));
 
         getAssignTagsCommand().setIsExecutionAllowed(items.size() > 0);
+
+        // Enable reset password only when exactly one user (not group) is selected
+        boolean resetPasswordAllowed = false;
+        if (items.size() == 1 && getSelectedItem() != null) {
+            DbUser user = getSelectedItem();
+            resetPasswordAllowed = !user.isGroup();
+        }
+        getResetPasswordCommand().setIsExecutionAllowed(resetPasswordAllowed);
     }
 
     @Override
@@ -524,6 +587,9 @@ public class UserListModel extends ListWithSimpleDetailsModel<Void, DbUser> impl
         }
         if (command == getAssignTagsCommand()) {
             assignTags();
+        }
+        if (command == getResetPasswordCommand()) {
+            resetPassword();
         }
 
         if ("Cancel".equals(command.getName())) { //$NON-NLS-1$
@@ -540,6 +606,9 @@ public class UserListModel extends ListWithSimpleDetailsModel<Void, DbUser> impl
         }
         if ("OnRemove".equals(command.getName())) { //$NON-NLS-1$
             onRemove();
+        }
+        if ("OnResetPassword".equals(command.getName())) { //$NON-NLS-1$
+            onResetPassword();
         }
     }
 
