@@ -25,6 +25,7 @@ import org.ovirt.engine.ui.uicommonweb.models.users.UserGeneralModel;
 import org.ovirt.engine.ui.uicommonweb.models.users.UserGroup;
 import org.ovirt.engine.ui.uicommonweb.models.users.UserGroupListModel;
 import org.ovirt.engine.ui.uicommonweb.models.users.UserListModel;
+import org.ovirt.engine.ui.uicommonweb.models.users.UserPasswordResetModel;
 import org.ovirt.engine.ui.uicommonweb.models.users.UserPermissionListModel;
 import org.ovirt.engine.ui.uicommonweb.models.users.UserQuotaListModel;
 import org.ovirt.engine.ui.uicommonweb.models.users.UserSettingsModel;
@@ -32,6 +33,7 @@ import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.AssignTagsPopup
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.PermissionsPopupPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.event.EventPopupPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.user.ManageEventsPopupPresenterWidget;
+import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.user.UserPasswordResetPopupPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.user.UserRolesPopupPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.user.UserMainSelectedItems;
 
@@ -53,6 +55,7 @@ public class UserModule extends AbstractGinModule {
             final Provider<AssignTagsPopupPresenterWidget> assignTagsPopupProvider,
             final Provider<PermissionsPopupPresenterWidget> popupProvider,
             final Provider<RemoveConfirmationPopupPresenterWidget> removeConfirmPopupProvider,
+            final Provider<UserPasswordResetPopupPresenterWidget> passwordResetPopupProvider,
             final Provider<UserListModel> modelProvider) {
         MainViewModelProvider<DbUser, UserListModel> result =
                 new MainViewModelProvider<DbUser, UserListModel>(eventBus, defaultConfirmPopupProvider) {
@@ -65,6 +68,8 @@ public class UserModule extends AbstractGinModule {
                             return assignTagsPopupProvider.get();
                         } else if (lastExecutedCommand == model.getAddCommand()) {
                             return popupProvider.get();
+                        } else if (lastExecutedCommand == model.getResetPasswordCommand()) {
+                            return passwordResetPopupProvider.get();
                         } else {
                             return super.getModelPopup(source, lastExecutedCommand, windowModel);
                         }
