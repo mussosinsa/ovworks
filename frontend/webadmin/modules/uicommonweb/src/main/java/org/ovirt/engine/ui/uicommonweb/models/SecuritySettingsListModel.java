@@ -74,7 +74,7 @@ public class SecuritySettingsListModel extends ListWithDetailsModel {
             new ActionParametersBase(),
             result -> {
                 // Handle result if needed
-                if (result != null && result.getSucceeded()) {
+                if (result != null && result.getReturnValue() != null && result.getReturnValue().getSucceeded()) {
                     // Audit completed successfully
                 } else {
                     // Audit failed
@@ -89,7 +89,7 @@ public class SecuritySettingsListModel extends ListWithDetailsModel {
             new ActionParametersBase(),
             result -> {
                 // Handle result if needed
-                if (result != null && result.getSucceeded()) {
+                if (result != null && result.getReturnValue() != null && result.getReturnValue().getSucceeded()) {
                     // Verification completed successfully
                 } else {
                     // Verification failed
