@@ -3630,8 +3630,6 @@ public interface ApplicationConstants extends CommonApplicationConstants {
     String clientManagementMainViewLabel();
 
     // Security Audit and Integrity Verification
-    String securitySettingsMainViewLabel();
-
     String runSecurityAudit();
 
     String runIntegrityVerification();
