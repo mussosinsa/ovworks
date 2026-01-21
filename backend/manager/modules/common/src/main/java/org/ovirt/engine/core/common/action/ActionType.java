@@ -233,6 +233,7 @@ public enum ActionType {
     AddGroup(420, ActionGroup.MANIPULATE_USERS, false, QuotaDependency.NONE),
     LoginOnBehalf(424, false, QuotaDependency.NONE),
     CreateUserSession(425, ActionGroup.LOGIN, false, QuotaDependency.NONE),
+    ResetUserPassword(426, ActionGroup.MANIPULATE_USERS, false, QuotaDependency.NONE),
 
     // UserProfile
     UpdateUserProfileProperty(427, ActionGroup.EDIT_PROFILE, false, QuotaDependency.NONE),
@@ -563,6 +564,8 @@ public enum ActionType {
     DisplayAllAuditLogEvents(2102, false, QuotaDependency.NONE),
     ClearAllAuditLogAlerts(2103, false, QuotaDependency.NONE),
     DisplayAllAuditLogAlerts(2104, false, QuotaDependency.NONE),
+    SecurityAudit(2105, ActionGroup.AUDIT_LOG_MANAGEMENT, false, QuotaDependency.NONE),
+    IntegrityVerification(2106, ActionGroup.AUDIT_LOG_MANAGEMENT, false, QuotaDependency.NONE),
 
     SetSesssionSoftLimit(3000, false, QuotaDependency.NONE),
 

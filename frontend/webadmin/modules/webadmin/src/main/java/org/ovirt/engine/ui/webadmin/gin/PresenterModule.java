@@ -80,6 +80,7 @@ import org.ovirt.engine.ui.common.view.popup.HostRestartConfirmationPopupView;
 import org.ovirt.engine.ui.common.view.popup.HostUpgradePopupView;
 import org.ovirt.engine.ui.common.widget.MenuDetailsProvider;
 import org.ovirt.engine.ui.uicommonweb.models.EngineErrataListModel;
+import org.ovirt.engine.ui.uicommonweb.models.SecuritySettingsListModel;
 import org.ovirt.engine.ui.uicommonweb.models.SessionListModel;
 import org.ovirt.engine.ui.uicommonweb.models.clusters.ClusterListModel;
 import org.ovirt.engine.ui.uicommonweb.models.datacenters.DataCenterListModel;
@@ -92,7 +93,6 @@ import org.ovirt.engine.ui.uicommonweb.models.pools.PoolListModel;
 import org.ovirt.engine.ui.uicommonweb.models.profiles.VnicProfileListModel;
 import org.ovirt.engine.ui.uicommonweb.models.providers.ProviderListModel;
 import org.ovirt.engine.ui.uicommonweb.models.quota.QuotaListModel;
-import org.ovirt.engine.ui.uicommonweb.models.SecuritySettingsListModel;
 import org.ovirt.engine.ui.uicommonweb.models.storage.StorageListModel;
 import org.ovirt.engine.ui.uicommonweb.models.templates.TemplateListModel;
 import org.ovirt.engine.ui.uicommonweb.models.users.UserListModel;
@@ -100,7 +100,6 @@ import org.ovirt.engine.ui.uicommonweb.models.vms.DiskModel;
 import org.ovirt.engine.ui.uicommonweb.models.vms.VmDeviceFeEntity;
 import org.ovirt.engine.ui.uicommonweb.models.vms.VmListModel;
 import org.ovirt.engine.ui.uicommonweb.models.volumes.VolumeListModel;
-import org.ovirt.engine.ui.webadmin.gin.ClientGinjectorProvider;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.AboutPopupPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.HeaderPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.MainClusterPresenter;
@@ -137,6 +136,7 @@ import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.ImportTemplates
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.ImportVmsPopupPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.NetworkQoSPopupPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.PermissionsPopupPresenterWidget;
+import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.SecuritySettingsPopupPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.StorageQosPopupPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.StorageQosRemovePopupPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.SystemPermissionsRemoveConfirmationPopupPresenterWidget;
@@ -236,6 +236,7 @@ import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.template.Import
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.template.TemplateEditPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.template.TemplateInterfacePopupPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.user.ManageEventsPopupPresenterWidget;
+import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.user.UserPasswordResetPopupPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.user.UserRolesPopupPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.vm.CloneVmPopupPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.vm.ImportVmFromExternalProviderPopupPresenterWidget;
@@ -258,6 +259,7 @@ import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.vm.VmSnapshotCu
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.vm.VmSnapshotPreviewPopupPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.vm.VncInfoPopupPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.vm.register.VnicProfileMappingPopupPresenterWidget;
+import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.SecuritySettingsActionPanelPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.cluster.ClusterSubTabPanelPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.cluster.SubTabClusterAffinityGroupPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.cluster.SubTabClusterAffinityLabelPresenter;
@@ -337,7 +339,6 @@ import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.quota.SubTabQuota
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.quota.SubTabQuotaTemplatePresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.quota.SubTabQuotaUserPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.quota.SubTabQuotaVmPresenter;
-import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.SecuritySettingsActionPanelPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.storage.StorageSubTabPanelPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.storage.SubTabStorageDRPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.storage.SubTabStorageDataCenterPresenter;
@@ -421,6 +422,7 @@ import org.ovirt.engine.ui.webadmin.section.main.view.popup.ImportTemplatesPopup
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.ImportVmsPopupView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.NewNetworkPopupView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.PermissionsPopupView;
+import org.ovirt.engine.ui.webadmin.section.main.view.popup.SecuritySettingsPopupView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.StorageQosRemovePopupView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.SystemPermissionsRemoveConfirmationPopupView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.VmErrataListWithDetailsPopupView;
@@ -523,6 +525,7 @@ import org.ovirt.engine.ui.webadmin.section.main.view.popup.template.ImportTempl
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.template.TemplateEditPopupView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.template.TemplateInterfacePopupView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.user.ManageEventsPopupView;
+import org.ovirt.engine.ui.webadmin.section.main.view.popup.user.UserPasswordResetPopupView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.user.UserRolesPopupView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.vm.AddVmHostDevicePopupView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.vm.CloneVmPopupView;
@@ -677,12 +680,10 @@ import org.ovirt.engine.ui.webadmin.section.main.view.tab.virtualMachine.SubTabV
 import org.ovirt.engine.ui.webadmin.section.main.view.tab.virtualMachine.SubTabVirtualMachineVmDevicesView;
 import org.ovirt.engine.ui.webadmin.section.main.view.tab.virtualMachine.VirtualMachineSubTabPanelView;
 
-import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.gwtplatform.mvp.client.PresenterWidget;
 import com.gwtplatform.mvp.client.View;
-
 
 /**
  * GIN module containing WebAdmin GWTP presenter bindings.
@@ -721,6 +722,9 @@ public class PresenterModule extends BasePresenterModule {
         bindPresenterWidget(ConfigurePopupPresenterWidget.class,
                 ConfigurePopupPresenterWidget.ViewDef.class,
                 ConfigurePopupView.class);
+        bindPresenterWidget(SecuritySettingsPopupPresenterWidget.class,
+                SecuritySettingsPopupPresenterWidget.ViewDef.class,
+                SecuritySettingsPopupView.class);
         bindPresenterWidget(RolePopupPresenterWidget.class,
                 RolePopupPresenterWidget.ViewDef.class,
                 RolePopupView.class);
@@ -777,7 +781,7 @@ public class PresenterModule extends BasePresenterModule {
                 MainSecuritySettingsPresenter.ViewDef.class,
                 MainSecuritySettingsView.class,
                 MainSecuritySettingsPresenter.ProxyDef.class);
-	bind(SecuritySettingsActionPanelPresenterWidget.class);
+        bind(SecuritySettingsActionPanelPresenterWidget.class);
         bindPresenter(MainStoragePresenter.class,
                 MainStoragePresenter.ViewDef.class,
                 MainStorageView.class,
@@ -1279,6 +1283,8 @@ public class PresenterModule extends BasePresenterModule {
                 SubTabUserQuotaPresenter.ProxyDef.class);
         bindPresenterWidget(UserRolesPopupPresenterWidget.class, UserRolesPopupPresenterWidget.ViewDef.class,
                 UserRolesPopupView.class);
+        bindPresenterWidget(UserPasswordResetPopupPresenterWidget.class, UserPasswordResetPopupPresenterWidget.ViewDef.class,
+                UserPasswordResetPopupView.class);
         bindSingletonPresenterWidget(
                 new TypeLiteral<SearchPanelPresenterWidget<DbUser, UserListModel>>(){},
                 new TypeLiteral<SearchPanelPresenterWidget.ViewDef<UserListModel>>(){},
@@ -1572,7 +1578,7 @@ public class PresenterModule extends BasePresenterModule {
                 DataCenterForceRemovePopupPresenterWidget.ViewDef.class,
                 DataCenterForceRemovePopupView.class);
 
-	// Security Settings
+        // Security Settings
         bindSingletonPresenterWidget(
                 new TypeLiteral<SearchPanelPresenterWidget<Object, SecuritySettingsListModel>>(){},
                 new TypeLiteral<SearchPanelPresenterWidget.ViewDef<SecuritySettingsListModel>>(){},

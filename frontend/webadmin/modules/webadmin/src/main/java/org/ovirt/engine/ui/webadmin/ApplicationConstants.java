@@ -1672,6 +1672,10 @@ public interface ApplicationConstants extends CommonApplicationConstants {
 
     String assignTagsUser();
 
+    String resetPasswordUser();
+
+    String resetPasswordTitle();
+
     String userUser();
 
     String inheritedFromUser();
@@ -3618,4 +3622,37 @@ public interface ApplicationConstants extends CommonApplicationConstants {
     String cleanupFinishedTasks();
 
     String accountSettings();
+
+    String securitySettings();
+
+    String integrityCheckMainViewLabel();
+
+    String clientManagementMainViewLabel();
+
+    // Security Audit and Integrity Verification
+    String runSecurityAudit();
+
+    String runIntegrityVerification();
+
+    String securityAuditStarted();
+
+    String securityAuditCompleted();
+
+    String securityAuditFailed();
+
+    String integrityVerificationStarted();
+
+    String integrityVerificationCompleted();
+
+    String integrityVerificationFailed();
+
+    String securityAuditStatus();
+
+    String integrityVerificationStatus();
+
+    String statusNormal();
+
+    String statusRunning();
+
+    String statusFailed();
 }
