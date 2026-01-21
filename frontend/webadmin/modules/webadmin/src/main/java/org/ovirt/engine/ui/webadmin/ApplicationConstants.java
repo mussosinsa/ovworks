@@ -3652,5 +3652,7 @@ public interface ApplicationConstants extends CommonApplicationConstants {
 
     String statusNormal();
 
+    String statusRunning();
+
     String statusFailed();
 }
