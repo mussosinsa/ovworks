@@ -9,6 +9,14 @@ import org.ovirt.engine.ui.webadmin.gin.AssetProvider;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.MainSecuritySettingsPresenter;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.inject.Inject;
 
 public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<Object, SecuritySettingsListModel>
@@ -20,12 +28,93 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
 
     private static final ApplicationConstants constants = AssetProvider.getConstants();
 
+    private Button securityAuditButton;
+    private Button integrityVerificationButton;
+    private Label securityAuditStatusLabel;
+    private Label integrityVerificationStatusLabel;
+
     @Inject
     public MainSecuritySettingsView(MainModelProvider<Object, SecuritySettingsListModel> modelProvider) {
         super(modelProvider);
         ViewIdHandler.idHandler.generateAndSetIds(this);
         initTable();
-        initWidget(getTable());
+        initWidget(createMainPanel());
+    }
+
+    private FlowPanel createMainPanel() {
+        FlowPanel mainPanel = new FlowPanel();
+        mainPanel.setWidth("100%");
+
+        // Add title
+        HTML title = new HTML("<h2>" + constants.securitySettings() + "</h2>");
+        mainPanel.add(title);
+
+        // Create security audit section
+        VerticalPanel securityAuditPanel = new VerticalPanel();
+        securityAuditPanel.setSpacing(10);
+        securityAuditPanel.getElement().getStyle().setProperty("marginTop", "20px");
+        securityAuditPanel.getElement().getStyle().setProperty("marginBottom", "20px");
+
+        HorizontalPanel auditButtonPanel = new HorizontalPanel();
+        auditButtonPanel.setSpacing(10);
+
+        securityAuditButton = new Button(constants.runSecurityAudit());
+        securityAuditButton.setStyleName("btn btn-primary");
+        securityAuditButton.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                if (getModelProvider().getModel().getSecurityAuditCommand() != null) {
+                    getModelProvider().getModel().getSecurityAuditCommand().execute();
+                }
+            }
+        });
+
+        securityAuditStatusLabel = new Label(constants.statusNormal());
+        securityAuditStatusLabel.setStyleName("label label-success");
+
+        auditButtonPanel.add(securityAuditButton);
+        auditButtonPanel.add(securityAuditStatusLabel);
+
+        securityAuditPanel.add(new Label(constants.securityAuditStatus() + ":"));
+        securityAuditPanel.add(auditButtonPanel);
+
+        // Create integrity verification section
+        VerticalPanel integrityPanel = new VerticalPanel();
+        integrityPanel.setSpacing(10);
+        integrityPanel.getElement().getStyle().setProperty("marginTop", "20px");
+        integrityPanel.getElement().getStyle().setProperty("marginBottom", "20px");
+
+        HorizontalPanel integrityButtonPanel = new HorizontalPanel();
+        integrityButtonPanel.setSpacing(10);
+
+        integrityVerificationButton = new Button(constants.runIntegrityVerification());
+        integrityVerificationButton.setStyleName("btn btn-primary");
+        integrityVerificationButton.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                if (getModelProvider().getModel().getIntegrityVerificationCommand() != null) {
+                    getModelProvider().getModel().getIntegrityVerificationCommand().execute();
+                }
+            }
+        });
+
+        integrityVerificationStatusLabel = new Label(constants.statusNormal());
+        integrityVerificationStatusLabel.setStyleName("label label-success");
+
+        integrityButtonPanel.add(integrityVerificationButton);
+        integrityButtonPanel.add(integrityVerificationStatusLabel);
+
+        integrityPanel.add(new Label(constants.integrityVerificationStatus() + ":"));
+        integrityPanel.add(integrityButtonPanel);
+
+        // Add sections to main panel
+        mainPanel.add(securityAuditPanel);
+        mainPanel.add(integrityPanel);
+
+        // Add table
+        mainPanel.add(getTable());
+
+        return mainPanel;
     }
 
     void initTable() {
