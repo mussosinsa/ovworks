@@ -19,8 +19,10 @@ import com.google.inject.Inject;
 public class SessionListModel extends ListWithSimpleDetailsModel<UserSession, UserSession> {
 
     private static final String CMD_TERMINATE = "Terminate"; //$NON-NLS-1$
+    private static final String CMD_SET_SESSION_LIMIT = "SetSessionLimit"; //$NON-NLS-1$
 
     private UICommand terminateCommand;
+    private UICommand setSessionLimitCommand;
 
     @Inject
     public SessionListModel() {
@@ -36,6 +38,7 @@ public class SessionListModel extends ListWithSimpleDetailsModel<UserSession, Us
         setAvailableInModes(ApplicationMode.AllModes);
 
         setTerminateCommand(new UICommand(CMD_TERMINATE, this));
+        setSetSessionLimitCommand(new UICommand(CMD_SET_SESSION_LIMIT, this));
 
         terminateActionAvailability();
 
@@ -49,6 +52,14 @@ public class SessionListModel extends ListWithSimpleDetailsModel<UserSession, Us
 
     private void setTerminateCommand(UICommand value) {
         terminateCommand = value;
+    }
+
+    public UICommand getSetSessionLimitCommand() {
+        return setSessionLimitCommand;
+    }
+
+    private void setSetSessionLimitCommand(UICommand value) {
+        setSessionLimitCommand = value;
     }
 
     @Override
@@ -108,7 +119,14 @@ public class SessionListModel extends ListWithSimpleDetailsModel<UserSession, Us
 
         if (command == getTerminateCommand()) {
             terminateSession();
+        } else if (command == getSetSessionLimitCommand()) {
+            setSessionLimit();
         }
+    }
+
+    private void setSessionLimit() {
+        // This will be called when the session limit is changed
+        // The actual implementation will be handled by backend
     }
 
 }

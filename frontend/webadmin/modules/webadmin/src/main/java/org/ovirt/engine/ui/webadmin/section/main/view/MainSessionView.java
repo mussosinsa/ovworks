@@ -2,6 +2,7 @@ package org.ovirt.engine.ui.webadmin.section.main.view;
 
 import java.util.Comparator;
 
+import org.gwtbootstrap3.client.ui.Button;
 import org.ovirt.engine.core.common.businessentities.UserSession;
 import org.ovirt.engine.core.searchbackend.SessionConditionFieldAutoCompleter;
 import org.ovirt.engine.ui.common.idhandler.ElementIdHandler;
@@ -13,19 +14,48 @@ import org.ovirt.engine.ui.webadmin.gin.AssetProvider;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.MainSessionPresenter;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.uibinder.client.UiBinder;
+import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.ListBox;
 import com.google.inject.Inject;
 
 public class MainSessionView extends AbstractMainWithDetailsTableView<UserSession, SessionListModel>
         implements MainSessionPresenter.ViewDef {
 
+    interface ViewUiBinder extends UiBinder<FlowPanel, MainSessionView> {
+        ViewUiBinder uiBinder = GWT.create(ViewUiBinder.class);
+    }
+
+    interface ViewIdHandler extends ElementIdHandler<MainSessionView> {
+        ViewIdHandler idHandler = GWT.create(ViewIdHandler.class);
+    }
+
     private static final ApplicationConstants constants = AssetProvider.getConstants();
+
+    @UiField
+    Button sessionLimitButton;
+
+    @UiField
+    ListBox sessionLimitDropdown;
 
     @Inject
     public MainSessionView(MainModelProvider<UserSession, SessionListModel> modelProvider) {
         super(modelProvider);
+
+        // Create custom UI using UiBinder
+        FlowPanel customPanel = ViewUiBinder.uiBinder.createAndBindUi(this);
+
+        // Add the custom panel to the table's outer container
+        FlowPanel tableContainer = getTable().getOuterWidget();
+        tableContainer.insert(customPanel, 0);  // Insert at the top
+
         ViewIdHandler.idHandler.generateAndSetIds(this);
         initTable();
+        initSessionLimitControls();
         initWidget(getTable());
     }
 
@@ -110,6 +140,32 @@ public class MainSessionView extends AbstractMainWithDetailsTableView<UserSessio
 
     interface ViewIdHandler extends ElementIdHandler<MainSessionView> {
         ViewIdHandler idHandler = GWT.create(ViewIdHandler.class);
+    }
+
+    private void initSessionLimitControls() {
+        // Populate dropdown with session limit options
+        sessionLimitDropdown.addItem("1", "1");
+        sessionLimitDropdown.addItem("2", "2");
+        sessionLimitDropdown.addItem("3", "3");
+        sessionLimitDropdown.addItem("5", "5");
+        sessionLimitDropdown.addItem("10", "10");
+        sessionLimitDropdown.addItem(constants.unlimited(), "-1");
+
+        // Set default selection
+        sessionLimitDropdown.setSelectedIndex(0);
+
+        // Add change handler
+        sessionLimitDropdown.addChangeHandler(new ChangeHandler() {
+            @Override
+            public void onChange(ChangeEvent event) {
+                int selectedIndex = sessionLimitDropdown.getSelectedIndex();
+                String selectedValue = sessionLimitDropdown.getValue(selectedIndex);
+                // Notify the model about the change
+                if (getModelProvider().getModel().getSetSessionLimitCommand() != null) {
+                    getModelProvider().getModel().getSetSessionLimitCommand().execute();
+                }
+            }
+        });
     }
 
 }
