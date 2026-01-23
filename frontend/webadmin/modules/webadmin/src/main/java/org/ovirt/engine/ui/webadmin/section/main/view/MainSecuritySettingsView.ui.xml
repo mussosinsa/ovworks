@@ -88,5 +88,56 @@
                          addStyleNames="{style.statusLabel}" />
             </g:HorizontalPanel>
         </g:FlowPanel>
+
+        <!-- Audit Log Protection Section -->
+        <g:FlowPanel addStyleNames="{style.sectionPanel}">
+            <g:HTML addStyleNames="{style.sectionTitle}">
+                <ui:text from="{constants.auditLogProtection}" />
+            </g:HTML>
+
+            <g:HorizontalPanel addStyleNames="{style.buttonPanel}">
+                <b:Button ui:field="fullLogBackupButton"
+                          text="{constants.fullLogBackup}"
+                          type="PRIMARY"
+                          addStyleNames="{style.actionButton}" />
+                <g:Label ui:field="fullLogBackupStatusLabel"
+                         text="{constants.statusNormal}"
+                         addStyleNames="{style.statusLabel}" />
+            </g:HorizontalPanel>
+        </g:FlowPanel>
+
+        <!-- Audit Log Remote Backup Section -->
+        <g:FlowPanel addStyleNames="{style.sectionPanel}">
+            <g:HTML addStyleNames="{style.sectionTitle}">
+                <ui:text from="{constants.auditLogRemoteBackup}" />
+            </g:HTML>
+
+            <g:HorizontalPanel addStyleNames="{style.buttonPanel}">
+                <b:Button ui:field="remoteBackupButton"
+                          text="{constants.remoteAddressRsyslog}"
+                          type="PRIMARY"
+                          addStyleNames="{style.actionButton}" />
+                <g:Label ui:field="remoteBackupStatusLabel"
+                         text="{constants.statusNormal}"
+                         addStyleNames="{style.statusLabel}" />
+            </g:HorizontalPanel>
+        </g:FlowPanel>
+
+        <!-- Availability Assurance Section -->
+        <g:FlowPanel addStyleNames="{style.sectionPanel}">
+            <g:HTML addStyleNames="{style.sectionTitle}">
+                <ui:text from="{constants.availabilityAssurance}" />
+            </g:HTML>
+
+            <g:HorizontalPanel addStyleNames="{style.buttonPanel}">
+                <b:Button ui:field="engineBackupButton"
+                          text="{constants.runEngineBackup}"
+                          type="PRIMARY"
+                          addStyleNames="{style.actionButton}" />
+                <g:Label ui:field="engineBackupStatusLabel"
+                         text="{constants.statusNormal}"
+                         addStyleNames="{style.statusLabel}" />
+            </g:HorizontalPanel>
+        </g:FlowPanel>
     </g:FlowPanel>
 </ui:UiBinder>

@@ -37,10 +37,28 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
     Button integrityVerificationButton;
 
     @UiField
+    Button fullLogBackupButton;
+
+    @UiField
+    Button remoteBackupButton;
+
+    @UiField
+    Button engineBackupButton;
+
+    @UiField
     Label securityAuditStatusLabel;
 
     @UiField
     Label integrityVerificationStatusLabel;
+
+    @UiField
+    Label fullLogBackupStatusLabel;
+
+    @UiField
+    Label remoteBackupStatusLabel;
+
+    @UiField
+    Label engineBackupStatusLabel;
 
     @Inject
     public MainSecuritySettingsView(MainModelProvider<Object, SecuritySettingsListModel> modelProvider) {
@@ -87,6 +105,42 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
                     integrityVerificationStatusLabel.removeStyleName("text-success"); //$NON-NLS-1$
                     integrityVerificationStatusLabel.addStyleName("text-warning"); //$NON-NLS-1$
                     getModelProvider().getModel().getIntegrityVerificationCommand().execute();
+                }
+            }
+        });
+
+        fullLogBackupButton.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                if (getModelProvider().getModel().getFullLogBackupCommand() != null) {
+                    fullLogBackupStatusLabel.setText(constants.statusRunning());
+                    fullLogBackupStatusLabel.removeStyleName("text-success"); //$NON-NLS-1$
+                    fullLogBackupStatusLabel.addStyleName("text-warning"); //$NON-NLS-1$
+                    getModelProvider().getModel().getFullLogBackupCommand().execute();
+                }
+            }
+        });
+
+        remoteBackupButton.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                if (getModelProvider().getModel().getRemoteBackupCommand() != null) {
+                    remoteBackupStatusLabel.setText(constants.statusRunning());
+                    remoteBackupStatusLabel.removeStyleName("text-success"); //$NON-NLS-1$
+                    remoteBackupStatusLabel.addStyleName("text-warning"); //$NON-NLS-1$
+                    getModelProvider().getModel().getRemoteBackupCommand().execute();
+                }
+            }
+        });
+
+        engineBackupButton.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                if (getModelProvider().getModel().getEngineBackupCommand() != null) {
+                    engineBackupStatusLabel.setText(constants.statusRunning());
+                    engineBackupStatusLabel.removeStyleName("text-success"); //$NON-NLS-1$
+                    engineBackupStatusLabel.addStyleName("text-warning"); //$NON-NLS-1$
+                    getModelProvider().getModel().getEngineBackupCommand().execute();
                 }
             }
         });
