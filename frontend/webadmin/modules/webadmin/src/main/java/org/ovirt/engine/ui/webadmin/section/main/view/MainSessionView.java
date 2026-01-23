@@ -140,12 +140,12 @@ public class MainSessionView extends AbstractMainWithDetailsTableView<UserSessio
 
     private void initSessionLimitControls() {
         // Populate dropdown with session limit options
-        sessionLimitDropdown.addItem("1", "1");
-        sessionLimitDropdown.addItem("2", "2");
-        sessionLimitDropdown.addItem("3", "3");
-        sessionLimitDropdown.addItem("5", "5");
-        sessionLimitDropdown.addItem("10", "10");
-        sessionLimitDropdown.addItem(constants.unlimited(), "-1");
+        sessionLimitDropdown.addItem("1", "1"); //$NON-NLS-1$ //$NON-NLS-2$
+        sessionLimitDropdown.addItem("2", "2"); //$NON-NLS-1$ //$NON-NLS-2$
+        sessionLimitDropdown.addItem("3", "3"); //$NON-NLS-1$ //$NON-NLS-2$
+        sessionLimitDropdown.addItem("5", "5"); //$NON-NLS-1$ //$NON-NLS-2$
+        sessionLimitDropdown.addItem("10", "10"); //$NON-NLS-1$ //$NON-NLS-2$
+        sessionLimitDropdown.addItem(constants.unlimited(), "-1"); //$NON-NLS-1$
 
         // Set default selection
         sessionLimitDropdown.setSelectedIndex(0);
