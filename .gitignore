@@ -57,7 +57,6 @@ packaging/bin/engine-backup.sh
 packaging/bin/engine-host-update.py
 packaging/bin/engine-migrate-he.py
 packaging/bin/engine-prolog.sh
-packaging/bin/ovirt-terminal-auth-config.sh
 packaging/bin/pki-common.sh
 packaging/bin/vdsm_to_network_name_map
 packaging/conf/notifier-logging.properties
