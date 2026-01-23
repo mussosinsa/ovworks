@@ -3655,4 +3655,32 @@ public interface ApplicationConstants extends CommonApplicationConstants {
     String statusRunning();
 
     String statusFailed();
+
+    // Audit Log Protection and Availability
+    String auditLogProtection();
+
+    String fullLogBackup();
+
+    String auditLogRemoteBackup();
+
+    String remoteAddressRsyslog();
+
+    String availabilityAssurance();
+
+    String runEngineBackup();
+
+    String fullLogBackupStatus();
+
+    String remoteBackupStatus();
+
+    String engineBackupStatus();
+
+    // Session Management
+    String concurrentSessionLimit();
+
+    String sessionLimitLabel();
+
+    String setSessionLimit();
+
+    String currentLimit();
 }
