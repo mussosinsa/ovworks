@@ -566,6 +566,9 @@ public enum ActionType {
     DisplayAllAuditLogAlerts(2104, false, QuotaDependency.NONE),
     SecurityAudit(2105, ActionGroup.AUDIT_LOG_MANAGEMENT, false, QuotaDependency.NONE),
     IntegrityVerification(2106, ActionGroup.AUDIT_LOG_MANAGEMENT, false, QuotaDependency.NONE),
+    FullLogBackup(2107, ActionGroup.AUDIT_LOG_MANAGEMENT, false, QuotaDependency.NONE),
+    RemoteBackup(2108, ActionGroup.AUDIT_LOG_MANAGEMENT, false, QuotaDependency.NONE),
+    EngineBackup(2109, ActionGroup.AUDIT_LOG_MANAGEMENT, false, QuotaDependency.NONE),
 
     SetSesssionSoftLimit(3000, false, QuotaDependency.NONE),
 
