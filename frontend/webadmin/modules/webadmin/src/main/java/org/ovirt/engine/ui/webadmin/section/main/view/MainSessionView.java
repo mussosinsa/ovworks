@@ -138,10 +138,6 @@ public class MainSessionView extends AbstractMainWithDetailsTableView<UserSessio
         getTable().addColumn(sessionLastActiveColumn, constants.sessionLastActiveTime(), "200px"); //$NON-NLS-1$
     }
 
-    interface ViewIdHandler extends ElementIdHandler<MainSessionView> {
-        ViewIdHandler idHandler = GWT.create(ViewIdHandler.class);
-    }
-
     private void initSessionLimitControls() {
         // Populate dropdown with session limit options
         sessionLimitDropdown.addItem("1", "1");
