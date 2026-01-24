@@ -48,6 +48,7 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
         mainContainer.getElement().getStyle().setDisplay(Display.TABLE);
         mainContainer.getElement().getStyle().setWidth(100, Unit.PCT);
         mainContainer.getElement().getStyle().setHeight(100, Unit.PCT);
+        mainContainer.getElement().getStyle().setProperty("minHeight", "600px"); //$NON-NLS-1$ //$NON-NLS-2$
 
         // 2. 사이드바 영역 생성 (display: table-cell)
         FlowPanel sidebar = new FlowPanel();
@@ -77,6 +78,8 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
         FlowPanel menuList = new FlowPanel();
         menuList.getElement().getStyle().setProperty("flex", "1"); //$NON-NLS-1$ //$NON-NLS-2$
         menuList.getElement().getStyle().setOverflowY(Overflow.AUTO);
+        menuList.getElement().getStyle().setDisplay(Display.BLOCK);
+        menuList.getElement().getStyle().setProperty("minHeight", "200px"); //$NON-NLS-1$ //$NON-NLS-2$
 
         // 6. 컨텐츠 영역 (display: table-cell)
         FlowPanel contentArea = new FlowPanel();
@@ -130,6 +133,8 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
         item.getElement().getStyle().setProperty("padding", "10px 15px"); //$NON-NLS-1$ //$NON-NLS-2$
         item.getElement().getStyle().setCursor(com.google.gwt.dom.client.Style.Cursor.POINTER);
         item.getElement().getStyle().setProperty("borderBottom", "1px solid #f0f0f0"); //$NON-NLS-1$ //$NON-NLS-2$
+        item.getElement().getStyle().setProperty("visibility", "visible"); //$NON-NLS-1$ //$NON-NLS-2$
+        item.getElement().getStyle().setProperty("opacity", "1"); //$NON-NLS-1$ //$NON-NLS-2$
         return item;
     }
 
