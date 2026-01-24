@@ -5,20 +5,76 @@
     xmlns:g="urn:import:com.google.gwt.user.client.ui"
     xmlns:b="urn:import:org.gwtbootstrap3.client.ui">
 
-    <ui:with field='constants' type='org.ovirt.engine.ui.webadmin.ApplicationConstants' />
+    <ui:with field="constants" type="org.ovirt.engine.ui.webadmin.ApplicationConstants" />
 
-    <g:FlowPanel>
-        <b:Container fluid="true">
-            <b:Row>
-                <b:Column size="XS_12">
-                    <g:HTMLPanel>
-                        <div style="padding: 20px;">
-                            <p>Integrity Check functionality will be implemented here.</p>
-                        </div>
-                    </g:HTMLPanel>
-                </b:Column>
-            </b:Row>
-        </b:Container>
+    <ui:style>
+        .mainPanel {
+            padding: 20px;
+            width: 100%;
+        }
+
+        .sectionPanel {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .sectionTitle {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .buttonPanel {
+            margin-top: 15px;
+        }
+
+        .actionButton {
+            margin-right: 15px;
+        }
+
+        .statusLabel {
+            padding: 10px;
+            font-weight: bold;
+            color: #5cb85c;
+        }
+    </ui:style>
+
+    <g:FlowPanel addStyleNames="{style.mainPanel}">
+        <!-- Security Audit Section -->
+        <g:FlowPanel addStyleNames="{style.sectionPanel}">
+            <g:HTML addStyleNames="{style.sectionTitle}">
+                <ui:text from="{constants.securityAuditStatus}" />
+            </g:HTML>
+
+            <g:HorizontalPanel addStyleNames="{style.buttonPanel}">
+                <b:Button ui:field="securityAuditButton"
+                          text="{constants.runSecurityAudit}"
+                          type="PRIMARY"
+                          addStyleNames="{style.actionButton}" />
+                <g:Label ui:field="securityAuditStatusLabel"
+                         text="{constants.statusNormal}"
+                         addStyleNames="{style.statusLabel}" />
+            </g:HorizontalPanel>
+        </g:FlowPanel>
+
+        <!-- Integrity Verification Section -->
+        <g:FlowPanel addStyleNames="{style.sectionPanel}">
+            <g:HTML addStyleNames="{style.sectionTitle}">
+                <ui:text from="{constants.integrityVerificationStatus}" />
+            </g:HTML>
+
+            <g:HorizontalPanel addStyleNames="{style.buttonPanel}">
+                <b:Button ui:field="integrityVerificationButton"
+                          text="{constants.runIntegrityVerification}"
+                          type="PRIMARY"
+                          addStyleNames="{style.actionButton}" />
+                <g:Label ui:field="integrityVerificationStatusLabel"
+                         text="{constants.statusNormal}"
+                         addStyleNames="{style.statusLabel}" />
+            </g:HorizontalPanel>
+        </g:FlowPanel>
     </g:FlowPanel>
-
 </ui:UiBinder>

@@ -1,148 +1,79 @@
 package org.ovirt.engine.ui.webadmin.section.main.view;
 
-import org.gwtbootstrap3.client.ui.Button;
-import org.ovirt.engine.ui.common.idhandler.ElementIdHandler;
+import org.gwtbootstrap3.client.ui.TabContent;
+import org.gwtbootstrap3.client.ui.TabListItem;
+import org.gwtbootstrap3.client.ui.TabPane;
+import org.gwtbootstrap3.client.ui.TabPanel;
 import org.ovirt.engine.ui.common.uicommon.model.MainModelProvider;
 import org.ovirt.engine.ui.uicommonweb.models.SecuritySettingsListModel;
-import org.ovirt.engine.ui.webadmin.ApplicationConstants;
-import org.ovirt.engine.ui.webadmin.gin.AssetProvider;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.MainSecuritySettingsPresenter;
+import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AuditLogManagementView;
+import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.ClientManagementView;
+import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.IntegrityCheckView;
 
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.uibinder.client.UiBinder;
-import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.Label;
 import com.google.inject.Inject;
 
 public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<Object, SecuritySettingsListModel>
         implements MainSecuritySettingsPresenter.ViewDef {
 
-    interface ViewUiBinder extends UiBinder<FlowPanel, MainSecuritySettingsView> {
-        ViewUiBinder uiBinder = GWT.create(ViewUiBinder.class);
-    }
-
-    interface ViewIdHandler extends ElementIdHandler<MainSecuritySettingsView> {
-        ViewIdHandler idHandler = GWT.create(ViewIdHandler.class);
-    }
-
-    private static final ApplicationConstants constants = AssetProvider.getConstants();
-
-    @UiField
-    Button securityAuditButton;
-
-    @UiField
-    Button integrityVerificationButton;
-
-    @UiField
-    Button fullLogBackupButton;
-
-    @UiField
-    Button remoteBackupButton;
-
-    @UiField
-    Button engineBackupButton;
-
-    @UiField
-    Label securityAuditStatusLabel;
-
-    @UiField
-    Label integrityVerificationStatusLabel;
-
-    @UiField
-    Label fullLogBackupStatusLabel;
-
-    @UiField
-    Label remoteBackupStatusLabel;
-
-    @UiField
-    Label engineBackupStatusLabel;
-
     @Inject
-    public MainSecuritySettingsView(MainModelProvider<Object, SecuritySettingsListModel> modelProvider) {
+    public MainSecuritySettingsView(MainModelProvider<Object, SecuritySettingsListModel> modelProvider,
+            IntegrityCheckView integrityCheckView,
+            ClientManagementView clientManagementView,
+            AuditLogManagementView auditLogManagementView) {
         super(modelProvider);
 
         // Hide the default table
         getTable().setVisible(false);
 
-        // Create custom UI using UiBinder
-        FlowPanel customPanel = ViewUiBinder.uiBinder.createAndBindUi(this);
+        // Create tab interface
+        FlowPanel mainPanel = new FlowPanel();
+        TabPanel tabPanel = new TabPanel();
 
-        // Add the custom panel to the table's outer container
+        // Create tab list items
+        TabListItem integrityCheckTab = new TabListItem("무결성 검사"); //$NON-NLS-1$
+        TabListItem clientManagementTab = new TabListItem("클라이언트 관리"); //$NON-NLS-1$
+        TabListItem auditLogManagementTab = new TabListItem("감사기록 관리"); //$NON-NLS-1$
+
+        // Create tab panes
+        TabPane integrityCheckPane = new TabPane();
+        integrityCheckPane.add(integrityCheckView);
+        integrityCheckPane.setActive(true);
+
+        TabPane clientManagementPane = new TabPane();
+        clientManagementPane.add(clientManagementView);
+
+        TabPane auditLogManagementPane = new TabPane();
+        auditLogManagementPane.add(auditLogManagementView);
+
+        // Link tabs to panes
+        integrityCheckTab.setDataTarget("#integrityCheckPane"); //$NON-NLS-1$
+        clientManagementTab.setDataTarget("#clientManagementPane"); //$NON-NLS-1$
+        auditLogManagementTab.setDataTarget("#auditLogManagementPane"); //$NON-NLS-1$
+        integrityCheckTab.setActive(true);
+
+        integrityCheckPane.setId("integrityCheckPane"); //$NON-NLS-1$
+        clientManagementPane.setId("clientManagementPane"); //$NON-NLS-1$
+        auditLogManagementPane.setId("auditLogManagementPane"); //$NON-NLS-1$
+
+        // Add tabs to panel
+        tabPanel.add(integrityCheckTab);
+        tabPanel.add(clientManagementTab);
+        tabPanel.add(auditLogManagementTab);
+
+        TabContent tabContent = new TabContent();
+        tabContent.add(integrityCheckPane);
+        tabContent.add(clientManagementPane);
+        tabContent.add(auditLogManagementPane);
+
+        mainPanel.add(tabPanel);
+        mainPanel.add(tabContent);
+
+        // Add to table container
         FlowPanel tableContainer = getTable().getOuterWidget();
-        tableContainer.add(customPanel);
+        tableContainer.add(mainPanel);
 
-        // Generate IDs
-        ViewIdHandler.idHandler.generateAndSetIds(this);
-
-        // Initialize button handlers
-        initializeHandlers();
-
-        // Initialize widget
         initWidget(getTable());
-    }
-
-    private void initializeHandlers() {
-        securityAuditButton.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                if (getModelProvider().getModel().getSecurityAuditCommand() != null) {
-                    securityAuditStatusLabel.setText(constants.statusRunning());
-                    securityAuditStatusLabel.removeStyleName("text-success"); //$NON-NLS-1$
-                    securityAuditStatusLabel.addStyleName("text-warning"); //$NON-NLS-1$
-                    getModelProvider().getModel().getSecurityAuditCommand().execute();
-                }
-            }
-        });
-
-        integrityVerificationButton.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                if (getModelProvider().getModel().getIntegrityVerificationCommand() != null) {
-                    integrityVerificationStatusLabel.setText(constants.statusRunning());
-                    integrityVerificationStatusLabel.removeStyleName("text-success"); //$NON-NLS-1$
-                    integrityVerificationStatusLabel.addStyleName("text-warning"); //$NON-NLS-1$
-                    getModelProvider().getModel().getIntegrityVerificationCommand().execute();
-                }
-            }
-        });
-
-        fullLogBackupButton.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                if (getModelProvider().getModel().getFullLogBackupCommand() != null) {
-                    fullLogBackupStatusLabel.setText(constants.statusRunning());
-                    fullLogBackupStatusLabel.removeStyleName("text-success"); //$NON-NLS-1$
-                    fullLogBackupStatusLabel.addStyleName("text-warning"); //$NON-NLS-1$
-                    getModelProvider().getModel().getFullLogBackupCommand().execute();
-                }
-            }
-        });
-
-        remoteBackupButton.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                if (getModelProvider().getModel().getRemoteBackupCommand() != null) {
-                    remoteBackupStatusLabel.setText(constants.statusRunning());
-                    remoteBackupStatusLabel.removeStyleName("text-success"); //$NON-NLS-1$
-                    remoteBackupStatusLabel.addStyleName("text-warning"); //$NON-NLS-1$
-                    getModelProvider().getModel().getRemoteBackupCommand().execute();
-                }
-            }
-        });
-
-        engineBackupButton.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                if (getModelProvider().getModel().getEngineBackupCommand() != null) {
-                    engineBackupStatusLabel.setText(constants.statusRunning());
-                    engineBackupStatusLabel.removeStyleName("text-success"); //$NON-NLS-1$
-                    engineBackupStatusLabel.addStyleName("text-warning"); //$NON-NLS-1$
-                    getModelProvider().getModel().getEngineBackupCommand().execute();
-                }
-            }
-        });
     }
 }
