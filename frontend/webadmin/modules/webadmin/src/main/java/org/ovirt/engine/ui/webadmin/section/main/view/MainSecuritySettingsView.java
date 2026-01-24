@@ -7,6 +7,11 @@ import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AuditLogMan
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.ClientManagementView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.IntegrityCheckView;
 
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.dom.client.Style.Display;
+import com.google.gwt.dom.client.Style.VerticalAlign;
+import com.google.gwt.dom.client.Style.Overflow;
+import com.google.gwt.dom.client.Style.FlexDirection;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.SimplePanel;
@@ -36,81 +41,97 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
         this.clientManagementView = clientManagementView;
         this.auditLogManagementView = auditLogManagementView;
 
-        // Hide the default table
+        // 기본 테이블 숨김
         getTable().setVisible(false);
 
-        // Create main container
+        // 1. 메인 컨테이너 생성 (CSS의 display: table 역할)
         FlowPanel mainContainer = new FlowPanel();
-        mainContainer.getElement().setInnerHTML(
-            "<div style='display: table; width: 100%; height: 100%;'>" + //$NON-NLS-1$
-            "  <div id='sidebar' style='display: table-cell; width: 250px; height: 100%; vertical-align: top; background-color: #ffffff; border-right: 1px solid #ddd;'>" + //$NON-NLS-1$
-            "    <div style='display: flex; flex-direction: column; height: 100%;'>" + //$NON-NLS-1$
-            "      <div style='padding: 10px 15px; font-size: 16px; font-weight: bold; border-bottom: 1px solid #ddd; background-color: #f8f8f8; flex-shrink: 0;'>보안 설정</div>" + //$NON-NLS-1$
-            "      <div id='menuList' style='flex: 1; overflow-y: auto;'></div>" + //$NON-NLS-1$
-            "    </div>" + //$NON-NLS-1$
-            "  </div>" + //$NON-NLS-1$
-            "  <div id='contentArea' style='display: table-cell; height: 100%; vertical-align: top; background-color: #ffffff;'></div>" + //$NON-NLS-1$
-            "</div>" //$NON-NLS-1$
-        );
+        mainContainer.getElement().getStyle().setDisplay(Display.TABLE);
+        mainContainer.getElement().getStyle().setWidth(100, Unit.PCT);
+        mainContainer.getElement().getStyle().setHeight(100, Unit.PCT);
 
-        // Create menu items
-        integrityCheckMenuItem = new HTML("무결성 검사"); //$NON-NLS-1$
-        integrityCheckMenuItem.setStyleName("security-menu-item security-menu-item-active"); //$NON-NLS-1$
-        integrityCheckMenuItem.getElement().getStyle().setProperty("display", "block"); //$NON-NLS-1$ //$NON-NLS-2$
-        integrityCheckMenuItem.getElement().getStyle().setProperty("padding", "10px 15px"); //$NON-NLS-1$ //$NON-NLS-2$
-        integrityCheckMenuItem.getElement().getStyle().setProperty("cursor", "pointer"); //$NON-NLS-1$ //$NON-NLS-2$
-        integrityCheckMenuItem.getElement().getStyle().setProperty("borderBottom", "1px solid #f0f0f0"); //$NON-NLS-1$ //$NON-NLS-2$
-        integrityCheckMenuItem.getElement().getStyle().setProperty("backgroundColor", "#337ab7"); //$NON-NLS-1$ //$NON-NLS-2$
-        integrityCheckMenuItem.getElement().getStyle().setProperty("color", "white"); //$NON-NLS-1$ //$NON-NLS-2$
-        integrityCheckMenuItem.getElement().getStyle().setProperty("fontWeight", "bold"); //$NON-NLS-1$ //$NON-NLS-2$
+        // 2. 사이드바 영역 생성 (display: table-cell)
+        FlowPanel sidebar = new FlowPanel();
+        sidebar.getElement().getStyle().setDisplay(Display.TABLE_CELL);
+        sidebar.getElement().getStyle().setWidth(250, Unit.PX);
+        sidebar.getElement().getStyle().setHeight(100, Unit.PCT);
+        sidebar.getElement().getStyle().setVerticalAlign(VerticalAlign.TOP);
+        sidebar.getElement().getStyle().setBackgroundColor("#ffffff"); //$NON-NLS-1$
+        sidebar.getElement().getStyle().setProperty("borderRight", "1px solid #ddd"); //$NON-NLS-1$ //$NON-NLS-2$
 
-        clientManagementMenuItem = new HTML("클라이언트 관리"); //$NON-NLS-1$
-        clientManagementMenuItem.setStyleName("security-menu-item"); //$NON-NLS-1$
-        clientManagementMenuItem.getElement().getStyle().setProperty("display", "block"); //$NON-NLS-1$ //$NON-NLS-2$
-        clientManagementMenuItem.getElement().getStyle().setProperty("padding", "10px 15px"); //$NON-NLS-1$ //$NON-NLS-2$
-        clientManagementMenuItem.getElement().getStyle().setProperty("cursor", "pointer"); //$NON-NLS-1$ //$NON-NLS-2$
-        clientManagementMenuItem.getElement().getStyle().setProperty("borderBottom", "1px solid #f0f0f0"); //$NON-NLS-1$ //$NON-NLS-2$
+        // 3. 사이드바 내부 Flex 컨테이너
+        FlowPanel sidebarInner = new FlowPanel();
+        sidebarInner.getElement().getStyle().setDisplay(Display.FLEX);
+        sidebarInner.getElement().getStyle().setProperty("flexDirection", "column"); //$NON-NLS-1$ //$NON-NLS-2$
+        sidebarInner.setHeight("100%"); //$NON-NLS-1$
 
-        auditLogManagementMenuItem = new HTML("감사기록 관리"); //$NON-NLS-1$
-        auditLogManagementMenuItem.setStyleName("security-menu-item"); //$NON-NLS-1$
-        auditLogManagementMenuItem.getElement().getStyle().setProperty("display", "block"); //$NON-NLS-1$ //$NON-NLS-2$
-        auditLogManagementMenuItem.getElement().getStyle().setProperty("padding", "10px 15px"); //$NON-NLS-1$ //$NON-NLS-2$
-        auditLogManagementMenuItem.getElement().getStyle().setProperty("cursor", "pointer"); //$NON-NLS-1$ //$NON-NLS-2$
-        auditLogManagementMenuItem.getElement().getStyle().setProperty("borderBottom", "1px solid #f0f0f0"); //$NON-NLS-1$ //$NON-NLS-2$
+        // 4. "보안 설정" 헤더
+        HTML headerTitle = new HTML("보안 설정"); //$NON-NLS-1$
+        headerTitle.getElement().getStyle().setProperty("padding", "10px 15px"); //$NON-NLS-1$ //$NON-NLS-2$
+        headerTitle.getElement().getStyle().setFontSize(16, Unit.PX);
+        headerTitle.getElement().getStyle().setFontWeight(com.google.gwt.dom.client.Style.FontWeight.BOLD);
+        headerTitle.getElement().getStyle().setProperty("borderBottom", "1px solid #ddd"); //$NON-NLS-1$ //$NON-NLS-2$
+        headerTitle.getElement().getStyle().setBackgroundColor("#f8f8f8"); //$NON-NLS-1$
+        headerTitle.getElement().getStyle().setProperty("flexShrink", "0"); //$NON-NLS-1$ //$NON-NLS-2$
 
-        // Create content panel
+        // 5. 메뉴 리스트 영역 (여기에 메뉴 아이템 추가)
+        FlowPanel menuList = new FlowPanel();
+        menuList.getElement().getStyle().setProperty("flex", "1"); //$NON-NLS-1$ //$NON-NLS-2$
+        menuList.getElement().getStyle().setOverflowY(Overflow.AUTO);
+
+        // 6. 컨텐츠 영역 (display: table-cell)
+        FlowPanel contentArea = new FlowPanel();
+        contentArea.getElement().getStyle().setDisplay(Display.TABLE_CELL);
+        contentArea.getElement().getStyle().setHeight(100, Unit.PCT);
+        contentArea.getElement().getStyle().setVerticalAlign(VerticalAlign.TOP);
+        contentArea.getElement().getStyle().setBackgroundColor("#ffffff"); //$NON-NLS-1$
+
+        // 메뉴 아이템 생성 (스타일 설정은 기존과 동일)
+        integrityCheckMenuItem = createMenuItem("무결성 검사"); //$NON-NLS-1$
+        clientManagementMenuItem = createMenuItem("클라이언트 관리"); //$NON-NLS-1$
+        auditLogManagementMenuItem = createMenuItem("감사기록 관리"); //$NON-NLS-1$
+
+        // Content Panel 초기화
         contentPanel = new SimplePanel();
         contentPanel.getElement().setId("contentPanel"); //$NON-NLS-1$
 
-        // Add to table container
+        // 위젯 조립 (부모-자식 관계 설정)
+        // 메뉴 리스트에 아이템 추가
+        menuList.add(integrityCheckMenuItem);
+        menuList.add(clientManagementMenuItem);
+        menuList.add(auditLogManagementMenuItem);
+
+        // 사이드바 조립
+        sidebarInner.add(headerTitle);
+        sidebarInner.add(menuList);
+        sidebar.add(sidebarInner);
+
+        // 컨텐츠 영역 조립
+        contentArea.add(contentPanel);
+
+        // 메인 컨테이너 조립
+        mainContainer.add(sidebar);
+        mainContainer.add(contentArea);
+
+        // 최종적으로 테이블 래퍼에 추가
         getTable().getOuterWidget().add(mainContainer);
 
-        // Use Scheduler to ensure DOM is ready before adding children
-        com.google.gwt.core.client.Scheduler.get().scheduleDeferred(() -> {
-            // Add menu items directly to sidebar's menuList div
-            com.google.gwt.dom.client.Element menuListElement =
-                com.google.gwt.dom.client.Document.get().getElementById("menuList"); //$NON-NLS-1$
-            if (menuListElement != null) {
-                menuListElement.appendChild(integrityCheckMenuItem.getElement());
-                menuListElement.appendChild(clientManagementMenuItem.getElement());
-                menuListElement.appendChild(auditLogManagementMenuItem.getElement());
-            }
-
-            // Add content panel to contentArea div
-            com.google.gwt.dom.client.Element contentAreaElement =
-                com.google.gwt.dom.client.Document.get().getElementById("contentArea"); //$NON-NLS-1$
-            if (contentAreaElement != null) {
-                contentAreaElement.appendChild(contentPanel.getElement());
-            }
-
-            // Initialize handlers
-            initializeHandlers();
-
-            // Show first tab by default
-            showIntegrityCheck();
-        });
+        // 핸들러 초기화 및 기본 탭 표시
+        initializeHandlers();
+        showIntegrityCheck();
 
         initWidget(getTable());
+    }
+
+    // 메뉴 아이템 생성 헬퍼 메소드 (중복 코드 제거)
+    private HTML createMenuItem(String text) {
+        HTML item = new HTML(text);
+        item.setStyleName("security-menu-item"); //$NON-NLS-1$
+        item.getElement().getStyle().setDisplay(Display.BLOCK);
+        item.getElement().getStyle().setProperty("padding", "10px 15px"); //$NON-NLS-1$ //$NON-NLS-2$
+        item.getElement().getStyle().setCursor(com.google.gwt.dom.client.Style.Cursor.POINTER);
+        item.getElement().getStyle().setProperty("borderBottom", "1px solid #f0f0f0"); //$NON-NLS-1$ //$NON-NLS-2$
+        return item;
     }
 
     private void initializeHandlers() {
@@ -135,17 +156,14 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
     }
 
     private void setActiveMenuItem(HTML menuItem) {
-        // Remove active class from current active item
         if (currentActiveMenuItem != null) {
             currentActiveMenuItem.getElement().getStyle().clearBackgroundColor();
             currentActiveMenuItem.getElement().getStyle().clearColor();
             currentActiveMenuItem.getElement().getStyle().clearFontWeight();
         }
-
-        // Add active class to new active item
-        menuItem.getElement().getStyle().setProperty("backgroundColor", "#337ab7"); //$NON-NLS-1$ //$NON-NLS-2$
-        menuItem.getElement().getStyle().setProperty("color", "white"); //$NON-NLS-1$ //$NON-NLS-2$
-        menuItem.getElement().getStyle().setProperty("fontWeight", "bold"); //$NON-NLS-1$ //$NON-NLS-2$
+        menuItem.getElement().getStyle().setBackgroundColor("#337ab7"); //$NON-NLS-1$
+        menuItem.getElement().getStyle().setColor("white"); //$NON-NLS-1$
+        menuItem.getElement().getStyle().setFontWeight(com.google.gwt.dom.client.Style.FontWeight.BOLD);
         currentActiveMenuItem = menuItem;
     }
 }
