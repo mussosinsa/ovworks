@@ -7,6 +7,8 @@ import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AuditLogMan
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.ClientManagementView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.IntegrityCheckView;
 
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.SimplePanel;
@@ -39,21 +41,22 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
         // Hide the default table
         getTable().setVisible(false);
 
-        // Create main container
+        // Create main container with layout structure
         FlowPanel mainContainer = new FlowPanel();
         mainContainer.getElement().setInnerHTML(
-            "<div style='display: table; width: 100%; height: 600px;'>" +
-            "  <div id='sidebar' style='display: table-cell; width: 250px; vertical-align: top; background-color: #ffffff; border-right: 1px solid #ddd;'>" +
+            "<div id='securitySettingsLayout' style='display: flex; width: 100%; min-height: 600px;'>" +
+            "  <div id='sidebar' style='width: 250px; background-color: #ffffff; border-right: 1px solid #ddd;'>" +
             "    <div style='padding: 10px 15px; font-size: 16px; font-weight: bold; border-bottom: 1px solid #ddd; background-color: #f8f8f8;'>보안 설정</div>" +
             "    <div id='menuList'></div>" +
             "  </div>" +
-            "  <div id='contentArea' style='display: table-cell; vertical-align: top; background-color: #ffffff;'></div>" +
+            "  <div id='contentArea' style='flex: 1; background-color: #ffffff; overflow-y: auto;'></div>" +
             "</div>"
         );
 
-        // Create menu items
-        FlowPanel menuListPanel = new FlowPanel();
+        // Add main container to table
+        getTable().getOuterWidget().add(mainContainer);
 
+        // Create menu items
         integrityCheckMenuItem = new HTML("무결성 검사"); //$NON-NLS-1$
         integrityCheckMenuItem.setStyleName("security-menu-item security-menu-item-active"); //$NON-NLS-1$
         integrityCheckMenuItem.getElement().getStyle().setProperty("display", "block"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -78,18 +81,35 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
         auditLogManagementMenuItem.getElement().getStyle().setProperty("cursor", "pointer"); //$NON-NLS-1$ //$NON-NLS-2$
         auditLogManagementMenuItem.getElement().getStyle().setProperty("borderBottom", "1px solid #f0f0f0"); //$NON-NLS-1$ //$NON-NLS-2$
 
-        menuListPanel.add(integrityCheckMenuItem);
-        menuListPanel.add(clientManagementMenuItem);
-        menuListPanel.add(auditLogManagementMenuItem);
+        // Find the menuList div and add menu items to it
+        com.google.gwt.dom.client.NodeList<com.google.gwt.dom.client.Element> menuListElements =
+            mainContainer.getElement().getElementsByTagName("div"); //$NON-NLS-1$
+        Element menuListElement = null;
+        Element contentAreaElement = null;
 
-        // Create content panel
+        for (int i = 0; i < menuListElements.getLength(); i++) {
+            Element elem = menuListElements.getItem(i);
+            if ("menuList".equals(elem.getId())) { //$NON-NLS-1$
+                menuListElement = elem;
+            } else if ("contentArea".equals(elem.getId())) { //$NON-NLS-1$
+                contentAreaElement = elem;
+            }
+        }
+
+        if (menuListElement != null) {
+            menuListElement.appendChild(integrityCheckMenuItem.getElement());
+            menuListElement.appendChild(clientManagementMenuItem.getElement());
+            menuListElement.appendChild(auditLogManagementMenuItem.getElement());
+        }
+
+        // Create content panel and add to content area
         contentPanel = new SimplePanel();
-        contentPanel.getElement().setId("contentPanel"); //$NON-NLS-1$
+        contentPanel.getElement().getStyle().setProperty("width", "100%"); //$NON-NLS-1$ //$NON-NLS-2$
+        contentPanel.getElement().getStyle().setProperty("height", "100%"); //$NON-NLS-1$ //$NON-NLS-2$
 
-        // Add to table container
-        getTable().getOuterWidget().add(mainContainer);
-        getTable().getOuterWidget().add(menuListPanel);
-        getTable().getOuterWidget().add(contentPanel);
+        if (contentAreaElement != null) {
+            contentAreaElement.appendChild(contentPanel.getElement());
+        }
 
         // Initialize handlers
         initializeHandlers();
