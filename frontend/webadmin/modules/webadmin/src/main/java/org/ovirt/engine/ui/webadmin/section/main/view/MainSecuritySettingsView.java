@@ -50,20 +50,20 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
         mainContainer.getElement().getStyle().setHeight(100, Unit.PCT);
         mainContainer.getElement().getStyle().setProperty("minHeight", "600px"); //$NON-NLS-1$ //$NON-NLS-2$
 
-        // 2. 사이드바 영역 생성 (display: table-cell)
+        // 2. 사이드바 영역 생성 (display: table-cell with flex layout)
         FlowPanel sidebar = new FlowPanel();
         sidebar.getElement().getStyle().setDisplay(Display.TABLE_CELL);
         sidebar.getElement().getStyle().setWidth(250, Unit.PX);
-        sidebar.getElement().getStyle().setHeight(100, Unit.PCT);
         sidebar.getElement().getStyle().setVerticalAlign(VerticalAlign.TOP);
         sidebar.getElement().getStyle().setBackgroundColor("#ffffff"); //$NON-NLS-1$
         sidebar.getElement().getStyle().setProperty("borderRight", "1px solid #ddd"); //$NON-NLS-1$ //$NON-NLS-2$
 
-        // 3. 사이드바 내부 Flex 컨테이너
+        // 3. Sidebar inner wrapper for flex layout
         FlowPanel sidebarInner = new FlowPanel();
-        sidebarInner.getElement().getStyle().setDisplay(Display.FLEX);
+        sidebarInner.getElement().getStyle().setProperty("display", "flex"); //$NON-NLS-1$ //$NON-NLS-2$
         sidebarInner.getElement().getStyle().setProperty("flexDirection", "column"); //$NON-NLS-1$ //$NON-NLS-2$
-        sidebarInner.setHeight("100%"); //$NON-NLS-1$
+        sidebarInner.getElement().getStyle().setProperty("height", "100%"); //$NON-NLS-1$ //$NON-NLS-2$
+        sidebarInner.getElement().getStyle().setProperty("minHeight", "400px"); //$NON-NLS-1$ //$NON-NLS-2$
 
         // 4. "보안 설정" 헤더
         HTML headerTitle = new HTML("보안 설정"); //$NON-NLS-1$
