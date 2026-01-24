@@ -14,6 +14,7 @@ import com.google.gwt.dom.client.Style.VerticalAlign;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.inject.Inject;
 
 public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<Object, SecuritySettingsListModel>
@@ -74,11 +75,11 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
         headerTitle.getElement().getStyle().setBackgroundColor("#f8f8f8"); //$NON-NLS-1$
         headerTitle.getElement().getStyle().setProperty("flexShrink", "0"); //$NON-NLS-1$ //$NON-NLS-2$
 
-        // 5. 메뉴 리스트 영역 (여기에 메뉴 아이템 추가)
-        FlowPanel menuList = new FlowPanel();
+        // 5. 메뉴 리스트 영역 (여기에 메뉴 아이템 추가) - VerticalPanel 사용
+        VerticalPanel menuList = new VerticalPanel();
+        menuList.setWidth("100%"); //$NON-NLS-1$
         menuList.getElement().getStyle().setProperty("flex", "1"); //$NON-NLS-1$ //$NON-NLS-2$
         menuList.getElement().getStyle().setOverflowY(Overflow.AUTO);
-        menuList.getElement().getStyle().setDisplay(Display.BLOCK);
         menuList.getElement().getStyle().setProperty("minHeight", "200px"); //$NON-NLS-1$ //$NON-NLS-2$
 
         // 6. 컨텐츠 영역 (display: table-cell)
@@ -128,13 +129,13 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
     // 메뉴 아이템 생성 헬퍼 메소드 (중복 코드 제거)
     private HTML createMenuItem(String text) {
         HTML item = new HTML(text);
+        item.setWidth("100%"); //$NON-NLS-1$
         item.setStyleName("security-menu-item"); //$NON-NLS-1$
         item.getElement().getStyle().setDisplay(Display.BLOCK);
         item.getElement().getStyle().setProperty("padding", "10px 15px"); //$NON-NLS-1$ //$NON-NLS-2$
+        item.getElement().getStyle().setProperty("boxSizing", "border-box"); //$NON-NLS-1$ //$NON-NLS-2$
         item.getElement().getStyle().setCursor(com.google.gwt.dom.client.Style.Cursor.POINTER);
         item.getElement().getStyle().setProperty("borderBottom", "1px solid #f0f0f0"); //$NON-NLS-1$ //$NON-NLS-2$
-        item.getElement().getStyle().setProperty("visibility", "visible"); //$NON-NLS-1$ //$NON-NLS-2$
-        item.getElement().getStyle().setProperty("opacity", "1"); //$NON-NLS-1$ //$NON-NLS-2$
         return item;
     }
 
