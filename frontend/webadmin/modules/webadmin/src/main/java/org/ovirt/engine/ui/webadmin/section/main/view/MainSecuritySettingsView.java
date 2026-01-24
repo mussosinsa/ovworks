@@ -8,7 +8,6 @@ import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.ClientManag
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.IntegrityCheckView;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.SimplePanel;
@@ -44,13 +43,13 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
         // Create main container with layout structure
         FlowPanel mainContainer = new FlowPanel();
         mainContainer.getElement().setInnerHTML(
-            "<div id='securitySettingsLayout' style='display: flex; width: 100%; min-height: 600px;'>" +
-            "  <div id='sidebar' style='width: 250px; background-color: #ffffff; border-right: 1px solid #ddd;'>" +
-            "    <div style='padding: 10px 15px; font-size: 16px; font-weight: bold; border-bottom: 1px solid #ddd; background-color: #f8f8f8;'>보안 설정</div>" +
-            "    <div id='menuList'></div>" +
-            "  </div>" +
-            "  <div id='contentArea' style='flex: 1; background-color: #ffffff; overflow-y: auto;'></div>" +
-            "</div>"
+            "<div id='securitySettingsLayout' style='display: flex; width: 100%; min-height: 600px;'>" + //$NON-NLS-1$
+            "  <div id='sidebar' style='width: 250px; background-color: #ffffff; border-right: 1px solid #ddd;'>" + //$NON-NLS-1$
+            "    <div style='padding: 10px 15px; font-size: 16px; font-weight: bold; border-bottom: 1px solid #ddd; background-color: #f8f8f8;'>보안 설정</div>" + //$NON-NLS-1$
+            "    <div id='menuList'></div>" + //$NON-NLS-1$
+            "  </div>" + //$NON-NLS-1$
+            "  <div id='contentArea' style='flex: 1; background-color: #ffffff; overflow-y: auto;'></div>" + //$NON-NLS-1$
+            "</div>" //$NON-NLS-1$
         );
 
         // Add main container to table
