@@ -569,6 +569,8 @@ public enum ActionType {
     FullLogBackup(2107, ActionGroup.AUDIT_LOG_MANAGEMENT, false, QuotaDependency.NONE),
     RemoteBackup(2108, ActionGroup.AUDIT_LOG_MANAGEMENT, false, QuotaDependency.NONE),
     EngineBackup(2109, ActionGroup.AUDIT_LOG_MANAGEMENT, false, QuotaDependency.NONE),
+    SetTerminalAuth(2110, ActionGroup.MANIPULATE_USERS, false, QuotaDependency.NONE),
+    SetTerminalIpAuth(2111, ActionGroup.MANIPULATE_USERS, false, QuotaDependency.NONE),
 
     SetSesssionSoftLimit(3000, false, QuotaDependency.NONE),
 
