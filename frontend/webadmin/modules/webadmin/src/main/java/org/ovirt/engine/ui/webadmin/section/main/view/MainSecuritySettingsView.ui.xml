@@ -27,8 +27,8 @@
         }
 
         .sidebarTitle {
-            padding: 20px;
-            font-size: 20px;
+            padding: 15px 20px;
+            font-size: 18px;
             font-weight: bold;
             border-bottom: 1px solid #ddd;
             background-color: #f8f8f8;
@@ -40,11 +40,12 @@
 
         .menuItem {
             display: block;
-            padding: 15px 20px;
+            padding: 12px 20px;
             cursor: pointer;
             border-bottom: 1px solid #f0f0f0;
             font-size: 14px;
             transition: background-color 0.2s;
+            line-height: 1.5;
         }
 
         .menuItem:hover {
