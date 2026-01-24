@@ -73,7 +73,7 @@
             <div class="{style.menuList}">
                 <div ui:field="integrityCheckMenuItem" class="{style.menuItem} {style.menuItemActive}" style="display: block !important;">무결성 검사</div>
                 <div ui:field="clientManagementMenuItem" class="{style.menuItem}" style="display: block !important;">클라이언트 관리</div>
-                <div ui:field="auditLogManagementMenuItem" class="{style.menuItem}" style="display: block !important; background-color: red; color: white;">감사기록 관리</div>
+                <div ui:field="auditLogManagementMenuItem" class="{style.menuItem}" style="display: block !important;">감사기록 관리</div>
             </div>
         </div>
         <div class="{style.contentArea}">
