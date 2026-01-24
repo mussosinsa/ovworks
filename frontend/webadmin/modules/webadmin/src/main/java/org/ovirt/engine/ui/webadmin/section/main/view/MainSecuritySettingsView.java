@@ -1,9 +1,6 @@
 package org.ovirt.engine.ui.webadmin.section.main.view;
 
-import org.gwtbootstrap3.client.ui.TabContent;
-import org.gwtbootstrap3.client.ui.TabListItem;
-import org.gwtbootstrap3.client.ui.TabPane;
-import org.gwtbootstrap3.client.ui.TabPanel;
+import org.ovirt.engine.ui.common.idhandler.ElementIdHandler;
 import org.ovirt.engine.ui.common.uicommon.model.MainModelProvider;
 import org.ovirt.engine.ui.uicommonweb.models.SecuritySettingsListModel;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.MainSecuritySettingsPresenter;
@@ -11,11 +8,44 @@ import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AuditLogMan
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.ClientManagementView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.IntegrityCheckView;
 
-import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.uibinder.client.UiBinder;
+import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 
 public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<Object, SecuritySettingsListModel>
         implements MainSecuritySettingsPresenter.ViewDef {
+
+    interface ViewUiBinder extends UiBinder<Widget, MainSecuritySettingsView> {
+        ViewUiBinder uiBinder = GWT.create(ViewUiBinder.class);
+    }
+
+    interface ViewIdHandler extends ElementIdHandler<MainSecuritySettingsView> {
+        ViewIdHandler idHandler = GWT.create(ViewIdHandler.class);
+    }
+
+    @UiField
+    Element integrityCheckMenuItem;
+
+    @UiField
+    Element clientManagementMenuItem;
+
+    @UiField
+    Element auditLogManagementMenuItem;
+
+    @UiField
+    SimplePanel contentPanel;
+
+    private final IntegrityCheckView integrityCheckView;
+    private final ClientManagementView clientManagementView;
+    private final AuditLogManagementView auditLogManagementView;
+
+    private Element currentActiveMenuItem;
 
     @Inject
     public MainSecuritySettingsView(MainModelProvider<Object, SecuritySettingsListModel> modelProvider,
@@ -24,56 +54,89 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
             AuditLogManagementView auditLogManagementView) {
         super(modelProvider);
 
+        this.integrityCheckView = integrityCheckView;
+        this.clientManagementView = clientManagementView;
+        this.auditLogManagementView = auditLogManagementView;
+
         // Hide the default table
         getTable().setVisible(false);
 
-        // Create tab interface
-        FlowPanel mainPanel = new FlowPanel();
-        TabPanel tabPanel = new TabPanel();
-
-        // Create tab list items
-        TabListItem integrityCheckTab = new TabListItem("무결성 검사"); //$NON-NLS-1$
-        TabListItem clientManagementTab = new TabListItem("클라이언트 관리"); //$NON-NLS-1$
-        TabListItem auditLogManagementTab = new TabListItem("감사기록 관리"); //$NON-NLS-1$
-
-        // Create tab panes
-        TabPane integrityCheckPane = new TabPane();
-        integrityCheckPane.add(integrityCheckView);
-        integrityCheckPane.setActive(true);
-
-        TabPane clientManagementPane = new TabPane();
-        clientManagementPane.add(clientManagementView);
-
-        TabPane auditLogManagementPane = new TabPane();
-        auditLogManagementPane.add(auditLogManagementView);
-
-        // Link tabs to panes
-        integrityCheckTab.setDataTarget("#integrityCheckPane"); //$NON-NLS-1$
-        clientManagementTab.setDataTarget("#clientManagementPane"); //$NON-NLS-1$
-        auditLogManagementTab.setDataTarget("#auditLogManagementPane"); //$NON-NLS-1$
-        integrityCheckTab.setActive(true);
-
-        integrityCheckPane.setId("integrityCheckPane"); //$NON-NLS-1$
-        clientManagementPane.setId("clientManagementPane"); //$NON-NLS-1$
-        auditLogManagementPane.setId("auditLogManagementPane"); //$NON-NLS-1$
-
-        // Add tabs to panel
-        tabPanel.add(integrityCheckTab);
-        tabPanel.add(clientManagementTab);
-        tabPanel.add(auditLogManagementTab);
-
-        TabContent tabContent = new TabContent();
-        tabContent.add(integrityCheckPane);
-        tabContent.add(clientManagementPane);
-        tabContent.add(auditLogManagementPane);
-
-        mainPanel.add(tabPanel);
-        mainPanel.add(tabContent);
+        // Create UI using UiBinder
+        Widget mainWidget = ViewUiBinder.uiBinder.createAndBindUi(this);
 
         // Add to table container
-        FlowPanel tableContainer = getTable().getOuterWidget();
-        tableContainer.add(mainPanel);
+        getTable().getOuterWidget().add(mainWidget);
+
+        // Initialize handlers
+        initializeHandlers();
+
+        // Show first tab by default
+        showIntegrityCheck();
+
+        // Generate IDs
+        ViewIdHandler.idHandler.generateAndSetIds(this);
 
         initWidget(getTable());
+    }
+
+    private void initializeHandlers() {
+        addClickHandler(integrityCheckMenuItem, new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                showIntegrityCheck();
+            }
+        });
+
+        addClickHandler(clientManagementMenuItem, new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                showClientManagement();
+            }
+        });
+
+        addClickHandler(auditLogManagementMenuItem, new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                showAuditLogManagement();
+            }
+        });
+    }
+
+    private void addClickHandler(Element element, ClickHandler handler) {
+        com.google.gwt.user.client.Event.sinkEvents(element, com.google.gwt.user.client.Event.ONCLICK);
+        com.google.gwt.user.client.Event.setEventListener(element, new com.google.gwt.user.client.EventListener() {
+            @Override
+            public void onBrowserEvent(com.google.gwt.user.client.Event event) {
+                if (com.google.gwt.user.client.Event.ONCLICK == event.getTypeInt()) {
+                    handler.onClick(null);
+                }
+            }
+        });
+    }
+
+    private void showIntegrityCheck() {
+        setActiveMenuItem(integrityCheckMenuItem);
+        contentPanel.setWidget(integrityCheckView);
+    }
+
+    private void showClientManagement() {
+        setActiveMenuItem(clientManagementMenuItem);
+        contentPanel.setWidget(clientManagementView);
+    }
+
+    private void showAuditLogManagement() {
+        setActiveMenuItem(auditLogManagementMenuItem);
+        contentPanel.setWidget(auditLogManagementView);
+    }
+
+    private void setActiveMenuItem(Element menuItem) {
+        // Remove active class from current active item
+        if (currentActiveMenuItem != null) {
+            currentActiveMenuItem.removeClassName("menuItemActive"); //$NON-NLS-1$
+        }
+
+        // Add active class to new active item
+        menuItem.addClassName("menuItemActive"); //$NON-NLS-1$
+        currentActiveMenuItem = menuItem;
     }
 }
