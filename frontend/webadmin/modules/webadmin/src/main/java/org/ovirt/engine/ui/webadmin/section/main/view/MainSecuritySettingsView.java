@@ -88,8 +88,20 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
 
         // Add to table container
         getTable().getOuterWidget().add(mainContainer);
-        getTable().getOuterWidget().add(menuListPanel);
-        getTable().getOuterWidget().add(contentPanel);
+
+        // Add menu items to sidebar's menuList div
+        com.google.gwt.dom.client.Element menuListElement =
+            com.google.gwt.dom.client.Document.get().getElementById("menuList"); //$NON-NLS-1$
+        if (menuListElement != null) {
+            menuListElement.appendChild(menuListPanel.getElement());
+        }
+
+        // Add content panel to contentArea div
+        com.google.gwt.dom.client.Element contentAreaElement =
+            com.google.gwt.dom.client.Document.get().getElementById("contentArea"); //$NON-NLS-1$
+        if (contentAreaElement != null) {
+            contentAreaElement.appendChild(contentPanel.getElement());
+        }
 
         // Initialize handlers
         initializeHandlers();
