@@ -40,55 +40,9 @@
             font-weight: bold;
             color: #5cb85c;
         }
-
-        .statusRunning {
-            color: #f0ad4e;
-        }
-
-        .statusFailed {
-            color: #d9534f;
-        }
     </ui:style>
 
     <g:FlowPanel addStyleNames="{style.mainPanel}">
-        <g:HTML>
-            <h2><ui:text from="{constants.securitySettings}" /></h2>
-        </g:HTML>
-
-        <!-- Security Audit Section -->
-        <g:FlowPanel addStyleNames="{style.sectionPanel}">
-            <g:HTML addStyleNames="{style.sectionTitle}">
-                <ui:text from="{constants.securityAuditStatus}" />
-            </g:HTML>
-
-            <g:HorizontalPanel addStyleNames="{style.buttonPanel}">
-                <b:Button ui:field="securityAuditButton"
-                          text="{constants.runSecurityAudit}"
-                          type="PRIMARY"
-                          addStyleNames="{style.actionButton}" />
-                <g:Label ui:field="securityAuditStatusLabel"
-                         text="{constants.statusNormal}"
-                         addStyleNames="{style.statusLabel}" />
-            </g:HorizontalPanel>
-        </g:FlowPanel>
-
-        <!-- Integrity Verification Section -->
-        <g:FlowPanel addStyleNames="{style.sectionPanel}">
-            <g:HTML addStyleNames="{style.sectionTitle}">
-                <ui:text from="{constants.integrityVerificationStatus}" />
-            </g:HTML>
-
-            <g:HorizontalPanel addStyleNames="{style.buttonPanel}">
-                <b:Button ui:field="integrityVerificationButton"
-                          text="{constants.runIntegrityVerification}"
-                          type="PRIMARY"
-                          addStyleNames="{style.actionButton}" />
-                <g:Label ui:field="integrityVerificationStatusLabel"
-                         text="{constants.statusNormal}"
-                         addStyleNames="{style.statusLabel}" />
-            </g:HorizontalPanel>
-        </g:FlowPanel>
-
         <!-- Audit Log Protection Section -->
         <g:FlowPanel addStyleNames="{style.sectionPanel}">
             <g:HTML addStyleNames="{style.sectionTitle}">
