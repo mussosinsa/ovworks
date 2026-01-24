@@ -54,8 +54,6 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
         );
 
         // Create menu items
-        FlowPanel menuListPanel = new FlowPanel();
-
         integrityCheckMenuItem = new HTML("무결성 검사"); //$NON-NLS-1$
         integrityCheckMenuItem.setStyleName("security-menu-item security-menu-item-active"); //$NON-NLS-1$
         integrityCheckMenuItem.getElement().getStyle().setProperty("display", "block"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -80,10 +78,6 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
         auditLogManagementMenuItem.getElement().getStyle().setProperty("cursor", "pointer"); //$NON-NLS-1$ //$NON-NLS-2$
         auditLogManagementMenuItem.getElement().getStyle().setProperty("borderBottom", "1px solid #f0f0f0"); //$NON-NLS-1$ //$NON-NLS-2$
 
-        menuListPanel.add(integrityCheckMenuItem);
-        menuListPanel.add(clientManagementMenuItem);
-        menuListPanel.add(auditLogManagementMenuItem);
-
         // Create content panel
         contentPanel = new SimplePanel();
         contentPanel.getElement().setId("contentPanel"); //$NON-NLS-1$
@@ -93,11 +87,13 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
 
         // Use Scheduler to ensure DOM is ready before adding children
         com.google.gwt.core.client.Scheduler.get().scheduleDeferred(() -> {
-            // Add menu items to sidebar's menuList div
+            // Add menu items directly to sidebar's menuList div
             com.google.gwt.dom.client.Element menuListElement =
                 com.google.gwt.dom.client.Document.get().getElementById("menuList"); //$NON-NLS-1$
             if (menuListElement != null) {
-                menuListElement.appendChild(menuListPanel.getElement());
+                menuListElement.appendChild(integrityCheckMenuItem.getElement());
+                menuListElement.appendChild(clientManagementMenuItem.getElement());
+                menuListElement.appendChild(auditLogManagementMenuItem.getElement());
             }
 
             // Add content panel to contentArea div
