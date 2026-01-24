@@ -44,8 +44,10 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
         mainContainer.getElement().setInnerHTML(
             "<div style='display: table; width: 100%; height: 100%;'>" + //$NON-NLS-1$
             "  <div id='sidebar' style='display: table-cell; width: 250px; height: 100%; vertical-align: top; background-color: #ffffff; border-right: 1px solid #ddd;'>" + //$NON-NLS-1$
-            "    <div style='padding: 10px 15px; font-size: 16px; font-weight: bold; border-bottom: 1px solid #ddd; background-color: #f8f8f8;'>보안 설정</div>" + //$NON-NLS-1$
-            "    <div id='menuList' style='overflow: auto;'></div>" + //$NON-NLS-1$
+            "    <div style='display: flex; flex-direction: column; height: 100%;'>" + //$NON-NLS-1$
+            "      <div style='padding: 10px 15px; font-size: 16px; font-weight: bold; border-bottom: 1px solid #ddd; background-color: #f8f8f8; flex-shrink: 0;'>보안 설정</div>" + //$NON-NLS-1$
+            "      <div id='menuList' style='flex: 1; overflow-y: auto;'></div>" + //$NON-NLS-1$
+            "    </div>" + //$NON-NLS-1$
             "  </div>" + //$NON-NLS-1$
             "  <div id='contentArea' style='display: table-cell; height: 100%; vertical-align: top; background-color: #ffffff;'></div>" + //$NON-NLS-1$
             "</div>" //$NON-NLS-1$
