@@ -3,7 +3,9 @@ package org.ovirt.engine.ui.webadmin.section.main.view;
 import org.ovirt.engine.ui.common.uicommon.model.MainModelProvider;
 import org.ovirt.engine.ui.uicommonweb.models.AuditLogListModel;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.MainAuditLogPresenter;
-import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AuditLogTabsView;
+import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AuditLogProtectionTabView;
+import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AuditLogRemoteBackupTabView;
+import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AvailabilityTabView;
 
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
@@ -13,7 +15,9 @@ import com.google.inject.Inject;
 public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, AuditLogListModel>
         implements MainAuditLogPresenter.ViewDef {
 
-    private final AuditLogTabsView auditLogTabsView;
+    private final AuditLogProtectionTabView auditLogProtectionTabView;
+    private final AuditLogRemoteBackupTabView auditLogRemoteBackupTabView;
+    private final AvailabilityTabView availabilityTabView;
 
     private SimplePanel contentPanel;
     private HTML auditLogProtectionMenuItem;
@@ -23,10 +27,14 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
 
     @Inject
     public MainAuditLogView(MainModelProvider<Object, AuditLogListModel> modelProvider,
-            AuditLogTabsView auditLogTabsView) {
+            AuditLogProtectionTabView auditLogProtectionTabView,
+            AuditLogRemoteBackupTabView auditLogRemoteBackupTabView,
+            AvailabilityTabView availabilityTabView) {
         super(modelProvider);
 
-        this.auditLogTabsView = auditLogTabsView;
+        this.auditLogProtectionTabView = auditLogProtectionTabView;
+        this.auditLogRemoteBackupTabView = auditLogRemoteBackupTabView;
+        this.availabilityTabView = availabilityTabView;
 
         // Hide the default table
         getTable().setVisible(false);
@@ -101,19 +109,30 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
         initializeHandlers();
 
         // Show first tab by default
-        showAuditLogTabs();
+        showAuditLogProtection();
 
         initWidget(getTable());
     }
 
     private void initializeHandlers() {
-        auditLogProtectionMenuItem.addClickHandler(event -> showAuditLogTabs());
-        auditLogRemoteBackupMenuItem.addClickHandler(event -> showAuditLogTabs());
-        availabilityMenuItem.addClickHandler(event -> showAuditLogTabs());
+        auditLogProtectionMenuItem.addClickHandler(event -> showAuditLogProtection());
+        auditLogRemoteBackupMenuItem.addClickHandler(event -> showAuditLogRemoteBackup());
+        availabilityMenuItem.addClickHandler(event -> showAvailability());
     }
 
-    private void showAuditLogTabs() {
-        contentPanel.setWidget(auditLogTabsView);
+    private void showAuditLogProtection() {
+        setActiveMenuItem(auditLogProtectionMenuItem);
+        contentPanel.setWidget(auditLogProtectionTabView);
+    }
+
+    private void showAuditLogRemoteBackup() {
+        setActiveMenuItem(auditLogRemoteBackupMenuItem);
+        contentPanel.setWidget(auditLogRemoteBackupTabView);
+    }
+
+    private void showAvailability() {
+        setActiveMenuItem(availabilityMenuItem);
+        contentPanel.setWidget(availabilityTabView);
     }
 
     private void setActiveMenuItem(HTML menuItem) {

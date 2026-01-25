@@ -8,22 +8,16 @@ import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Widget;
 
-public class AuditLogTabsView extends Composite {
+public class AuditLogProtectionTabView extends Composite {
 
-    interface ViewUiBinder extends UiBinder<Widget, AuditLogTabsView> {
+    interface ViewUiBinder extends UiBinder<Widget, AuditLogProtectionTabView> {
         ViewUiBinder uiBinder = GWT.create(ViewUiBinder.class);
     }
 
     @UiField
     Button fullLogBackupButton;
 
-    @UiField
-    Button remoteBackupButton;
-
-    @UiField
-    Button engineBackupButton;
-
-    public AuditLogTabsView() {
+    public AuditLogProtectionTabView() {
         initWidget(ViewUiBinder.uiBinder.createAndBindUi(this));
     }
 }

@@ -12,7 +12,6 @@
         }
 
         .sectionPanel {
-            margin-top: 20px;
             margin-bottom: 20px;
             padding: 15px;
             border: 1px solid #ddd;
@@ -35,34 +34,11 @@
     </ui:style>
 
     <g:FlowPanel addStyleNames="{style.mainPanel}">
-        <!-- Audit Log Protection Section -->
-        <g:FlowPanel addStyleNames="{style.sectionPanel}">
-            <g:HTML addStyleNames="{style.sectionTitle}">감사기록 보호</g:HTML>
-            <g:HorizontalPanel addStyleNames="{style.buttonPanel}">
-                <b:Button ui:field="fullLogBackupButton"
-                          text="전체 로그 백업"
-                          type="PRIMARY"
-                          addStyleNames="{style.actionButton}" />
-            </g:HorizontalPanel>
-        </g:FlowPanel>
-
-        <!-- Remote Backup Section -->
         <g:FlowPanel addStyleNames="{style.sectionPanel}">
             <g:HTML addStyleNames="{style.sectionTitle}">감사기록 원격 백업</g:HTML>
             <g:HorizontalPanel addStyleNames="{style.buttonPanel}">
                 <b:Button ui:field="remoteBackupButton"
                           text="원격 주소(/etc/rsyslog.conf)"
-                          type="PRIMARY"
-                          addStyleNames="{style.actionButton}" />
-            </g:HorizontalPanel>
-        </g:FlowPanel>
-
-        <!-- Availability Section -->
-        <g:FlowPanel addStyleNames="{style.sectionPanel}">
-            <g:HTML addStyleNames="{style.sectionTitle}">가용성 확보</g:HTML>
-            <g:HorizontalPanel addStyleNames="{style.buttonPanel}">
-                <b:Button ui:field="engineBackupButton"
-                          text="engine-backup 실행"
                           type="PRIMARY"
                           addStyleNames="{style.actionButton}" />
             </g:HorizontalPanel>
