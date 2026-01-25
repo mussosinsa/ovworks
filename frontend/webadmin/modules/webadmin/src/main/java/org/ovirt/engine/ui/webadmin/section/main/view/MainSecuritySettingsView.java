@@ -3,7 +3,6 @@ package org.ovirt.engine.ui.webadmin.section.main.view;
 import org.ovirt.engine.ui.common.uicommon.model.MainModelProvider;
 import org.ovirt.engine.ui.uicommonweb.models.SecuritySettingsListModel;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.MainSecuritySettingsPresenter;
-import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AuditLogManagementView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.ClientManagementView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.IntegrityCheckView;
 
@@ -17,24 +16,20 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
 
     private final IntegrityCheckView integrityCheckView;
     private final ClientManagementView clientManagementView;
-    private final AuditLogManagementView auditLogManagementView;
 
     private SimplePanel contentPanel;
     private HTML integrityCheckMenuItem;
     private HTML clientManagementMenuItem;
-    private HTML auditLogManagementMenuItem;
     private HTML currentActiveMenuItem;
 
     @Inject
     public MainSecuritySettingsView(MainModelProvider<Object, SecuritySettingsListModel> modelProvider,
             IntegrityCheckView integrityCheckView,
-            ClientManagementView clientManagementView,
-            AuditLogManagementView auditLogManagementView) {
+            ClientManagementView clientManagementView) {
         super(modelProvider);
 
         this.integrityCheckView = integrityCheckView;
         this.clientManagementView = clientManagementView;
-        this.auditLogManagementView = auditLogManagementView;
 
         // Hide the default table
         getTable().setVisible(false);
@@ -82,14 +77,6 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
         clientManagementMenuItem.getElement().getStyle().setProperty("borderBottom", "1px solid #f0f0f0"); //$NON-NLS-1$ //$NON-NLS-2$
         sidebar.add(clientManagementMenuItem);
 
-        auditLogManagementMenuItem = new HTML("감사기록 관리"); //$NON-NLS-1$
-        auditLogManagementMenuItem.setStyleName("security-menu-item"); //$NON-NLS-1$
-        auditLogManagementMenuItem.getElement().getStyle().setProperty("display", "block"); //$NON-NLS-1$ //$NON-NLS-2$
-        auditLogManagementMenuItem.getElement().getStyle().setProperty("padding", "10px 15px"); //$NON-NLS-1$ //$NON-NLS-2$
-        auditLogManagementMenuItem.getElement().getStyle().setProperty("cursor", "pointer"); //$NON-NLS-1$ //$NON-NLS-2$
-        auditLogManagementMenuItem.getElement().getStyle().setProperty("borderBottom", "1px solid #f0f0f0"); //$NON-NLS-1$ //$NON-NLS-2$
-        sidebar.add(auditLogManagementMenuItem);
-
         // Add sidebar to main container
         mainContainer.add(sidebar);
 
@@ -117,7 +104,6 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
     private void initializeHandlers() {
         integrityCheckMenuItem.addClickHandler(event -> showIntegrityCheck());
         clientManagementMenuItem.addClickHandler(event -> showClientManagement());
-        auditLogManagementMenuItem.addClickHandler(event -> showAuditLogManagement());
     }
 
     private void showIntegrityCheck() {
@@ -128,11 +114,6 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
     private void showClientManagement() {
         setActiveMenuItem(clientManagementMenuItem);
         contentPanel.setWidget(clientManagementView);
-    }
-
-    private void showAuditLogManagement() {
-        setActiveMenuItem(auditLogManagementMenuItem);
-        contentPanel.setWidget(auditLogManagementView);
     }
 
     private void setActiveMenuItem(HTML menuItem) {
