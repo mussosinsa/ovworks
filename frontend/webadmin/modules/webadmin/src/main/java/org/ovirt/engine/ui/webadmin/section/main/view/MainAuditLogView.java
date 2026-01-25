@@ -1,46 +1,53 @@
 package org.ovirt.engine.ui.webadmin.section.main.view;
 
+import org.ovirt.engine.ui.common.presenter.ActionPanelPresenterWidget;
+import org.ovirt.engine.ui.common.presenter.PlaceTransitionHandler;
 import org.ovirt.engine.ui.common.uicommon.model.MainModelProvider;
+import org.ovirt.engine.ui.common.view.AbstractView;
 import org.ovirt.engine.ui.uicommonweb.models.AuditLogListModel;
+import org.ovirt.engine.ui.webadmin.section.main.presenter.AbstractMainWithDetailsPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.MainAuditLogPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AuditLogProtectionTabView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AuditLogRemoteBackupTabView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AvailabilityTabView;
 
+import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.inject.Inject;
 
-public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, AuditLogListModel>
+public class MainAuditLogView extends AbstractView
         implements MainAuditLogPresenter.ViewDef {
 
     private final AuditLogProtectionTabView auditLogProtectionTabView;
     private final AuditLogRemoteBackupTabView auditLogRemoteBackupTabView;
     private final AvailabilityTabView availabilityTabView;
+    private final MainModelProvider<Object, AuditLogListModel> modelProvider;
 
     private SimplePanel contentPanel;
     private HTML auditLogProtectionMenuItem;
     private HTML auditLogRemoteBackupMenuItem;
     private HTML availabilityMenuItem;
     private HTML currentActiveMenuItem;
+    private PlaceTransitionHandler placeTransitionHandler;
+    private FlowPanel mainContainer;
 
     @Inject
     public MainAuditLogView(MainModelProvider<Object, AuditLogListModel> modelProvider,
             AuditLogProtectionTabView auditLogProtectionTabView,
             AuditLogRemoteBackupTabView auditLogRemoteBackupTabView,
             AvailabilityTabView availabilityTabView) {
-        super(modelProvider);
-
+        this.modelProvider = modelProvider;
         this.auditLogProtectionTabView = auditLogProtectionTabView;
         this.auditLogRemoteBackupTabView = auditLogRemoteBackupTabView;
         this.availabilityTabView = availabilityTabView;
 
-        // Hide the default table
-        getTable().setVisible(false);
-
         // Create main container with flexbox layout
-        FlowPanel mainContainer = new FlowPanel();
+        mainContainer = new FlowPanel();
         mainContainer.getElement().getStyle().setProperty("display", "flex"); //$NON-NLS-1$ //$NON-NLS-2$
         mainContainer.getElement().getStyle().setProperty("width", "100%"); //$NON-NLS-1$ //$NON-NLS-2$
         mainContainer.getElement().getStyle().setProperty("minHeight", "600px"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -102,16 +109,13 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
         // Add content panel to main container
         mainContainer.add(contentPanel);
 
-        // Add main container to table
-        getTable().getOuterWidget().add(mainContainer);
-
         // Initialize handlers
         initializeHandlers();
 
         // Show first tab by default
         showAuditLogProtection();
 
-        initWidget(getTable());
+        initWidget(mainContainer);
     }
 
     private void initializeHandlers() {
@@ -148,5 +152,36 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
         menuItem.getElement().getStyle().setProperty("color", "white"); //$NON-NLS-1$ //$NON-NLS-2$
         menuItem.getElement().getStyle().setProperty("fontWeight", "bold"); //$NON-NLS-1$ //$NON-NLS-2$
         currentActiveMenuItem = menuItem;
+    }
+
+    @Override
+    public HandlerRegistration addWindowResizeHandler(ResizeHandler handler) {
+        return Window.addResizeHandler(handler);
+    }
+
+    @Override
+    public void resizeToFullHeight() {
+        // Not needed for this custom view
+    }
+
+    @Override
+    public void setInSlot(Object slot, IsWidget content) {
+        if (slot == AbstractMainWithDetailsPresenter.TYPE_SetBreadCrumbs) {
+            // Bread crumbs can be added here if needed
+        } else if (slot == AbstractMainWithDetailsPresenter.TYPE_SetSearchPanel) {
+            // Search panel can be added here if needed
+        } else if (slot == AbstractMainWithDetailsPresenter.TYPE_SetActionPanel) {
+            // Action panel can be added here if needed
+        }
+    }
+
+    @Override
+    public IsWidget getTableContainer() {
+        return mainContainer;
+    }
+
+    @Override
+    public void setPlaceTransitionHandler(PlaceTransitionHandler handler) {
+        this.placeTransitionHandler = handler;
     }
 }
