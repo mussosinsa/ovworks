@@ -1604,10 +1604,6 @@ public class PresenterModule extends BasePresenterModule {
                 new TypeLiteral<SearchPanelPresenterWidget<Object, AuditLogListModel>>(){},
                 new TypeLiteral<SearchPanelPresenterWidget.ViewDef<AuditLogListModel>>(){},
                 new TypeLiteral<SearchPanelView<AuditLogListModel>>(){});
-        bindPresenterWidget(
-                new TypeLiteral<OvirtBreadCrumbsPresenterWidget<Object, AuditLogListModel>>(){},
-                new TypeLiteral<OvirtBreadCrumbsPresenterWidget.ViewDef<Object>>(){},
-                new TypeLiteral<OvirtBreadCrumbsView<Object, AuditLogListModel>>(){});
 
         // Cluster
         bindPresenterWidget(NewClusterNetworkPopupPresenterWidget.class,
