@@ -16,6 +16,7 @@ import org.ovirt.engine.ui.uicommonweb.models.configure.scheduling.ClusterPolicy
 import org.ovirt.engine.ui.uicommonweb.models.events.AlertListModel;
 import org.ovirt.engine.ui.uicommonweb.models.events.TaskListModel;
 import org.ovirt.engine.ui.uicommonweb.models.tags.TagListModel;
+import org.ovirt.engine.ui.webadmin.gin.uicommon.AuditLogModule;
 import org.ovirt.engine.ui.webadmin.gin.uicommon.ClusterModule;
 import org.ovirt.engine.ui.webadmin.gin.uicommon.DataCenterModule;
 import org.ovirt.engine.ui.webadmin.gin.uicommon.DiskModule;
@@ -26,7 +27,6 @@ import org.ovirt.engine.ui.webadmin.gin.uicommon.MacPoolModule;
 import org.ovirt.engine.ui.webadmin.gin.uicommon.NetworkModule;
 import org.ovirt.engine.ui.webadmin.gin.uicommon.PoolModule;
 import org.ovirt.engine.ui.webadmin.gin.uicommon.ProviderModule;
-import org.ovirt.engine.ui.webadmin.gin.uicommon.AuditLogModule;
 import org.ovirt.engine.ui.webadmin.gin.uicommon.QuotaModule;
 import org.ovirt.engine.ui.webadmin.gin.uicommon.SecuritySettingsModule;
 import org.ovirt.engine.ui.webadmin.gin.uicommon.SessionModule;
