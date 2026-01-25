@@ -79,6 +79,7 @@ import org.ovirt.engine.ui.common.view.popup.HostMaintenanceConfirmationPopupVie
 import org.ovirt.engine.ui.common.view.popup.HostRestartConfirmationPopupView;
 import org.ovirt.engine.ui.common.view.popup.HostUpgradePopupView;
 import org.ovirt.engine.ui.common.widget.MenuDetailsProvider;
+import org.ovirt.engine.ui.uicommonweb.models.AuditLogListModel;
 import org.ovirt.engine.ui.uicommonweb.models.EngineErrataListModel;
 import org.ovirt.engine.ui.uicommonweb.models.SecuritySettingsListModel;
 import org.ovirt.engine.ui.uicommonweb.models.SessionListModel;
