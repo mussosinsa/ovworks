@@ -1,23 +1,19 @@
 package org.ovirt.engine.ui.webadmin.section.main.view;
 
+import org.gwtbootstrap3.client.ui.Button;
+import org.gwtbootstrap3.client.ui.constants.ButtonType;
 import org.ovirt.engine.ui.common.uicommon.model.MainModelProvider;
 import org.ovirt.engine.ui.uicommonweb.models.AuditLogListModel;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.MainAuditLogPresenter;
-import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AuditLogProtectionView;
-import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AuditLogRemoteBackupView;
-import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AvailabilityView;
 
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.inject.Inject;
 
 public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, AuditLogListModel>
         implements MainAuditLogPresenter.ViewDef {
-
-    private final AuditLogProtectionView auditLogProtectionView;
-    private final AuditLogRemoteBackupView auditLogRemoteBackupView;
-    private final AvailabilityView availabilityView;
 
     private SimplePanel contentPanel;
     private HTML auditLogProtectionMenuItem;
@@ -25,16 +21,19 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
     private HTML availabilityMenuItem;
     private HTML currentActiveMenuItem;
 
+    private FlowPanel auditLogProtectionPanel;
+    private FlowPanel auditLogRemoteBackupPanel;
+    private FlowPanel availabilityPanel;
+
     @Inject
     public MainAuditLogView(MainModelProvider<Object, AuditLogListModel> modelProvider) {
         super(modelProvider);
 
-        this.auditLogProtectionView = new AuditLogProtectionView();
-        this.auditLogRemoteBackupView = new AuditLogRemoteBackupView();
-        this.availabilityView = new AvailabilityView();
-
         // Hide the default table
         getTable().setVisible(false);
+
+        // Create view panels
+        createViewPanels();
 
         // Create main container with flexbox layout
         FlowPanel mainContainer = new FlowPanel();
@@ -111,6 +110,44 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
         initWidget(getTable());
     }
 
+    private void createViewPanels() {
+        // Create audit log protection panel
+        auditLogProtectionPanel = new FlowPanel();
+        auditLogProtectionPanel.getElement().getStyle().setProperty("padding", "20px"); //$NON-NLS-1$ //$NON-NLS-2$
+
+        HTML protectionTitle = new HTML("<h3>감사기록 보호</h3>"); //$NON-NLS-1$
+        protectionTitle.getElement().getStyle().setProperty("marginBottom", "20px"); //$NON-NLS-1$ //$NON-NLS-2$
+        auditLogProtectionPanel.add(protectionTitle);
+
+        Button fullLogBackupButton = new Button("전체 로그 백업"); //$NON-NLS-1$
+        fullLogBackupButton.setType(ButtonType.PRIMARY);
+        auditLogProtectionPanel.add(fullLogBackupButton);
+
+        // Create remote backup panel
+        auditLogRemoteBackupPanel = new FlowPanel();
+        auditLogRemoteBackupPanel.getElement().getStyle().setProperty("padding", "20px"); //$NON-NLS-1$ //$NON-NLS-2$
+
+        HTML remoteTitle = new HTML("<h3>감사기록 원격 백업</h3>"); //$NON-NLS-1$
+        remoteTitle.getElement().getStyle().setProperty("marginBottom", "20px"); //$NON-NLS-1$ //$NON-NLS-2$
+        auditLogRemoteBackupPanel.add(remoteTitle);
+
+        Button remoteBackupButton = new Button("원격 주소(/etc/rsyslog.conf)"); //$NON-NLS-1$
+        remoteBackupButton.setType(ButtonType.PRIMARY);
+        auditLogRemoteBackupPanel.add(remoteBackupButton);
+
+        // Create availability panel
+        availabilityPanel = new FlowPanel();
+        availabilityPanel.getElement().getStyle().setProperty("padding", "20px"); //$NON-NLS-1$ //$NON-NLS-2$
+
+        HTML availabilityTitle = new HTML("<h3>가용성 확보</h3>"); //$NON-NLS-1$
+        availabilityTitle.getElement().getStyle().setProperty("marginBottom", "20px"); //$NON-NLS-1$ //$NON-NLS-2$
+        availabilityPanel.add(availabilityTitle);
+
+        Button engineBackupButton = new Button("engine-backup 실행"); //$NON-NLS-1$
+        engineBackupButton.setType(ButtonType.PRIMARY);
+        availabilityPanel.add(engineBackupButton);
+    }
+
     private void initializeHandlers() {
         auditLogProtectionMenuItem.addClickHandler(event -> showAuditLogProtection());
         auditLogRemoteBackupMenuItem.addClickHandler(event -> showAuditLogRemoteBackup());
@@ -119,17 +156,17 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
 
     private void showAuditLogProtection() {
         setActiveMenuItem(auditLogProtectionMenuItem);
-        contentPanel.setWidget(auditLogProtectionView);
+        contentPanel.setWidget(auditLogProtectionPanel);
     }
 
     private void showAuditLogRemoteBackup() {
         setActiveMenuItem(auditLogRemoteBackupMenuItem);
-        contentPanel.setWidget(auditLogRemoteBackupView);
+        contentPanel.setWidget(auditLogRemoteBackupPanel);
     }
 
     private void showAvailability() {
         setActiveMenuItem(availabilityMenuItem);
-        contentPanel.setWidget(availabilityView);
+        contentPanel.setWidget(availabilityPanel);
     }
 
     private void setActiveMenuItem(HTML menuItem) {
