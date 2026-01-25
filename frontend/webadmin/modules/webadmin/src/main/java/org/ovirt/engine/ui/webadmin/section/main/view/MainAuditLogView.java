@@ -26,15 +26,12 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
     private HTML currentActiveMenuItem;
 
     @Inject
-    public MainAuditLogView(MainModelProvider<Object, AuditLogListModel> modelProvider,
-            AuditLogProtectionView auditLogProtectionView,
-            AuditLogRemoteBackupView auditLogRemoteBackupView,
-            AvailabilityView availabilityView) {
+    public MainAuditLogView(MainModelProvider<Object, AuditLogListModel> modelProvider) {
         super(modelProvider);
 
-        this.auditLogProtectionView = auditLogProtectionView;
-        this.auditLogRemoteBackupView = auditLogRemoteBackupView;
-        this.availabilityView = availabilityView;
+        this.auditLogProtectionView = new AuditLogProtectionView();
+        this.auditLogRemoteBackupView = new AuditLogRemoteBackupView();
+        this.availabilityView = new AvailabilityView();
 
         // Hide the default table
         getTable().setVisible(false);
