@@ -28,6 +28,7 @@ import org.ovirt.engine.ui.webadmin.gin.uicommon.PoolModule;
 import org.ovirt.engine.ui.webadmin.gin.uicommon.ProviderModule;
 import org.ovirt.engine.ui.webadmin.gin.uicommon.QuotaModule;
 import org.ovirt.engine.ui.webadmin.gin.uicommon.SecuritySettingsModule;
+import org.ovirt.engine.ui.webadmin.gin.uicommon.AuditLogModule;
 import org.ovirt.engine.ui.webadmin.gin.uicommon.SessionModule;
 import org.ovirt.engine.ui.webadmin.gin.uicommon.StorageModule;
 import org.ovirt.engine.ui.webadmin.gin.uicommon.TemplateModule;
@@ -83,6 +84,7 @@ public class UiCommonModule extends BaseUiCommonModule {
         install(new MacPoolModule());
         install(new ErrataModule());
         install(new SecuritySettingsModule());
+        install(new AuditLogModule());
         install(new SessionModule());
 
         bindCommonModels();
