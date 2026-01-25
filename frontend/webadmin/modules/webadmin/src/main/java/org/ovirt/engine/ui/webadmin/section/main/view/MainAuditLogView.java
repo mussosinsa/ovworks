@@ -184,4 +184,10 @@ public class MainAuditLogView extends AbstractView
     public void setPlaceTransitionHandler(PlaceTransitionHandler handler) {
         this.placeTransitionHandler = handler;
     }
+
+    @Override
+    public org.ovirt.engine.ui.common.widget.table.ActionTable<Object> getTable() {
+        // This view doesn't use a table, return null
+        return null;
+    }
 }
