@@ -8,7 +8,6 @@ import org.ovirt.engine.ui.webadmin.section.main.presenter.MainAuditLogPresenter
 
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.inject.Inject;
 
