@@ -1,5 +1,7 @@
 package org.ovirt.engine.ui.uicommonweb.models;
 
+import java.util.ArrayList;
+
 import org.ovirt.engine.ui.uicommonweb.help.HelpTag;
 
 /**
@@ -12,6 +14,9 @@ public class AuditLogListModel extends ListWithDetailsModel {
         setTitle("Audit Log Management"); //$NON-NLS-1$
         setHelpTag(HelpTag.audit_log);
         setHashName("audit_log"); //$NON-NLS-1$
+
+        // Initialize with empty list (required for table infrastructure)
+        setItems(new ArrayList<>());
     }
 
     @Override
