@@ -47,6 +47,7 @@ public class ClientManagementView extends Composite {
         initWidget(ViewUiBinder.uiBinder.createAndBindUi(this));
         initializeHandlers();
         loadTerminalAuthSerialNumber();
+        loadTerminalIpAuth();
     }
 
     private void initializeHandlers() {
@@ -93,6 +94,17 @@ public class ClientManagementView extends Composite {
                 new AsyncQuery<QueryReturnValue>(returnValue -> {
                     if (returnValue != null && returnValue.getReturnValue() instanceof String) {
                         terminalAuthInput.setText((String) returnValue.getReturnValue());
+                    }
+                }));
+    }
+
+    private void loadTerminalIpAuth() {
+        Frontend.getInstance().runQuery(
+                QueryType.GetTerminalIpAuth,
+                new QueryParametersBase(),
+                new AsyncQuery<QueryReturnValue>(returnValue -> {
+                    if (returnValue != null && returnValue.getReturnValue() instanceof String) {
+                        terminalIpInput.setText((String) returnValue.getReturnValue());
                     }
                 }));
     }
