@@ -9,6 +9,7 @@ import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.Availabilit
 
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.inject.Inject;
 
 public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, AuditLogListModel>
@@ -18,7 +19,7 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
     private final AuditLogRemoteBackupTabView auditLogRemoteBackupTabView;
     private final AvailabilityTabView availabilityTabView;
 
-    private FlowPanel contentPanel;
+    private SimplePanel contentPanel;
     private FlowPanel sidebar;
 
     @Inject
@@ -65,14 +66,18 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
         mainContainer.add(sidebar);
 
         // Create content panel that stacks all sections
-        contentPanel = new FlowPanel();
+        contentPanel = new SimplePanel();
         contentPanel.getElement().getStyle().setProperty("flex", "1"); //$NON-NLS-1$ //$NON-NLS-2$
         contentPanel.getElement().getStyle().setProperty("backgroundColor", "#ffffff"); //$NON-NLS-1$ //$NON-NLS-2$
-        contentPanel.getElement().getStyle().setProperty("padding", "20px"); //$NON-NLS-1$ //$NON-NLS-2$
         contentPanel.getElement().getStyle().setProperty("overflowY", "auto"); //$NON-NLS-1$ //$NON-NLS-2$
-        contentPanel.add(auditLogProtectionTabView);
-        contentPanel.add(auditLogRemoteBackupTabView);
-        contentPanel.add(availabilityTabView);
+
+        FlowPanel stackedSections = new FlowPanel();
+        stackedSections.getElement().getStyle().setProperty("padding", "20px"); //$NON-NLS-1$ //$NON-NLS-2$
+        stackedSections.add(auditLogProtectionTabView);
+        stackedSections.add(auditLogRemoteBackupTabView);
+        stackedSections.add(availabilityTabView);
+
+        contentPanel.setWidget(stackedSections);
 
         mainContainer.add(contentPanel);
 
