@@ -1,6 +1,7 @@
 package org.ovirt.engine.ui.uicommonweb.models;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.ovirt.engine.ui.uicommonweb.help.HelpTag;
 
@@ -15,8 +16,14 @@ public class AuditLogListModel extends ListWithDetailsModel {
         setHelpTag(HelpTag.audit_log);
         setHashName("audit_log"); //$NON-NLS-1$
 
-        // Initialize with empty list (required for table infrastructure)
-        setItems(new ArrayList<>());
+        // Initialize with dummy items to display the view
+        initializeItems();
+    }
+
+    private void initializeItems() {
+        List<Object> items = new ArrayList<>();
+        items.add(new Object()); // Add a placeholder item to make the view visible
+        setItems(items);
     }
 
     @Override
@@ -27,6 +34,8 @@ public class AuditLogListModel extends ListWithDetailsModel {
     @Override
     protected void syncSearch() {
         super.syncSearch();
+        // Refresh items
+        initializeItems();
     }
 
     @Override
