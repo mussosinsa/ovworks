@@ -156,9 +156,6 @@ public class MenuView extends AbstractView implements MenuPresenterWidget.ViewDe
     @WithElementId
     @UiField
     Anchor securityAnchor;
-    @WithElementId
-    @UiField
-    Anchor auditLogAnchor;
 
     private final Map<String, ListGroupItem> hrefToGroupLabelMap = new HashMap<>();
     private final List<Anchor> anchorList = new ArrayList<>();
@@ -418,8 +415,6 @@ public class MenuView extends AbstractView implements MenuPresenterWidget.ViewDe
         hrefToGroupLabelMap.put(sessionsAnchor.getTargetHistoryToken(), administrationSecondaryItem);
         hrefToGroupLabelMap.put(usersAnchor.getTargetHistoryToken(), administrationSecondaryItem);
         hrefToGroupLabelMap.put(errataAnchor.getTargetHistoryToken(), administrationSecondaryItem);
-        hrefToGroupLabelMap.put(auditLogAnchor.getTargetHistoryToken(), administrationSecondaryItem);
-
         hrefToGroupLabelMap.put(eventsAnchor.getTargetHistoryToken(), eventsPrimaryItem);
     }
 
@@ -442,7 +437,6 @@ public class MenuView extends AbstractView implements MenuPresenterWidget.ViewDe
         anchorList.add(sessionsAnchor);
         anchorList.add(usersAnchor);
         anchorList.add(errataAnchor);
-        anchorList.add(auditLogAnchor);
         anchorList.add(configureAnchor);
         anchorList.add(accountSettingsAnchor);
 

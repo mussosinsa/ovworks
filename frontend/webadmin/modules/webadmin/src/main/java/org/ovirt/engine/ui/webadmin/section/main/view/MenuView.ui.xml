@@ -202,13 +202,6 @@
                             </b:Anchor>
                         </b:ListGroupItem>
                     </b:ListGroup>
-                    <b:ListGroup>
-                        <b:ListGroupItem>
-                            <b:Anchor href="#auditLog" targetHistoryToken="auditLog" ui:field="auditLogAnchor">
-                                <span class="list-group-item-value"><ui:text from="{constants.auditLogMainViewLabel}" /></span>
-                            </b:Anchor>
-                        </b:ListGroupItem>
-                    </b:ListGroup>
                 </g:FlowPanel>
             </b:ListGroupItem>
             <b:ListGroupItem ui:field="eventsPrimaryItem">
