@@ -5,6 +5,10 @@ import org.gwtbootstrap3.client.ui.TextBox;
 import org.ovirt.engine.core.common.action.ActionType;
 import org.ovirt.engine.core.common.action.TerminalAuthParameters;
 import org.ovirt.engine.core.common.action.TerminalIpAuthParameters;
+import org.ovirt.engine.core.common.queries.QueryParametersBase;
+import org.ovirt.engine.core.common.queries.QueryReturnValue;
+import org.ovirt.engine.core.common.queries.QueryType;
+import org.ovirt.engine.ui.frontend.AsyncQuery;
 import org.ovirt.engine.ui.frontend.Frontend;
 import org.ovirt.engine.ui.uicompat.FrontendActionAsyncResult;
 import org.ovirt.engine.ui.webadmin.ApplicationConstants;
@@ -42,6 +46,7 @@ public class ClientManagementView extends Composite {
     public ClientManagementView() {
         initWidget(ViewUiBinder.uiBinder.createAndBindUi(this));
         initializeHandlers();
+        loadTerminalAuthSerialNumber();
     }
 
     private void initializeHandlers() {
@@ -79,6 +84,17 @@ public class ClientManagementView extends Composite {
             params,
             result -> handleActionResult(result, "단말기 인증이 적용되었습니다.") //$NON-NLS-1$
         );
+    }
+
+    private void loadTerminalAuthSerialNumber() {
+        Frontend.getInstance().runQuery(
+                QueryType.GetTerminalAuthSerial,
+                new QueryParametersBase(),
+                new AsyncQuery<QueryReturnValue>(returnValue -> {
+                    if (returnValue != null && returnValue.getReturnValue() instanceof String) {
+                        terminalAuthInput.setText((String) returnValue.getReturnValue());
+                    }
+                }));
     }
 
     private void applyTerminalIpAuth(String ipAddress) {
