@@ -23,10 +23,6 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
     private final AvailabilityTabView availabilityTabView;
 
     private SimplePanel contentPanel;
-    private HTML auditLogProtectionMenuItem;
-    private HTML auditLogRemoteBackupMenuItem;
-    private HTML availabilityMenuItem;
-    private HTML currentActiveMenuItem;
 
     @Override
     protected SimpleActionTable<Void, Object> createActionTable() {
@@ -66,115 +62,90 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
         // Hide the default table
         getTable().setVisible(false);
 
-        // Create main container with flexbox layout
+        // Create main container with stacked header + body layout
         FlowPanel mainContainer = new FlowPanel();
-        mainContainer.getElement().getStyle().setProperty("display", "flex"); //$NON-NLS-1$ //$NON-NLS-2$
         mainContainer.getElement().getStyle().setProperty("width", "100%"); //$NON-NLS-1$ //$NON-NLS-2$
         mainContainer.getElement().getStyle().setProperty("minHeight", "600px"); //$NON-NLS-1$ //$NON-NLS-2$
 
-        // Create sidebar
+        FlowPanel header = new FlowPanel();
+        header.getElement().getStyle().setProperty("display", "flex"); //$NON-NLS-1$ //$NON-NLS-2$
+        header.getElement().getStyle().setProperty("justifyContent", "space-between"); //$NON-NLS-1$ //$NON-NLS-2$
+        header.getElement().getStyle().setProperty("alignItems", "center"); //$NON-NLS-1$ //$NON-NLS-2$
+        header.getElement().getStyle().setProperty("padding", "10px 15px"); //$NON-NLS-1$ //$NON-NLS-2$
+        header.getElement().getStyle().setProperty("borderBottom", "1px solid #ddd"); //$NON-NLS-1$ //$NON-NLS-2$
+        header.getElement().getStyle().setProperty("backgroundColor", "#f8f8f8"); //$NON-NLS-1$ //$NON-NLS-2$
+
+        HTML headerTitle = new HTML("관리 - 감사기록 관리"); //$NON-NLS-1$
+        headerTitle.getElement().getStyle().setProperty("fontWeight", "bold"); //$NON-NLS-1$ //$NON-NLS-2$
+        headerTitle.getElement().getStyle().setProperty("fontSize", "16px"); //$NON-NLS-1$ //$NON-NLS-2$
+        header.add(headerTitle);
+
+        HTML headerClose = new HTML("&times;"); //$NON-NLS-1$
+        headerClose.getElement().getStyle().setProperty("color", "#777"); //$NON-NLS-1$ //$NON-NLS-2$
+        headerClose.getElement().getStyle().setProperty("fontSize", "18px"); //$NON-NLS-1$ //$NON-NLS-2$
+        headerClose.getElement().getStyle().setProperty("cursor", "default"); //$NON-NLS-1$ //$NON-NLS-2$
+        header.add(headerClose);
+
+        FlowPanel body = new FlowPanel();
+        body.getElement().getStyle().setProperty("display", "flex"); //$NON-NLS-1$ //$NON-NLS-2$
+        body.getElement().getStyle().setProperty("width", "100%"); //$NON-NLS-1$ //$NON-NLS-2$
+
         FlowPanel sidebar = new FlowPanel();
-        sidebar.getElement().getStyle().setProperty("width", "250px"); //$NON-NLS-1$ //$NON-NLS-2$
-        sidebar.getElement().getStyle().setProperty("backgroundColor", "#ffffff"); //$NON-NLS-1$ //$NON-NLS-2$
+        sidebar.getElement().getStyle().setProperty("width", "200px"); //$NON-NLS-1$ //$NON-NLS-2$
+        sidebar.getElement().getStyle().setProperty("backgroundColor", "#f5f5f5"); //$NON-NLS-1$ //$NON-NLS-2$
         sidebar.getElement().getStyle().setProperty("borderRight", "1px solid #ddd"); //$NON-NLS-1$ //$NON-NLS-2$
         sidebar.getElement().getStyle().setProperty("flexShrink", "0"); //$NON-NLS-1$ //$NON-NLS-2$
-        sidebar.getElement().getStyle().setProperty("overflowY", "auto"); //$NON-NLS-1$ //$NON-NLS-2$
 
-        // Create sidebar header
-        HTML sidebarHeader = new HTML("관리 - 감사기록 관리"); //$NON-NLS-1$
-        sidebarHeader.getElement().getStyle().setProperty("padding", "10px 15px"); //$NON-NLS-1$ //$NON-NLS-2$
-        sidebarHeader.getElement().getStyle().setProperty("fontSize", "16px"); //$NON-NLS-1$ //$NON-NLS-2$
-        sidebarHeader.getElement().getStyle().setProperty("fontWeight", "bold"); //$NON-NLS-1$ //$NON-NLS-2$
-        sidebarHeader.getElement().getStyle().setProperty("borderBottom", "1px solid #ddd"); //$NON-NLS-1$ //$NON-NLS-2$
-        sidebarHeader.getElement().getStyle().setProperty("backgroundColor", "#f8f8f8"); //$NON-NLS-1$ //$NON-NLS-2$
-        sidebar.add(sidebarHeader);
+        sidebar.add(buildSidebarItem("감사기록 보호", true)); //$NON-NLS-1$
+        sidebar.add(buildSidebarItem("감사기록 원격 백업", false)); //$NON-NLS-1$
+        sidebar.add(buildSidebarItem("가용성 확보", false)); //$NON-NLS-1$
 
-        // Create menu items
-        auditLogProtectionMenuItem = new HTML("감사기록 보호"); //$NON-NLS-1$
-        auditLogProtectionMenuItem.setStyleName("security-menu-item security-menu-item-active"); //$NON-NLS-1$
-        auditLogProtectionMenuItem.getElement().getStyle().setProperty("display", "block"); //$NON-NLS-1$ //$NON-NLS-2$
-        auditLogProtectionMenuItem.getElement().getStyle().setProperty("padding", "10px 15px"); //$NON-NLS-1$ //$NON-NLS-2$
-        auditLogProtectionMenuItem.getElement().getStyle().setProperty("cursor", "pointer"); //$NON-NLS-1$ //$NON-NLS-2$
-        auditLogProtectionMenuItem.getElement().getStyle().setProperty("borderBottom", "1px solid #f0f0f0"); //$NON-NLS-1$ //$NON-NLS-2$
-        auditLogProtectionMenuItem.getElement().getStyle().setProperty("backgroundColor", "#337ab7"); //$NON-NLS-1$ //$NON-NLS-2$
-        auditLogProtectionMenuItem.getElement().getStyle().setProperty("color", "white"); //$NON-NLS-1$ //$NON-NLS-2$
-        auditLogProtectionMenuItem.getElement().getStyle().setProperty("fontWeight", "bold"); //$NON-NLS-1$ //$NON-NLS-2$
-        sidebar.add(auditLogProtectionMenuItem);
+        body.add(sidebar);
 
-        auditLogRemoteBackupMenuItem = new HTML("감사기록 원격 백업"); //$NON-NLS-1$
-        auditLogRemoteBackupMenuItem.setStyleName("security-menu-item"); //$NON-NLS-1$
-        auditLogRemoteBackupMenuItem.getElement().getStyle().setProperty("display", "block"); //$NON-NLS-1$ //$NON-NLS-2$
-        auditLogRemoteBackupMenuItem.getElement().getStyle().setProperty("padding", "10px 15px"); //$NON-NLS-1$ //$NON-NLS-2$
-        auditLogRemoteBackupMenuItem.getElement().getStyle().setProperty("cursor", "pointer"); //$NON-NLS-1$ //$NON-NLS-2$
-        auditLogRemoteBackupMenuItem.getElement().getStyle().setProperty("borderBottom", "1px solid #f0f0f0"); //$NON-NLS-1$ //$NON-NLS-2$
-        sidebar.add(auditLogRemoteBackupMenuItem);
-
-        availabilityMenuItem = new HTML("가용성 확보"); //$NON-NLS-1$
-        availabilityMenuItem.setStyleName("security-menu-item"); //$NON-NLS-1$
-        availabilityMenuItem.getElement().getStyle().setProperty("display", "block"); //$NON-NLS-1$ //$NON-NLS-2$
-        availabilityMenuItem.getElement().getStyle().setProperty("padding", "10px 15px"); //$NON-NLS-1$ //$NON-NLS-2$
-        availabilityMenuItem.getElement().getStyle().setProperty("cursor", "pointer"); //$NON-NLS-1$ //$NON-NLS-2$
-        availabilityMenuItem.getElement().getStyle().setProperty("borderBottom", "1px solid #f0f0f0"); //$NON-NLS-1$ //$NON-NLS-2$
-        sidebar.add(availabilityMenuItem);
-
-        mainContainer.add(sidebar);
-
-        // Create content panel
         contentPanel = new SimplePanel();
         contentPanel.getElement().getStyle().setProperty("flex", "1"); //$NON-NLS-1$ //$NON-NLS-2$
         contentPanel.getElement().getStyle().setProperty("backgroundColor", "#ffffff"); //$NON-NLS-1$ //$NON-NLS-2$
         contentPanel.getElement().getStyle().setProperty("overflowY", "auto"); //$NON-NLS-1$ //$NON-NLS-2$
 
-        mainContainer.add(contentPanel);
+        FlowPanel stackedSections = new FlowPanel();
+        stackedSections.getElement().getStyle().setProperty("padding", "20px"); //$NON-NLS-1$ //$NON-NLS-2$
+        stackedSections.add(auditLogProtectionTabView);
+        stackedSections.add(auditLogRemoteBackupTabView);
+        stackedSections.add(availabilityTabView);
+        contentPanel.setWidget(stackedSections);
 
-        // Add main container to table
+        body.add(contentPanel);
+
+        mainContainer.add(header);
+        mainContainer.add(body);
+
         getTable().getOuterWidget().add(mainContainer);
-
-        // Make sure mainContainer is visible even though table is hidden
         mainContainer.setVisible(true);
-
-        // Initialize handlers
-        initializeHandlers();
-
-        // Show first tab by default
-        showAuditLogProtection();
 
         initWidget(getTable());
     }
 
-    private void initializeHandlers() {
-        auditLogProtectionMenuItem.addClickHandler(event -> showAuditLogProtection());
-        auditLogRemoteBackupMenuItem.addClickHandler(event -> showAuditLogRemoteBackup());
-        availabilityMenuItem.addClickHandler(event -> showAvailability());
-    }
-
-    private void showAuditLogProtection() {
-        setActiveMenuItem(auditLogProtectionMenuItem);
-        contentPanel.setWidget(auditLogProtectionTabView);
-    }
-
-    private void showAuditLogRemoteBackup() {
-        setActiveMenuItem(auditLogRemoteBackupMenuItem);
-        contentPanel.setWidget(auditLogRemoteBackupTabView);
-    }
-
-    private void showAvailability() {
-        setActiveMenuItem(availabilityMenuItem);
-        contentPanel.setWidget(availabilityTabView);
-    }
-
-    private void setActiveMenuItem(HTML menuItem) {
-        // Remove active class from current active item
-        if (currentActiveMenuItem != null) {
-            currentActiveMenuItem.getElement().getStyle().clearBackgroundColor();
-            currentActiveMenuItem.getElement().getStyle().clearColor();
-            currentActiveMenuItem.getElement().getStyle().clearFontWeight();
+    private FlowPanel buildSidebarItem(String label, boolean isActive) {
+        FlowPanel item = new FlowPanel();
+        item.getElement().getStyle().setProperty("display", "flex"); //$NON-NLS-1$ //$NON-NLS-2$
+        item.getElement().getStyle().setProperty("alignItems", "center"); //$NON-NLS-1$ //$NON-NLS-2$
+        item.getElement().getStyle().setProperty("justifyContent", "space-between"); //$NON-NLS-1$ //$NON-NLS-2$
+        item.getElement().getStyle().setProperty("padding", "10px 12px"); //$NON-NLS-1$ //$NON-NLS-2$
+        item.getElement().getStyle().setProperty("borderBottom", "1px solid #e6e6e6"); //$NON-NLS-1$ //$NON-NLS-2$
+        if (isActive) {
+            item.getElement().getStyle().setProperty("backgroundColor", "#ededed"); //$NON-NLS-1$ //$NON-NLS-2$
+            item.getElement().getStyle().setProperty("borderLeft", "3px solid #2b83c9"); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
-        // Add active class to new active item
-        menuItem.getElement().getStyle().setProperty("backgroundColor", "#337ab7"); //$NON-NLS-1$ //$NON-NLS-2$
-        menuItem.getElement().getStyle().setProperty("color", "white"); //$NON-NLS-1$ //$NON-NLS-2$
-        menuItem.getElement().getStyle().setProperty("fontWeight", "bold"); //$NON-NLS-1$ //$NON-NLS-2$
-        currentActiveMenuItem = menuItem;
+        HTML text = new HTML(label);
+        item.add(text);
+
+        HTML chevron = new HTML("&rsaquo;"); //$NON-NLS-1$
+        chevron.getElement().getStyle().setProperty("color", "#2b83c9"); //$NON-NLS-1$ //$NON-NLS-2$
+        if (!isActive) {
+            chevron.getElement().getStyle().setProperty("visibility", "hidden"); //$NON-NLS-1$ //$NON-NLS-2$
+        }
+        item.add(chevron);
+        return item;
     }
 }
