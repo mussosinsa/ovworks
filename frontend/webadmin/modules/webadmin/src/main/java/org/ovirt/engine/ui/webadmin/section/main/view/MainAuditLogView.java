@@ -1,6 +1,7 @@
 package org.ovirt.engine.ui.webadmin.section.main.view;
 
 import org.ovirt.engine.ui.common.uicommon.model.MainModelProvider;
+import org.ovirt.engine.ui.common.widget.table.column.AbstractTextColumn;
 import org.ovirt.engine.ui.uicommonweb.models.AuditLogListModel;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.MainAuditLogPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AuditLogProtectionTabView;
@@ -35,6 +36,14 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
         this.auditLogProtectionTabView = auditLogProtectionTabView;
         this.auditLogRemoteBackupTabView = auditLogRemoteBackupTabView;
         this.availabilityTabView = availabilityTabView;
+
+        // Add a dummy column to the table to prevent rendering errors
+        getTable().addColumn(new AbstractTextColumn<Object>() {
+            @Override
+            public String getValue(Object object) {
+                return ""; //$NON-NLS-1$
+            }
+        }, ""); //$NON-NLS-1$
 
         // Hide the default table
         getTable().setVisible(false);
