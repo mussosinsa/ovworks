@@ -13,6 +13,8 @@ import org.ovirt.engine.core.utils.EngineLocalConfig;
 public final class TerminalIpConfigUtils {
     private static final Pattern REQUIRE_IP_PATTERN =
             Pattern.compile("(?m)^(\\s*Require\\s+ip\\s+)(.*)$"); //$NON-NLS-1$
+    private static final Pattern REQUIRE_IP_FULL_PATTERN =
+            Pattern.compile("(?m)^\\s*Require\\s+ip\\s+.*$"); //$NON-NLS-1$
 
     private TerminalIpConfigUtils() {
     }
@@ -29,7 +31,7 @@ public final class TerminalIpConfigUtils {
     public static String readRequireIp() throws IOException {
         String content = Files.readString(getConfigPath(), StandardCharsets.UTF_8);
         Matcher matcher = REQUIRE_IP_PATTERN.matcher(content);
-        return matcher.find() ? matcher.group(2) : null;
+        return matcher.find() ? matcher.group(0) : null;
     }
 
     public static void updateRequireIp(String ipValue) throws IOException {
@@ -39,7 +41,11 @@ public final class TerminalIpConfigUtils {
         if (!matcher.find()) {
             throw new IOException("Require ip line not found in z-ovirt-engine-proxy.conf"); //$NON-NLS-1$
         }
-        String updated = matcher.replaceFirst("$1" + Matcher.quoteReplacement(ipValue)); //$NON-NLS-1$
+        String normalizedValue = ipValue == null ? "" : ipValue.trim(); //$NON-NLS-1$
+        if (REQUIRE_IP_FULL_PATTERN.matcher(normalizedValue).matches()) {
+            normalizedValue = normalizedValue.replaceFirst("^\\s*Require\\s+ip\\s+", ""); //$NON-NLS-1$ //$NON-NLS-2$
+        }
+        String updated = matcher.replaceFirst("$1" + Matcher.quoteReplacement(normalizedValue)); //$NON-NLS-1$
         if (!updated.equals(content)) {
             Files.writeString(configPath, updated, StandardCharsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING);
         }
