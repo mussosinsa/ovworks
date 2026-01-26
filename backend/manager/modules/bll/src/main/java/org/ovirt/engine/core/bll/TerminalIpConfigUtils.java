@@ -8,7 +8,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.ovirt.engine.core.utils.EngineLocalConfig;
 
 public final class TerminalIpConfigUtils {
     private static final Pattern REQUIRE_IP_PATTERN =
