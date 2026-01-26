@@ -44,27 +44,30 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
 
         // Create static sidebar matching the security settings menu
         sidebar = new FlowPanel();
-        sidebar.getElement().getStyle().setProperty("width", "240px"); //$NON-NLS-1$ //$NON-NLS-2$
-        sidebar.getElement().getStyle().setProperty("backgroundColor", "#f5f5f5"); //$NON-NLS-1$ //$NON-NLS-2$
+        sidebar.getElement().getStyle().setProperty("width", "250px"); //$NON-NLS-1$ //$NON-NLS-2$
+        sidebar.getElement().getStyle().setProperty("backgroundColor", "#ffffff"); //$NON-NLS-1$ //$NON-NLS-2$
         sidebar.getElement().getStyle().setProperty("borderRight", "1px solid #ddd"); //$NON-NLS-1$ //$NON-NLS-2$
         sidebar.getElement().getStyle().setProperty("flexShrink", "0"); //$NON-NLS-1$ //$NON-NLS-2$
+        sidebar.getElement().getStyle().setProperty("overflowY", "auto"); //$NON-NLS-1$ //$NON-NLS-2$
 
         HTML sidebarHeader = new HTML("보안 설정"); //$NON-NLS-1$
-        sidebarHeader.getElement().getStyle().setProperty("padding", "12px 16px"); //$NON-NLS-1$ //$NON-NLS-2$
+        sidebarHeader.getElement().getStyle().setProperty("padding", "10px 15px"); //$NON-NLS-1$ //$NON-NLS-2$
         sidebarHeader.getElement().getStyle().setProperty("fontSize", "16px"); //$NON-NLS-1$ //$NON-NLS-2$
         sidebarHeader.getElement().getStyle().setProperty("fontWeight", "bold"); //$NON-NLS-1$ //$NON-NLS-2$
         sidebarHeader.getElement().getStyle().setProperty("borderBottom", "1px solid #ddd"); //$NON-NLS-1$ //$NON-NLS-2$
+        sidebarHeader.getElement().getStyle().setProperty("backgroundColor", "#f8f8f8"); //$NON-NLS-1$ //$NON-NLS-2$
         sidebar.add(sidebarHeader);
 
-        sidebar.add(buildSidebarItem("무결성 검사", "#2b83c9", false)); //$NON-NLS-1$ //$NON-NLS-2$
+        sidebar.add(buildSidebarItem("무결성 검사", "#337ab7", false)); //$NON-NLS-1$ //$NON-NLS-2$
         sidebar.add(buildSidebarItem("클라이언트 관리", "#333333", false)); //$NON-NLS-1$ //$NON-NLS-2$
-        sidebar.add(buildSidebarItem("감사기록 관리", "#c9302c", true)); //$NON-NLS-1$ //$NON-NLS-2$
+        sidebar.add(buildSidebarItem("감사기록 관리", "#d9534f", true)); //$NON-NLS-1$ //$NON-NLS-2$
 
         mainContainer.add(sidebar);
 
         // Create content panel that stacks all sections
         contentPanel = new FlowPanel();
         contentPanel.getElement().getStyle().setProperty("flex", "1"); //$NON-NLS-1$ //$NON-NLS-2$
+        contentPanel.getElement().getStyle().setProperty("backgroundColor", "#ffffff"); //$NON-NLS-1$ //$NON-NLS-2$
         contentPanel.getElement().getStyle().setProperty("padding", "20px"); //$NON-NLS-1$ //$NON-NLS-2$
         contentPanel.getElement().getStyle().setProperty("overflowY", "auto"); //$NON-NLS-1$ //$NON-NLS-2$
         contentPanel.add(auditLogProtectionTabView);
@@ -85,12 +88,12 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
     private HTML buildSidebarItem(String label, String color, boolean isActive) {
         HTML item = new HTML(label);
         item.getElement().getStyle().setProperty("display", "block"); //$NON-NLS-1$ //$NON-NLS-2$
-        item.getElement().getStyle().setProperty("padding", "12px 16px"); //$NON-NLS-1$ //$NON-NLS-2$
-        item.getElement().getStyle().setProperty("borderBottom", "1px solid #e6e6e6"); //$NON-NLS-1$ //$NON-NLS-2$
+        item.getElement().getStyle().setProperty("padding", "10px 15px"); //$NON-NLS-1$ //$NON-NLS-2$
+        item.getElement().getStyle().setProperty("borderBottom", "1px solid #f0f0f0"); //$NON-NLS-1$ //$NON-NLS-2$
+        item.getElement().getStyle().setProperty("cursor", "default"); //$NON-NLS-1$ //$NON-NLS-2$
         item.getElement().getStyle().setProperty("color", color); //$NON-NLS-1$ //$NON-NLS-2$
         if (isActive) {
             item.getElement().getStyle().setProperty("fontWeight", "bold"); //$NON-NLS-1$ //$NON-NLS-2$
-            item.getElement().getStyle().setProperty("backgroundColor", "#ffffff"); //$NON-NLS-1$ //$NON-NLS-2$
         }
         return item;
     }
