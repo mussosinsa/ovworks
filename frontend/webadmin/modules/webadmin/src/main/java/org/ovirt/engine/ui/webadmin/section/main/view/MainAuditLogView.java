@@ -1,13 +1,18 @@
 package org.ovirt.engine.ui.webadmin.section.main.view;
 
+import org.ovirt.engine.ui.common.MainTableResources;
 import org.ovirt.engine.ui.common.uicommon.model.MainModelProvider;
+import org.ovirt.engine.ui.common.widget.table.SimpleActionTable;
 import org.ovirt.engine.ui.common.widget.table.column.AbstractTextColumn;
 import org.ovirt.engine.ui.uicommonweb.models.AuditLogListModel;
+import org.ovirt.engine.ui.webadmin.gin.ClientGinjectorProvider;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.MainAuditLogPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AuditLogProtectionTabView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AuditLogRemoteBackupTabView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AvailabilityTabView;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.cellview.client.DataGrid.Resources;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.SimplePanel;
@@ -26,6 +31,30 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
     private HTML availabilityMenuItem;
     private HTML currentActiveMenuItem;
 
+    @Override
+    protected SimpleActionTable<Void, Object> createActionTable() {
+        SimpleActionTable<Void, Object> table = new SimpleActionTable<Void, Object>(getModelProvider(),
+                getTableResources(), ClientGinjectorProvider.getEventBus(),
+                ClientGinjectorProvider.getClientStorage()) {
+            {
+                showRefreshButton();
+                showItemsCount();
+                showSelectionCountTooltip();
+                enableHeaderContextMenu();
+            }
+        };
+
+        // Add a dummy column to prevent rendering errors when table has data but no columns
+        table.addColumn(new AbstractTextColumn<Object>() {
+            @Override
+            public String getValue(Object object) {
+                return ""; //$NON-NLS-1$
+            }
+        }, ""); //$NON-NLS-1$
+
+        return table;
+    }
+
     @Inject
     public MainAuditLogView(MainModelProvider<Object, AuditLogListModel> modelProvider,
             AuditLogProtectionTabView auditLogProtectionTabView,
@@ -36,14 +65,6 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
         this.auditLogProtectionTabView = auditLogProtectionTabView;
         this.auditLogRemoteBackupTabView = auditLogRemoteBackupTabView;
         this.availabilityTabView = availabilityTabView;
-
-        // Add a dummy column to the table to prevent rendering errors
-        getTable().addColumn(new AbstractTextColumn<Object>() {
-            @Override
-            public String getValue(Object object) {
-                return ""; //$NON-NLS-1$
-            }
-        }, ""); //$NON-NLS-1$
 
         // Hide the default table
         getTable().setVisible(false);
