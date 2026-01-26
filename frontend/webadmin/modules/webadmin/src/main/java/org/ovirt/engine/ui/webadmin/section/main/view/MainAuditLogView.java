@@ -105,6 +105,9 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
         // Add main container to table
         getTable().getOuterWidget().add(mainContainer);
 
+        // Make sure mainContainer is visible even though table is hidden
+        mainContainer.setVisible(true);
+
         // Initialize handlers
         initializeHandlers();
 
