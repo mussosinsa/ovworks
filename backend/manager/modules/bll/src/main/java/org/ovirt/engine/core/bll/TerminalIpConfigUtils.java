@@ -20,12 +20,7 @@ public final class TerminalIpConfigUtils {
     }
 
     public static Path getConfigPath() {
-        return EngineLocalConfig.getInstance()
-                .getEtcDir()
-                .toPath()
-                .resolve("httpd") //$NON-NLS-1$
-                .resolve("conf.d") //$NON-NLS-1$
-                .resolve("z-ovirt-engine-proxy.conf"); //$NON-NLS-1$
+        return Path.of("/etc/httpd/conf.d/z-ovirt-engine-proxy.conf"); //$NON-NLS-1$
     }
 
     public static String readRequireIp() throws IOException {
