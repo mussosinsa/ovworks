@@ -54,6 +54,19 @@
             font-weight: bold;
             margin-left: 15px;
         }
+
+        .ipList {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #0f5d7a;
+            color: white;
+            min-width: 160px;
+        }
+
+        .ipListItem {
+            font-size: 18px;
+            line-height: 1.6;
+        }
     </ui:style>
 
     <g:FlowPanel addStyleNames="{style.mainPanel}">
@@ -103,6 +116,8 @@
                     /etc/httpd/conf.d/z-ovirt-engine-proxy.conf 파일의 Require ip 설정에 적용됩니다
                 </div>
             </g:HTML>
+
+            <g:FlowPanel ui:field="terminalIpList" addStyleNames="{style.ipList}" />
         </g:FlowPanel>
     </g:FlowPanel>
 </ui:UiBinder>

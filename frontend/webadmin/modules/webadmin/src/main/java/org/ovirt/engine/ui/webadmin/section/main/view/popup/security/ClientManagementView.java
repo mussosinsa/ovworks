@@ -21,6 +21,8 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
 
 public class ClientManagementView extends Composite {
@@ -42,6 +44,9 @@ public class ClientManagementView extends Composite {
 
     @UiField
     Button terminalIpButton;
+
+    @UiField
+    FlowPanel terminalIpList;
 
     public ClientManagementView() {
         initWidget(ViewUiBinder.uiBinder.createAndBindUi(this));
@@ -104,7 +109,11 @@ public class ClientManagementView extends Composite {
                 new QueryParametersBase(),
                 new AsyncQuery<QueryReturnValue>(returnValue -> {
                     if (returnValue != null && returnValue.getReturnValue() instanceof String) {
-                        terminalIpInput.setText((String) returnValue.getReturnValue());
+                        String requireIp = (String) returnValue.getReturnValue();
+                        terminalIpInput.setText(requireIp);
+                        updateTerminalIpList(requireIp);
+                    } else {
+                        updateTerminalIpList(null);
                     }
                 }));
     }
@@ -116,8 +125,37 @@ public class ClientManagementView extends Composite {
         Frontend.getInstance().runAction(
             ActionType.SetTerminalIpAuth,
             params,
-            result -> handleActionResult(result, "단말기 IP 인증이 적용되었습니다.") //$NON-NLS-1$
+            result -> {
+                handleActionResult(result, "단말기 IP 인증이 적용되었습니다."); //$NON-NLS-1$
+                if (result != null && result.getReturnValue() != null && result.getReturnValue().getSucceeded()) {
+                    loadTerminalIpAuth();
+                }
+            }
         );
+    }
+
+    private void updateTerminalIpList(String requireIpValue) {
+        terminalIpList.clear();
+        if (requireIpValue == null || requireIpValue.trim().isEmpty()) {
+            return;
+        }
+        String[] lines = requireIpValue.split("\\r?\\n"); //$NON-NLS-1$
+        for (String line : lines) {
+            String trimmed = line.trim();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+            trimmed = trimmed.replaceFirst("^\\s*Require\\s+ip\\s+", ""); //$NON-NLS-1$ //$NON-NLS-2$
+            String[] tokens = trimmed.split("\\s+"); //$NON-NLS-1$
+            for (String token : tokens) {
+                if (token.isEmpty()) {
+                    continue;
+                }
+                HTML item = new HTML(token);
+                item.addStyleName("ipListItem"); //$NON-NLS-1$
+                terminalIpList.add(item);
+            }
+        }
     }
 
     private void handleActionResult(FrontendActionAsyncResult result, String successMessage) {
