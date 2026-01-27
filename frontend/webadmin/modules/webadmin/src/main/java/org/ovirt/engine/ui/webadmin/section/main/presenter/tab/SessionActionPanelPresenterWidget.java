@@ -7,7 +7,6 @@ import org.gwtbootstrap3.client.ui.constants.ButtonType;
 import org.ovirt.engine.core.common.businessentities.UserSession;
 import org.ovirt.engine.ui.common.presenter.ActionPanelPresenterWidget;
 import org.ovirt.engine.ui.common.uicommon.model.MainModelProvider;
-import org.ovirt.engine.ui.common.widget.action.AbstractButtonDefinition;
 import org.ovirt.engine.ui.common.widget.action.ActionButton;
 import org.ovirt.engine.ui.uicommonweb.UICommand;
 import org.ovirt.engine.ui.uicommonweb.models.SessionListModel;
@@ -38,7 +37,8 @@ public class SessionActionPanelPresenterWidget extends ActionPanelPresenterWidge
     @Override
     protected void initializeButtons() {
         SessionLimitButtonDefinition sessionLimitButtonDefinition = new SessionLimitButtonDefinition();
-        sessionLimitButton = addActionButton(sessionLimitButtonDefinition);
+        addActionButton(sessionLimitButtonDefinition);
+        sessionLimitButton = getView().getActionItems().get(sessionLimitButtonDefinition);
         initSessionLimitPopup();
         updateSessionLimitButton();
 
@@ -93,9 +93,9 @@ public class SessionActionPanelPresenterWidget extends ActionPanelPresenterWidge
         }
     }
 
-    private class SessionLimitButtonDefinition extends AbstractButtonDefinition<UserSession, UserSession> {
+    private class SessionLimitButtonDefinition extends WebAdminButtonDefinition<UserSession, UserSession> {
         SessionLimitButtonDefinition() {
-            super(getEventBus(), constants.concurrentSessionLimit());
+            super(constants.concurrentSessionLimit());
         }
 
         @Override
@@ -121,6 +121,11 @@ public class SessionActionPanelPresenterWidget extends ActionPanelPresenterWidge
         @Override
         public String getUniqueId() {
             return SESSION_LIMIT_BUTTON_ID;
+        }
+
+        @Override
+        protected UICommand resolveCommand() {
+            return null;
         }
     }
 
