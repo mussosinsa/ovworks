@@ -38,6 +38,11 @@ public final class TerminalIpConfigUtils {
     public static void updateRequireIp(String ipValue) throws IOException {
         Path configPath = getConfigPath();
         String content = Files.readString(configPath, StandardCharsets.UTF_8);
+        String requireIpPrefix = "Require ip "; //$NON-NLS-1$
+        Matcher prefixMatcher = REQUIRE_IP_PATTERN.matcher(content);
+        if (prefixMatcher.find()) {
+            requireIpPrefix = prefixMatcher.group(1);
+        }
         String normalizedValue = ipValue == null ? "" : ipValue.trim(); //$NON-NLS-1$
         String[] rawLines = normalizedValue.isEmpty() ? new String[0] : normalizedValue.split("\\r?\\n"); //$NON-NLS-1$
         StringBuilder replacement = new StringBuilder();
@@ -48,11 +53,13 @@ public final class TerminalIpConfigUtils {
             }
             if (REQUIRE_IP_FULL_PATTERN.matcher(candidate).matches()) {
                 candidate = candidate.replaceFirst("^\\s*Require\\s+ip\\s+", ""); //$NON-NLS-1$ //$NON-NLS-2$
+            } else if (candidate.startsWith("Require ")) { //$NON-NLS-1$
+                continue;
             }
             if (replacement.length() > 0) {
                 replacement.append("\n"); //$NON-NLS-1$
             }
-            replacement.append("Require ip ").append(candidate); //$NON-NLS-1$
+            replacement.append(requireIpPrefix).append(candidate);
         }
 
         String[] lines = content.split("\\r?\\n", -1); //$NON-NLS-1$

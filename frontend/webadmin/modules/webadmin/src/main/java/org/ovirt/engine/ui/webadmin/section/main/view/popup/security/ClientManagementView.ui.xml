@@ -104,7 +104,8 @@
 
             <g:HTML>
                 <div style="margin-top: 10px; font-size: 12px; color: #666;">
-                    /etc/httpd/conf.d/z-ovirt-engine-proxy.conf 파일의 Require ip 설정에 적용됩니다
+                    /etc/httpd/conf.d/z-ovirt-engine-proxy.conf 파일의 Require ip 설정에 적용됩니다.
+                    Require ip 항목은 한 줄에 하나씩 입력하세요.
                 </div>
             </g:HTML>
 
