@@ -132,8 +132,8 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
 
     private void styleTab(HTML tab, boolean isActive) {
         tab.getElement().getStyle().setProperty("border", "1px solid #1f6b8a"); //$NON-NLS-1$ //$NON-NLS-2$
-        tab.getElement().getStyle().setProperty("color", isActive ? "#ffffff" : "#1f6b8a"); //$NON-NLS-1$ //$NON-NLS-2$
-        tab.getElement().getStyle().setProperty("backgroundColor", isActive ? "#1f6b8a" : "#f5f5f5"); //$NON-NLS-1$ //$NON-NLS-2$
-        tab.getElement().getStyle().setProperty("fontWeight", isActive ? "bold" : "normal"); //$NON-NLS-1$ //$NON-NLS-2$
+        tab.getElement().getStyle().setProperty("color", isActive ? "#ffffff" : "#1f6b8a"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        tab.getElement().getStyle().setProperty("backgroundColor", isActive ? "#1f6b8a" : "#f5f5f5"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        tab.getElement().getStyle().setProperty("fontWeight", isActive ? "bold" : "normal"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 }
