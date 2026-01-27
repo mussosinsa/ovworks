@@ -91,6 +91,8 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
 
         // Add main container to table
         getTable().getOuterWidget().add(mainContainer);
+        // Ensure the custom container remains visible even when the table is hidden.
+        mainContainer.setVisible(true);
 
         // Initialize handlers
         initializeHandlers();
