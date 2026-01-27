@@ -3,6 +3,7 @@ package org.ovirt.engine.ui.webadmin.section.main.view;
 import java.util.Comparator;
 
 import org.gwtbootstrap3.client.ui.Button;
+import org.gwtbootstrap3.client.ui.constants.ButtonType;
 import org.ovirt.engine.core.common.businessentities.UserSession;
 import org.ovirt.engine.core.searchbackend.SessionConditionFieldAutoCompleter;
 import org.ovirt.engine.ui.common.idhandler.ElementIdHandler;
@@ -14,13 +15,14 @@ import org.ovirt.engine.ui.webadmin.gin.AssetProvider;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.MainSessionPresenter;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.inject.Inject;
 
 public class MainSessionView extends AbstractMainWithDetailsTableView<UserSession, SessionListModel>
@@ -39,8 +41,8 @@ public class MainSessionView extends AbstractMainWithDetailsTableView<UserSessio
     @UiField
     Button sessionLimitButton;
 
-    @UiField
-    ListBox sessionLimitDropdown;
+    private PopupPanel sessionLimitPopup;
+    private int selectedSessionLimit = 1;
 
     @Inject
     public MainSessionView(MainModelProvider<UserSession, SessionListModel> modelProvider) {
@@ -139,29 +141,49 @@ public class MainSessionView extends AbstractMainWithDetailsTableView<UserSessio
     }
 
     private void initSessionLimitControls() {
-        // Populate dropdown with session limit options
-        sessionLimitDropdown.addItem("1", "1"); //$NON-NLS-1$ //$NON-NLS-2$
-        sessionLimitDropdown.addItem("2", "2"); //$NON-NLS-1$ //$NON-NLS-2$
-        sessionLimitDropdown.addItem("3", "3"); //$NON-NLS-1$ //$NON-NLS-2$
-        sessionLimitDropdown.addItem("5", "5"); //$NON-NLS-1$ //$NON-NLS-2$
-        sessionLimitDropdown.addItem("10", "10"); //$NON-NLS-1$ //$NON-NLS-2$
-        sessionLimitDropdown.addItem(constants.unlimited(), "-1"); //$NON-NLS-1$
+        sessionLimitPopup = new PopupPanel(true);
+        sessionLimitPopup.setAutoHideEnabled(true);
 
-        // Set default selection
-        sessionLimitDropdown.setSelectedIndex(0);
+        VerticalPanel popupContents = new VerticalPanel();
+        popupContents.setSpacing(4);
 
-        // Add change handler
-        sessionLimitDropdown.addChangeHandler(new ChangeHandler() {
+        addSessionLimitOption(popupContents, 1);
+        addSessionLimitOption(popupContents, 2);
+        addSessionLimitOption(popupContents, 3);
+        addSessionLimitOption(popupContents, 4);
+        addSessionLimitOption(popupContents, 5);
+
+        sessionLimitPopup.setWidget(popupContents);
+        updateSessionLimitButton();
+
+        sessionLimitButton.addClickHandler(new ClickHandler() {
             @Override
-            public void onChange(ChangeEvent event) {
-                int selectedIndex = sessionLimitDropdown.getSelectedIndex();
-                String selectedValue = sessionLimitDropdown.getValue(selectedIndex);
-                // Notify the model about the change
+            public void onClick(ClickEvent event) {
+                sessionLimitPopup.showRelativeTo(sessionLimitButton);
+            }
+        });
+    }
+
+    private void addSessionLimitOption(VerticalPanel popupContents, int option) {
+        Button optionButton = new Button(Integer.toString(option));
+        optionButton.setType(ButtonType.DEFAULT);
+        optionButton.setBlock(true);
+        optionButton.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                selectedSessionLimit = option;
+                updateSessionLimitButton();
+                sessionLimitPopup.hide();
                 if (getModelProvider().getModel().getSetSessionLimitCommand() != null) {
                     getModelProvider().getModel().getSetSessionLimitCommand().execute();
                 }
             }
         });
+        popupContents.add(optionButton);
+    }
+
+    private void updateSessionLimitButton() {
+        sessionLimitButton.setText(constants.concurrentSessionLimit() + ": " + selectedSessionLimit); //$NON-NLS-1$
     }
 
 }

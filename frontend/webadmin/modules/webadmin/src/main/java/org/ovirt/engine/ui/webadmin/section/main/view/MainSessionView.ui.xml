@@ -22,11 +22,6 @@
             margin-right: 10px;
             min-width: 200px;
         }
-
-        .sessionLimitDropdown {
-            width: 100px;
-            display: inline-block;
-        }
     </ui:style>
 
     <g:FlowPanel>
@@ -37,8 +32,6 @@
                           text="{constants.concurrentSessionLimit}"
                           type="PRIMARY"
                           addStyleNames="{style.sessionLimitButton}" />
-                <g:ListBox ui:field="sessionLimitDropdown"
-                           addStyleNames="{style.sessionLimitDropdown}" />
             </g:HorizontalPanel>
         </g:FlowPanel>
     </g:FlowPanel>
