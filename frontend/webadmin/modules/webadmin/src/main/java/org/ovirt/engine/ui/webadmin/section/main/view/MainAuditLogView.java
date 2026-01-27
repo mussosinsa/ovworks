@@ -43,13 +43,13 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
         FlowPanel mainContainer = new FlowPanel();
         mainContainer.getElement().getStyle().setProperty("width", "100%"); //$NON-NLS-1$ //$NON-NLS-2$
         mainContainer.getElement().getStyle().setProperty("minHeight", "600px"); //$NON-NLS-1$ //$NON-NLS-2$
-        mainContainer.getElement().getStyle().setProperty("backgroundColor", "#000000"); //$NON-NLS-1$ //$NON-NLS-2$
+        mainContainer.getElement().getStyle().setProperty("backgroundColor", "#ffffff"); //$NON-NLS-1$ //$NON-NLS-2$
 
         // Create tab bar
         FlowPanel tabBar = new FlowPanel();
         tabBar.getElement().getStyle().setProperty("padding", "10px 10px 0 10px"); //$NON-NLS-1$ //$NON-NLS-2$
         tabBar.getElement().getStyle().setProperty("borderBottom", "2px solid #1f6b8a"); //$NON-NLS-1$ //$NON-NLS-2$
-        tabBar.getElement().getStyle().setProperty("backgroundColor", "#000000"); //$NON-NLS-1$ //$NON-NLS-2$
+        tabBar.getElement().getStyle().setProperty("backgroundColor", "#ffffff"); //$NON-NLS-1$ //$NON-NLS-2$
 
         // Create tab items
         auditLogProtectionMenuItem = new HTML("감사기록보호"); //$NON-NLS-1$
@@ -79,7 +79,7 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
 
         // Create content panel
         contentPanel = new SimplePanel();
-        contentPanel.getElement().getStyle().setProperty("backgroundColor", "#000000"); //$NON-NLS-1$ //$NON-NLS-2$
+        contentPanel.getElement().getStyle().setProperty("backgroundColor", "#ffffff"); //$NON-NLS-1$ //$NON-NLS-2$
         contentPanel.getElement().getStyle().setProperty("overflowY", "auto"); //$NON-NLS-1$ //$NON-NLS-2$
 
         // Add content panel to main container
