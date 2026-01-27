@@ -26,7 +26,7 @@ public class MainAuditLogPresenter extends AbstractMainWithDetailsPresenter<Obje
     }
 
     @ProxyCodeSplit
-    @NameToken("auditLog")
+    @NameToken("auditLog") //$NON-NLS-1$
     public interface ProxyDef extends ProxyPlace<MainAuditLogPresenter> {
     }
 
@@ -52,7 +52,7 @@ public class MainAuditLogPresenter extends AbstractMainWithDetailsPresenter<Obje
 
     @Override
     protected PlaceRequest getMainViewRequest() {
-        return PlaceRequestFactory.get("auditLog");
+        return PlaceRequestFactory.get("auditLog"); //$NON-NLS-1$
     }
 
     @Override
