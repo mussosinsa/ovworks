@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 public class SecurityAuditCommand<T extends ActionParametersBase> extends CommandBase<T> {
 
     private static final Logger log = LoggerFactory.getLogger(SecurityAuditCommand.class);
-    private static final String SECURITY_AUDIT_SCRIPT = "/home/user/ovworks/ov-works-security_audit.sh";
+    private static final String SECURITY_AUDIT_SCRIPT = "/usr/share/ovirt-engine/bin/ov-works-security_audit.sh"; //$NON-NLS-1$
 
     @Inject
     private AuditLogDao auditLogDao;
