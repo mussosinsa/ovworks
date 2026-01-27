@@ -36,7 +36,7 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
         this.auditLogRemoteBackupTabView = auditLogRemoteBackupTabView;
         this.availabilityTabView = availabilityTabView;
 
-        // Hide the default table
+        // Hide the default table to show the custom layout.
         getTable().setVisible(false);
 
         // Create main container with flexbox layout
@@ -102,8 +102,10 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
         // Add content panel to main container
         mainContainer.add(contentPanel);
 
-        // Add main container to table
-        getTable().getOuterWidget().add(mainContainer);
+        // Compose a root panel with the hidden table and the custom layout.
+        FlowPanel rootPanel = new FlowPanel();
+        rootPanel.add(getTable());
+        rootPanel.add(mainContainer);
 
         // Make sure mainContainer is visible even though table is hidden
         mainContainer.setVisible(true);
@@ -114,7 +116,7 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
         // Show first tab by default
         showAuditLogProtection();
 
-        initWidget(getTable());
+        initWidget(rootPanel);
     }
 
     private void initializeHandlers() {

@@ -31,7 +31,7 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
         this.integrityCheckView = integrityCheckView;
         this.clientManagementView = clientManagementView;
 
-        // Hide the default table
+        // Hide the default table to show the custom layout.
         getTable().setVisible(false);
 
         // Create main container with flexbox layout
@@ -89,8 +89,10 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
         // Add content panel to main container
         mainContainer.add(contentPanel);
 
-        // Add main container to table
-        getTable().getOuterWidget().add(mainContainer);
+        // Compose a root panel with the hidden table and the custom layout.
+        FlowPanel rootPanel = new FlowPanel();
+        rootPanel.add(getTable());
+        rootPanel.add(mainContainer);
 
         // Initialize handlers
         initializeHandlers();
@@ -98,7 +100,7 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
         // Show first tab by default
         showIntegrityCheck();
 
-        initWidget(getTable());
+        initWidget(rootPanel);
     }
 
     private void initializeHandlers() {
