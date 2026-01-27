@@ -6,7 +6,7 @@ import java.util.List;
 import org.ovirt.engine.ui.uicommonweb.help.HelpTag;
 
 /**
- * Model for Audit Log Management main tab
+ * Model for Audit Log Management main tab.
  */
 public class AuditLogListModel extends ListWithDetailsModel {
 

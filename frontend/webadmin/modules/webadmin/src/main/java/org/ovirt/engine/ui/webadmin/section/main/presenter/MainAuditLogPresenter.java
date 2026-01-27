@@ -6,7 +6,6 @@ import org.ovirt.engine.ui.common.place.PlaceRequestFactory;
 import org.ovirt.engine.ui.common.presenter.OvirtBreadCrumbsPresenterWidget;
 import org.ovirt.engine.ui.common.uicommon.model.MainModelProvider;
 import org.ovirt.engine.ui.uicommonweb.models.AuditLogListModel;
-import org.ovirt.engine.ui.uicommonweb.place.WebAdminApplicationPlaces;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.AuditLogActionPanelPresenterWidget;
 
 import com.google.gwt.event.shared.EventBus;
@@ -27,7 +26,7 @@ public class MainAuditLogPresenter extends AbstractMainWithDetailsPresenter<Obje
     }
 
     @ProxyCodeSplit
-    @NameToken(WebAdminApplicationPlaces.auditLogMainPlace)
+    @NameToken("auditLog")
     public interface ProxyDef extends ProxyPlace<MainAuditLogPresenter> {
     }
 
@@ -53,7 +52,7 @@ public class MainAuditLogPresenter extends AbstractMainWithDetailsPresenter<Obje
 
     @Override
     protected PlaceRequest getMainViewRequest() {
-        return PlaceRequestFactory.get(WebAdminApplicationPlaces.auditLogMainPlace);
+        return PlaceRequestFactory.get("auditLog");
     }
 
     @Override
