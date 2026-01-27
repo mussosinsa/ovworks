@@ -55,17 +55,8 @@
             margin-left: 15px;
         }
 
-        .ipList {
-            margin-top: 15px;
-            padding: 15px;
-            background-color: #0f5d7a;
-            color: white;
-            min-width: 160px;
-        }
-
-        .ipListItem {
-            font-size: 18px;
-            line-height: 1.6;
+        .ipTextarea {
+            min-height: 70px;
         }
     </ui:style>
 
@@ -101,9 +92,9 @@
             </g:HTML>
 
             <g:HorizontalPanel addStyleNames="{style.inputPanel}">
-                <b:TextBox ui:field="terminalIpInput"
-                          placeholder="IP 주소를 입력하세요 (예: 192.168.1.100)"
-                          addStyleNames="{style.inputField}" />
+                <b:TextArea ui:field="terminalIpInput"
+                            placeholder="Require ip 192.168.1.100"
+                            addStyleNames="{style.inputField} {style.ipTextarea}" />
                 <b:Button ui:field="terminalIpButton"
                           text="적용"
                           type="PRIMARY"
@@ -117,7 +108,6 @@
                 </div>
             </g:HTML>
 
-            <g:FlowPanel ui:field="terminalIpList" addStyleNames="{style.ipList}" />
         </g:FlowPanel>
     </g:FlowPanel>
 </ui:UiBinder>
