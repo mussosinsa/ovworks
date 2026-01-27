@@ -103,6 +103,7 @@ import org.ovirt.engine.ui.uicommonweb.models.vms.VmListModel;
 import org.ovirt.engine.ui.uicommonweb.models.volumes.VolumeListModel;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.AboutPopupPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.HeaderPresenterWidget;
+import org.ovirt.engine.ui.webadmin.section.main.presenter.MainAuditLogPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.MainClusterPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.MainContentPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.MainDataCenterPresenter;
@@ -392,6 +393,7 @@ import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.virtualMachine.Su
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.virtualMachine.VirtualMachineSubTabPanelPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.view.AboutPopupView;
 import org.ovirt.engine.ui.webadmin.section.main.view.HeaderView;
+import org.ovirt.engine.ui.webadmin.section.main.view.MainAuditLogView;
 import org.ovirt.engine.ui.webadmin.section.main.view.MainClusterView;
 import org.ovirt.engine.ui.webadmin.section.main.view.MainContentView;
 import org.ovirt.engine.ui.webadmin.section.main.view.MainDataCenterView;
@@ -784,6 +786,10 @@ public class PresenterModule extends BasePresenterModule {
                 MainSecuritySettingsView.class,
                 MainSecuritySettingsPresenter.ProxyDef.class);
         bind(SecuritySettingsActionPanelPresenterWidget.class);
+        bindPresenter(MainAuditLogPresenter.class,
+                MainAuditLogPresenter.ViewDef.class,
+                MainAuditLogView.class,
+                MainAuditLogPresenter.ProxyDef.class);
         bind(AuditLogActionPanelPresenterWidget.class);
         bindPresenter(MainStoragePresenter.class,
                 MainStoragePresenter.ViewDef.class,
