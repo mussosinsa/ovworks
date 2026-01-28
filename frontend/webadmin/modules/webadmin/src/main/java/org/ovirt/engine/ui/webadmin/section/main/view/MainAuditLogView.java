@@ -124,6 +124,9 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
     }
 
     private void setActiveMenuItem(HTML menuItem) {
+        if (menuItem == null) {
+            return;
+        }
         styleTab(auditLogProtectionMenuItem, menuItem == auditLogProtectionMenuItem);
         styleTab(auditLogRemoteBackupMenuItem, menuItem == auditLogRemoteBackupMenuItem);
         styleTab(availabilityMenuItem, menuItem == availabilityMenuItem);
@@ -131,6 +134,9 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
     }
 
     private void styleTab(HTML tab, boolean isActive) {
+        if (tab == null) {
+            return;
+        }
         tab.getElement().getStyle().setProperty("border", "1px solid #1f6b8a"); //$NON-NLS-1$ //$NON-NLS-2$
         tab.getElement().getStyle().setProperty("color", isActive ? "#ffffff" : "#1f6b8a"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         tab.getElement().getStyle().setProperty("backgroundColor", isActive ? "#1f6b8a" : "#f5f5f5"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
