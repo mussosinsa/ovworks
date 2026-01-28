@@ -25,6 +25,7 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
     private HTML auditLogRemoteBackupMenuItem;
     private HTML availabilityMenuItem;
     private HTML currentActiveMenuItem;
+    private FlowPanel rootPanel;
 
     @Inject
     public MainAuditLogView(MainModelProvider<Object, AuditLogListModel> modelProvider,
@@ -87,7 +88,7 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
         mainContainer.add(contentPanel);
 
         // Compose a root panel with the hidden table and the custom layout.
-        FlowPanel rootPanel = new FlowPanel();
+        rootPanel = new FlowPanel();
         rootPanel.add(getTable());
         rootPanel.add(mainContainer);
 
@@ -99,7 +100,7 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
 
         // Show first tab by default once the widget is attached.
         Scheduler.get().scheduleDeferred(() -> {
-            if (!isAttached()) {
+            if (rootPanel == null || !rootPanel.isAttached()) {
                 return;
             }
             showAuditLogProtection();
