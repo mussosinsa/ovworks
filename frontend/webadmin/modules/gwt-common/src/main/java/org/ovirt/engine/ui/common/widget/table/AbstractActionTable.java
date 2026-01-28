@@ -224,7 +224,11 @@ public abstract class AbstractActionTable<E, T> extends AbstractActionPanel<T> i
     }
 
     private void autoSelectFirst() {
-        if (table.getRowCount() == 1 && selectionModel.asMultiSelectionModel().getSelectedList().isEmpty() && doAutoSelect) {
+        List<T> selectedList = selectionModel.asMultiSelectionModel().getSelectedList();
+        if (selectedList == null) {
+            return;
+        }
+        if (table.getRowCount() == 1 && selectedList.isEmpty() && doAutoSelect) {
             Scheduler.get().scheduleDeferred(() -> {
                 if (table.getVisibleItemCount() > 0) {
                     selectionModel.setSelected(table.getVisibleItems().get(0), true);
