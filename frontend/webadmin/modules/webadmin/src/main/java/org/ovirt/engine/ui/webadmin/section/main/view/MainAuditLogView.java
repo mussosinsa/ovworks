@@ -6,6 +6,8 @@ import org.ovirt.engine.ui.webadmin.section.main.presenter.MainAuditLogPresenter
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AuditLogProtectionTabView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AuditLogRemoteBackupTabView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AvailabilityTabView;
+import org.ovirt.engine.ui.common.widget.table.SimpleActionTable;
+import org.ovirt.engine.ui.webadmin.gin.ClientGinjectorProvider;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -107,6 +109,18 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
         });
 
         initWidget(rootPanel);
+    }
+
+    @Override
+    protected SimpleActionTable<Void, Object> createActionTable() {
+        return new SimpleActionTable<>(getModelProvider(), getTableResources(),
+                ClientGinjectorProvider.getEventBus(), ClientGinjectorProvider.getClientStorage()) {
+            {
+                showRefreshButton();
+                showItemsCount();
+                enableHeaderContextMenu();
+            }
+        };
     }
 
     private void initializeHandlers() {
