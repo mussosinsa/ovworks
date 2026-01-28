@@ -1,13 +1,13 @@
 package org.ovirt.engine.ui.webadmin.section.main.view;
 
 import org.ovirt.engine.ui.common.uicommon.model.MainModelProvider;
+import org.ovirt.engine.ui.common.widget.table.SimpleActionTable;
 import org.ovirt.engine.ui.uicommonweb.models.AuditLogListModel;
+import org.ovirt.engine.ui.webadmin.gin.ClientGinjectorProvider;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.MainAuditLogPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AuditLogProtectionTabView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AuditLogRemoteBackupTabView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AvailabilityTabView;
-import org.ovirt.engine.ui.common.widget.table.SimpleActionTable;
-import org.ovirt.engine.ui.webadmin.gin.ClientGinjectorProvider;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.FlowPanel;
