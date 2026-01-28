@@ -113,7 +113,7 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
 
     @Override
     protected SimpleActionTable<Void, Object> createActionTable() {
-        return new SimpleActionTable<>(getModelProvider(), getTableResources(),
+        return new SimpleActionTable<Void, Object>(getModelProvider(), getTableResources(),
                 ClientGinjectorProvider.getEventBus(), ClientGinjectorProvider.getClientStorage()) {
             {
                 showRefreshButton();
