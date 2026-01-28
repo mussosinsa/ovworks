@@ -5,6 +5,7 @@ import org.ovirt.engine.ui.uicommonweb.models.SecuritySettingsListModel;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.MainSecuritySettingsPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.ClientManagementView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.IntegrityCheckView;
+import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.LogBackupManagementView;
 
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
@@ -16,20 +17,24 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
 
     private final IntegrityCheckView integrityCheckView;
     private final ClientManagementView clientManagementView;
+    private final LogBackupManagementView logBackupManagementView;
 
     private SimplePanel contentPanel;
     private HTML integrityCheckMenuItem;
     private HTML clientManagementMenuItem;
+    private HTML logBackupManagementMenuItem;
     private HTML currentActiveMenuItem;
 
     @Inject
     public MainSecuritySettingsView(MainModelProvider<Object, SecuritySettingsListModel> modelProvider,
             IntegrityCheckView integrityCheckView,
-            ClientManagementView clientManagementView) {
+            ClientManagementView clientManagementView,
+            LogBackupManagementView logBackupManagementView) {
         super(modelProvider);
 
         this.integrityCheckView = integrityCheckView;
         this.clientManagementView = clientManagementView;
+        this.logBackupManagementView = logBackupManagementView;
 
         // Hide the default table to show the custom layout.
         getTable().setVisible(false);
@@ -77,6 +82,15 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
         clientManagementMenuItem.getElement().getStyle().setProperty("borderBottom", "1px solid #f0f0f0"); //$NON-NLS-1$ //$NON-NLS-2$
         sidebar.add(clientManagementMenuItem);
 
+        logBackupManagementMenuItem = new HTML("로그백업관리"); //$NON-NLS-1$
+        logBackupManagementMenuItem.setStyleName("security-menu-item"); //$NON-NLS-1$
+        logBackupManagementMenuItem.getElement().getStyle().setProperty("display", "block"); //$NON-NLS-1$ //$NON-NLS-2$
+        logBackupManagementMenuItem.getElement().getStyle().setProperty("padding", "10px 15px"); //$NON-NLS-1$ //$NON-NLS-2$
+        logBackupManagementMenuItem.getElement().getStyle().setProperty("cursor", "pointer"); //$NON-NLS-1$ //$NON-NLS-2$
+        logBackupManagementMenuItem.getElement().getStyle().setProperty("borderBottom", "1px solid #f0f0f0"); //$NON-NLS-1$ //$NON-NLS-2$
+        logBackupManagementMenuItem.getElement().getStyle().setProperty("color", "#d9534f"); //$NON-NLS-1$ //$NON-NLS-2$
+        sidebar.add(logBackupManagementMenuItem);
+
         // Add sidebar to main container
         mainContainer.add(sidebar);
 
@@ -106,6 +120,7 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
     private void initializeHandlers() {
         integrityCheckMenuItem.addClickHandler(event -> showIntegrityCheck());
         clientManagementMenuItem.addClickHandler(event -> showClientManagement());
+        logBackupManagementMenuItem.addClickHandler(event -> showLogBackupManagement());
     }
 
     private void showIntegrityCheck() {
@@ -118,12 +133,20 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
         contentPanel.setWidget(clientManagementView);
     }
 
+    private void showLogBackupManagement() {
+        setActiveMenuItem(logBackupManagementMenuItem);
+        contentPanel.setWidget(logBackupManagementView);
+    }
+
     private void setActiveMenuItem(HTML menuItem) {
         // Remove active class from current active item
         if (currentActiveMenuItem != null) {
             currentActiveMenuItem.getElement().getStyle().clearBackgroundColor();
             currentActiveMenuItem.getElement().getStyle().clearColor();
             currentActiveMenuItem.getElement().getStyle().clearFontWeight();
+            if (currentActiveMenuItem == logBackupManagementMenuItem) {
+                currentActiveMenuItem.getElement().getStyle().setProperty("color", "#d9534f"); //$NON-NLS-1$ //$NON-NLS-2$
+            }
         }
 
         // Add active class to new active item
