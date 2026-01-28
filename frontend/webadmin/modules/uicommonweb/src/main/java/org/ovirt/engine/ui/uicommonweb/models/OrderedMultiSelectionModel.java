@@ -121,6 +121,9 @@ public class OrderedMultiSelectionModel<T> extends AbstractSelectionModel<T> {
     }
 
     public void resolveChanges() {
+        if (dataDisplay == null) {
+            return;
+        }
         Set<Object> selectedKeys = selectedSet.keySet();
         List<Object> visibleKeys = new ArrayList<>();
         for (T visible : dataDisplay.getVisibleItems()) {
