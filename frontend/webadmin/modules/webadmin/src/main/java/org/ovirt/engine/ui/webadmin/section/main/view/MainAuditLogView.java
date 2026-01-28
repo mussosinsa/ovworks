@@ -89,6 +89,9 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
 
         // Add content panel to main container
         mainContainer.add(contentPanel);
+        if (auditLogProtectionTabView != null) {
+            contentPanel.setWidget(auditLogProtectionTabView);
+        }
 
         // Compose a root panel with the hidden table and the custom layout.
         rootPanel = new FlowPanel();
