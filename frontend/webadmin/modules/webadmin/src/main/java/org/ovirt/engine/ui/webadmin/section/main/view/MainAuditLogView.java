@@ -7,11 +7,11 @@ import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AuditLogPro
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AuditLogRemoteBackupTabView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.AvailabilityTabView;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.inject.Inject;
-import com.google.gwt.core.client.Scheduler;
 
 public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, AuditLogListModel>
         implements MainAuditLogPresenter.ViewDef {
