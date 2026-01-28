@@ -115,8 +115,10 @@ public abstract class AbstractActionTable<E, T> extends AbstractActionPanel<T> i
                 mousePosition[0] = event.getClientX();
                 mousePosition[1] = event.getClientY();
                 if (BrowserEvents.CLICK.equals(event.getType())) {
-                    selectionModel.asMultiSelectionModel().setMultiSelectEnabled(event.getCtrlKey());
-                    selectionModel.asMultiSelectionModel().setMultiRangeSelectEnabled(event.getShiftKey());
+                    if (selectionModel.getMode() == OvirtSelectionModel.Mode.MULTI_SELECTION) {
+                        selectionModel.asMultiSelectionModel().setMultiSelectEnabled(event.getCtrlKey());
+                        selectionModel.asMultiSelectionModel().setMultiRangeSelectEnabled(event.getShiftKey());
+                    }
                 }
                 // Remove focus from the table so refreshes won't try to focus on the
                 // selected row. This is important when the user has scrolled the selected
@@ -128,7 +130,8 @@ public abstract class AbstractActionTable<E, T> extends AbstractActionPanel<T> i
 
             @Override
             public int getKeyboardSelectedRow() {
-                if (selectionModel.asMultiSelectionModel().getLastSelectedRow() == -1) {
+                if (selectionModel.getMode() != OvirtSelectionModel.Mode.MULTI_SELECTION
+                        || selectionModel.asMultiSelectionModel().getLastSelectedRow() == -1) {
                     return super.getKeyboardSelectedRow();
                 }
 
@@ -138,7 +141,8 @@ public abstract class AbstractActionTable<E, T> extends AbstractActionPanel<T> i
             @Override
             protected void onLoad() {
                 super.onLoad();
-                if (selectionModel.asMultiSelectionModel().getLastSelectedRow() == -1) {
+                if (selectionModel.getMode() != OvirtSelectionModel.Mode.MULTI_SELECTION
+                        || selectionModel.asMultiSelectionModel().getLastSelectedRow() == -1) {
                     return;
                 }
 
@@ -148,7 +152,9 @@ public abstract class AbstractActionTable<E, T> extends AbstractActionPanel<T> i
             @Override
             public void setRowData(int start, final List<? extends T> values) {
                 super.setRowData(start, values);
-                selectionModel.asMultiSelectionModel().resolveChanges();
+                if (selectionModel.getMode() == OvirtSelectionModel.Mode.MULTI_SELECTION) {
+                    selectionModel.asMultiSelectionModel().resolveChanges();
+                }
                 if (isAttached() && isVisible()) {
                     autoSelectFirst();
                 }
@@ -224,6 +230,9 @@ public abstract class AbstractActionTable<E, T> extends AbstractActionPanel<T> i
     }
 
     private void autoSelectFirst() {
+        if (selectionModel.getMode() != OvirtSelectionModel.Mode.MULTI_SELECTION) {
+            return;
+        }
         List<T> selectedList = selectionModel.asMultiSelectionModel().getSelectedList();
         if (selectedList == null) {
             return;
@@ -255,6 +264,9 @@ public abstract class AbstractActionTable<E, T> extends AbstractActionPanel<T> i
     }
 
     public void showSelectionCountTooltip() {
+        if (selectionModel.getMode() != OvirtSelectionModel.Mode.MULTI_SELECTION) {
+            return;
+        }
         this.selectionModel.addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
 
             private PopupPanel tooltip = null;
