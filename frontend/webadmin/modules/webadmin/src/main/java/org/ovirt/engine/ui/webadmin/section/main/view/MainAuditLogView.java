@@ -80,6 +80,7 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
         tabBar.add(availabilityMenuItem);
 
         mainContainer.add(tabBar);
+        setActiveMenuItem(auditLogProtectionMenuItem);
 
         // Create content panel
         contentPanel = new SimplePanel();
