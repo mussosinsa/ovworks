@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.inject.Inject;
+import com.google.gwt.core.client.Scheduler;
 
 public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, AuditLogListModel>
         implements MainAuditLogPresenter.ViewDef {
@@ -96,8 +97,8 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
         // Initialize handlers
         initializeHandlers();
 
-        // Show first tab by default
-        showAuditLogProtection();
+        // Show first tab by default once the widget is attached.
+        Scheduler.get().scheduleDeferred(this::showAuditLogProtection);
 
         initWidget(rootPanel);
     }
