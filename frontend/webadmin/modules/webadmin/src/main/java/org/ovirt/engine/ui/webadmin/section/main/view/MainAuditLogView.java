@@ -98,7 +98,12 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
         initializeHandlers();
 
         // Show first tab by default once the widget is attached.
-        Scheduler.get().scheduleDeferred(this::showAuditLogProtection);
+        Scheduler.get().scheduleDeferred(() -> {
+            if (!isAttached()) {
+                return;
+            }
+            showAuditLogProtection();
+        });
 
         initWidget(rootPanel);
     }
@@ -111,17 +116,23 @@ public class MainAuditLogView extends AbstractMainWithDetailsTableView<Object, A
 
     private void showAuditLogProtection() {
         setActiveMenuItem(auditLogProtectionMenuItem);
-        contentPanel.setWidget(auditLogProtectionTabView);
+        if (contentPanel != null && auditLogProtectionTabView != null) {
+            contentPanel.setWidget(auditLogProtectionTabView);
+        }
     }
 
     private void showAuditLogRemoteBackup() {
         setActiveMenuItem(auditLogRemoteBackupMenuItem);
-        contentPanel.setWidget(auditLogRemoteBackupTabView);
+        if (contentPanel != null && auditLogRemoteBackupTabView != null) {
+            contentPanel.setWidget(auditLogRemoteBackupTabView);
+        }
     }
 
     private void showAvailability() {
         setActiveMenuItem(availabilityMenuItem);
-        contentPanel.setWidget(availabilityTabView);
+        if (contentPanel != null && availabilityTabView != null) {
+            contentPanel.setWidget(availabilityTabView);
+        }
     }
 
     private void setActiveMenuItem(HTML menuItem) {
