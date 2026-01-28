@@ -257,7 +257,11 @@ public abstract class AbstractActionTable<E, T> extends AbstractActionPanel<T> i
 
             @Override
             public void onSelectionChange(SelectionChangeEvent event) {
-                int selectedItems = selectionModel.asMultiSelectionModel().getSelectedList().size();
+                List<T> selectedList = selectionModel.asMultiSelectionModel().getSelectedList();
+                if (selectedList == null) {
+                    return;
+                }
+                int selectedItems = selectedList.size();
                 if (selectedItems < 2) {
                     return;
                 }
@@ -267,7 +271,7 @@ public abstract class AbstractActionTable<E, T> extends AbstractActionPanel<T> i
                 }
 
                 tooltip = new PopupPanel(true);
-                tooltip.setWidget(new Label(selectionModel.asMultiSelectionModel().getSelectedList().size()
+                tooltip.setWidget(new Label(selectedList.size()
                         + " " + constants.selectedActionTable())); //$NON-NLS-1$
 
                 if (mousePosition[0] == 0 && mousePosition[1] == 0) {
