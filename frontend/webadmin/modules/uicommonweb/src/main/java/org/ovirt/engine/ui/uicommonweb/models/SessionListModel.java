@@ -3,12 +3,15 @@ package org.ovirt.engine.ui.uicommonweb.models;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.ovirt.engine.core.common.action.ActionType;
+import org.ovirt.engine.core.common.action.SetEngineSessionLimitParameters;
 import org.ovirt.engine.core.common.businessentities.UserSession;
 import org.ovirt.engine.core.common.interfaces.SearchType;
 import org.ovirt.engine.core.common.mode.ApplicationMode;
 import org.ovirt.engine.core.common.queries.QueryType;
 import org.ovirt.engine.core.common.queries.SearchParameters;
 import org.ovirt.engine.core.searchbackend.SearchObjects;
+import org.ovirt.engine.ui.frontend.Frontend;
 import org.ovirt.engine.ui.uicommonweb.UICommand;
 import org.ovirt.engine.ui.uicommonweb.help.HelpTag;
 import org.ovirt.engine.ui.uicommonweb.place.WebAdminApplicationPlaces;
@@ -23,6 +26,7 @@ public class SessionListModel extends ListWithSimpleDetailsModel<UserSession, Us
 
     private UICommand terminateCommand;
     private UICommand setSessionLimitCommand;
+    private int sessionLimit = 1;
 
     @Inject
     public SessionListModel() {
@@ -60,6 +64,14 @@ public class SessionListModel extends ListWithSimpleDetailsModel<UserSession, Us
 
     private void setSetSessionLimitCommand(UICommand value) {
         setSessionLimitCommand = value;
+    }
+
+    public int getSessionLimit() {
+        return sessionLimit;
+    }
+
+    public void setSessionLimit(int sessionLimit) {
+        this.sessionLimit = sessionLimit;
     }
 
     @Override
@@ -125,8 +137,8 @@ public class SessionListModel extends ListWithSimpleDetailsModel<UserSession, Us
     }
 
     private void setSessionLimit() {
-        // This will be called when the session limit is changed
-        // The actual implementation will be handled by backend
+        Frontend.getInstance().runAction(ActionType.SetEngineSessionLimit,
+                new SetEngineSessionLimitParameters(sessionLimit));
     }
 
 }
