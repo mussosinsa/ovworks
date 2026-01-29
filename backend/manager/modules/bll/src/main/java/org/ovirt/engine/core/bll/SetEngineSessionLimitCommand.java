@@ -4,9 +4,15 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
 
 import org.ovirt.engine.core.bll.context.CommandContext;
+import org.ovirt.engine.core.bll.utils.PermissionSubject;
 import org.ovirt.engine.core.common.action.SetEngineSessionLimitParameters;
+import org.ovirt.engine.core.common.businessentities.ActionGroup;
+import org.ovirt.engine.core.common.VdcObjectType;
+import org.ovirt.engine.core.compat.Guid;
 import org.ovirt.engine.core.utils.EngineLocalConfig;
 
 public class SetEngineSessionLimitCommand extends CommandBase<SetEngineSessionLimitParameters> {
@@ -38,5 +44,12 @@ public class SetEngineSessionLimitCommand extends CommandBase<SetEngineSessionLi
             log.error("Failed to update session limit configuration at {}", confFile, exception);
             setSucceeded(false);
         }
+    }
+
+    @Override
+    public List<PermissionSubject> getPermissionCheckSubjects() {
+        return Collections.singletonList(new PermissionSubject(Guid.SYSTEM,
+                VdcObjectType.System,
+                ActionGroup.CONFIGURE_ENGINE));
     }
 }
