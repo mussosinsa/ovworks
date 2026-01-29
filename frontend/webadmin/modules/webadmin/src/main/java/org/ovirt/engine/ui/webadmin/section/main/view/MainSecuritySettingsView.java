@@ -7,11 +7,11 @@ import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.ClientManag
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.IntegrityCheckView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.LogBackupManagementView;
 
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.Button;
 import com.google.inject.Inject;
 
 public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<Object, SecuritySettingsListModel>
