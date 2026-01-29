@@ -9,9 +9,6 @@ import java.util.List;
 
 import org.ovirt.engine.core.bll.context.CommandContext;
 import org.ovirt.engine.core.bll.utils.PermissionSubject;
-import org.ovirt.engine.core.common.VdcObjectType;
-import org.ovirt.engine.core.common.action.SetEngineSessionLimitParameters;
-import org.ovirt.engine.core.common.businessentities.ActionGroup;
 import org.ovirt.engine.core.compat.Guid;
 import org.ovirt.engine.core.utils.EngineLocalConfig;
 

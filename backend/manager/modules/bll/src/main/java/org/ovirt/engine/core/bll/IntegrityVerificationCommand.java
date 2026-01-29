@@ -1,7 +1,6 @@
 package org.ovirt.engine.core.bll;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.List;
@@ -51,22 +50,6 @@ public class IntegrityVerificationCommand<T extends ActionParametersBase> extend
         logAuditEvent(AuditLogType.INTEGRITY_VERIFICATION_STARTED, "Integrity verification started");
 
         try {
-            File aideBinary = new File(INTEGRITY_CHECK_COMMAND);
-            if (!aideBinary.exists()) {
-                log.error("Integrity verification binary not found: {}", INTEGRITY_CHECK_COMMAND);
-                logAuditEvent(AuditLogType.INTEGRITY_VERIFICATION_FAILED,
-                        "Integrity verification binary not found: " + INTEGRITY_CHECK_COMMAND);
-                setSucceeded(false);
-                return;
-            }
-            if (!aideBinary.canExecute()) {
-                log.error("Integrity verification binary is not executable: {}", INTEGRITY_CHECK_COMMAND);
-                logAuditEvent(AuditLogType.INTEGRITY_VERIFICATION_FAILED,
-                        "Integrity verification binary is not executable: " + INTEGRITY_CHECK_COMMAND);
-                setSucceeded(false);
-                return;
-            }
-
             ProcessBuilder processBuilder = new ProcessBuilder(INTEGRITY_CHECK_COMMAND, INTEGRITY_CHECK_OPTION);
             processBuilder.redirectErrorStream(true);
             Process process = processBuilder.start();
