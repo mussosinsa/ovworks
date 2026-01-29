@@ -392,7 +392,18 @@ public class UserListModel extends ListWithSimpleDetailsModel<Void, DbUser> impl
                 result -> {
                     UserPasswordResetModel localModel = (UserPasswordResetModel) result.getState();
                     localModel.stopProgress();
-                    cancel();
+                    if (result.getReturnValue() != null && result.getReturnValue().getSucceeded()) {
+                        cancel();
+                    } else {
+                        // Display detailed error messages from the backend
+                        if (result.getReturnValue() != null
+                                && result.getReturnValue().getExecuteFailedMessages() != null
+                                && !result.getReturnValue().getExecuteFailedMessages().isEmpty()) {
+                            String errorMsg = String.join("\n", //$NON-NLS-1$
+                                    result.getReturnValue().getExecuteFailedMessages());
+                            localModel.setMessage(errorMsg);
+                        }
+                    }
                 },
                 model);
     }
