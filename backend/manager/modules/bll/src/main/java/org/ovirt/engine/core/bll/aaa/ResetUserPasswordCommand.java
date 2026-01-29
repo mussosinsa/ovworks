@@ -91,16 +91,75 @@ public class ResetUserPasswordCommand extends CommandBase<UserPasswordResetParam
             } else {
                 log.error("Failed to reset password for user: {}. Exit code: {}. Output: {}",
                         username, exitCode, output.toString());
+                // Extract and add detailed error message for the user
+                String errorMessage = parsePasswordPolicyError(output.toString());
+                getReturnValue().getExecuteFailedMessages().add(errorMessage);
                 setSucceeded(false);
             }
 
         } catch (IOException | InterruptedException e) {
             log.error("Error executing ovirt-aaa-jdbc-tool for user: {}", username, e);
+            getReturnValue().getExecuteFailedMessages().add(e.getMessage());
             setSucceeded(false);
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
         }
+    }
+
+    /**
+     * Parse the output from ovirt-aaa-jdbc-tool to extract password policy error messages.
+     * @param output the raw output from the command
+     * @return a user-friendly error message
+     */
+    private String parsePasswordPolicyError(String output) {
+        if (output == null || output.isEmpty()) {
+            return "패스워드 변경에 실패했습니다.";
+        }
+
+        StringBuilder errorMsg = new StringBuilder();
+
+        // Check for common password policy violations
+        if (output.contains("too short") || output.contains("minimum length")) {
+            errorMsg.append("패스워드가 너무 짧습니다. 최소 길이 요구사항을 충족해야 합니다.\n");
+        }
+        if (output.contains("uppercase") || output.contains("capital")) {
+            errorMsg.append("패스워드에 대문자가 포함되어야 합니다.\n");
+        }
+        if (output.contains("lowercase")) {
+            errorMsg.append("패스워드에 소문자가 포함되어야 합니다.\n");
+        }
+        if (output.contains("digit") || output.contains("number")) {
+            errorMsg.append("패스워드에 숫자가 포함되어야 합니다.\n");
+        }
+        if (output.contains("special") || output.contains("symbol")) {
+            errorMsg.append("패스워드에 특수문자가 포함되어야 합니다.\n");
+        }
+        if (output.contains("history") || output.contains("previously used")) {
+            errorMsg.append("이전에 사용한 패스워드는 사용할 수 없습니다.\n");
+        }
+        if (output.contains("dictionary") || output.contains("common word")) {
+            errorMsg.append("사전에 있는 단어는 패스워드로 사용할 수 없습니다.\n");
+        }
+        if (output.contains("username") || output.contains("user name")) {
+            errorMsg.append("패스워드에 사용자 이름이 포함될 수 없습니다.\n");
+        }
+
+        // If no specific error was found, return the raw output (cleaned up)
+        if (errorMsg.length() == 0) {
+            // Clean up the output - remove Java tool options and extract meaningful message
+            String cleanedOutput = output
+                    .replaceAll("Picked up JAVA_TOOL_OPTIONS:.*\\n?", "")
+                    .replaceAll(".*SEVERE:.*?:", "")
+                    .replaceAll(".*Exception.*?:", "")
+                    .trim();
+            if (!cleanedOutput.isEmpty()) {
+                return "패스워드 정책 오류: " + cleanedOutput;
+            }
+            return "패스워드 정책을 충족하지 않습니다. 보안 요구사항을 확인하세요.";
+        }
+
+        return errorMsg.toString().trim();
     }
 
     @Override
