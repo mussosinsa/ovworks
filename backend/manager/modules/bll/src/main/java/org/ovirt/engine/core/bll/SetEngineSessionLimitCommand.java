@@ -21,6 +21,7 @@ public class SetEngineSessionLimitCommand extends CommandBase<SetEngineSessionLi
         super(parameters, commandContext);
     }
 
+
     @Override
     protected boolean validate() {
         return getParameters().getSessionLimit() > 0;
