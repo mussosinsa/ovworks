@@ -54,10 +54,11 @@ public class ResetUserPasswordCommand extends CommandBase<UserPasswordResetParam
         String username = user.getLoginName();
 
         try {
-            // Execute ovirt-aaa-jdbc-tool userpassword-reset command
+            // Execute ovirt-aaa-jdbc-tool user password-reset command
             ProcessBuilder processBuilder = new ProcessBuilder(
                 "ovirt-aaa-jdbc-tool",
-                "userpassword-reset",
+                "user",
+                "password-reset",
                 username,
                 "--password=pass:" + newPassword
             );
