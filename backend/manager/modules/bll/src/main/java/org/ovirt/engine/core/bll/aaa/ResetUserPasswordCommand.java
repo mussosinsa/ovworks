@@ -3,6 +3,10 @@ package org.ovirt.engine.core.bll.aaa;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 
@@ -54,17 +58,29 @@ public class ResetUserPasswordCommand extends CommandBase<UserPasswordResetParam
         String username = user.getLoginName();
 
         try {
+            // Calculate password valid-to date (10 years from now)
+            ZonedDateTime validTo = ZonedDateTime.now().plusYears(10);
+            String validToStr = validTo.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssX"));
+
             // Execute ovirt-aaa-jdbc-tool user password-reset command
             ProcessBuilder processBuilder = new ProcessBuilder(
                 "ovirt-aaa-jdbc-tool",
                 "user",
                 "password-reset",
                 username,
-                "--password=pass:" + newPassword
+                "--password-valid-to=" + validToStr,
+                "--force"
             );
 
             processBuilder.redirectErrorStream(true);
             Process process = processBuilder.start();
+
+            // Write password to stdin
+            try (OutputStream stdin = process.getOutputStream()) {
+                stdin.write((newPassword + "\n").getBytes(StandardCharsets.UTF_8));
+                stdin.write((newPassword + "\n").getBytes(StandardCharsets.UTF_8));
+                stdin.flush();
+            }
 
             // Read the output
             StringBuilder output = new StringBuilder();
