@@ -12,17 +12,15 @@ import org.ovirt.engine.core.bll.utils.PermissionSubject;
 import org.ovirt.engine.core.compat.Guid;
 import org.ovirt.engine.core.utils.EngineLocalConfig;
 
-public class SetEngineSessionLimitCommand extends CommandBase<
-        org.ovirt.engine.core.common.action.SetEngineSessionLimitParameters> {
+public class SetEngineSessionLimitCommand extends CommandBase<SetEngineSessionLimitParameters> {
 
     private static final String SESSION_LIMIT_CONF = "99-limit-user-sessions.conf"; //$NON-NLS-1$
     private static final String SESSION_LIMIT_KEY = "ENGINE_MAX_USER_SESSIONS"; //$NON-NLS-1$
 
-    public SetEngineSessionLimitCommand(
-            org.ovirt.engine.core.common.action.SetEngineSessionLimitParameters parameters,
-            CommandContext commandContext) {
+    public SetEngineSessionLimitCommand(SetEngineSessionLimitParameters parameters, CommandContext commandContext) {
         super(parameters, commandContext);
     }
+
 
     @Override
     protected boolean validate() {
@@ -49,7 +47,7 @@ public class SetEngineSessionLimitCommand extends CommandBase<
     @Override
     public List<PermissionSubject> getPermissionCheckSubjects() {
         return Collections.singletonList(new PermissionSubject(Guid.SYSTEM,
-                org.ovirt.engine.core.common.VdcObjectType.System,
-                org.ovirt.engine.core.common.businessentities.ActionGroup.CONFIGURE_ENGINE));
+                VdcObjectType.System,
+                ActionGroup.CONFIGURE_ENGINE));
     }
 }
