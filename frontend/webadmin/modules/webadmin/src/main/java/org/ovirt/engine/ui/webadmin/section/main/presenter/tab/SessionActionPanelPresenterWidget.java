@@ -75,6 +75,7 @@ public class SessionActionPanelPresenterWidget extends ActionPanelPresenterWidge
             updateSessionLimitButton();
             sessionLimitPopup.hide();
             if (getModel().getSetSessionLimitCommand() != null) {
+                getModel().setSessionLimit(selectedSessionLimit);
                 getModel().getSetSessionLimitCommand().execute();
             }
         });

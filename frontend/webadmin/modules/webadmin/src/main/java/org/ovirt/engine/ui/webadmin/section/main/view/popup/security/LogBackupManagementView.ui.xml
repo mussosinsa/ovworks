@@ -19,17 +19,25 @@
         }
 
         .sectionTitle {
-            font-size: 18px;
+            font-size: 22px;
             font-weight: bold;
             margin-bottom: 15px;
         }
 
         .buttonPanel {
-            margin-top: 15px;
+            margin-top: 10px;
         }
 
         .actionButton {
             margin-right: 15px;
+            width: 100%;
+            max-width: 520px;
+            background-color: #0f5f7c !important;
+            border: 2px solid #0b3e4f !important;
+            color: #ffffff !important;
+            font-size: 18px;
+            padding: 8px 12px;
+            border-radius: 2px;
         }
     </ui:style>
 
