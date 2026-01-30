@@ -10,9 +10,13 @@ import org.ovirt.engine.ui.uicommonweb.models.users.UserPasswordResetModel;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.user.UserPasswordResetPopupPresenterWidget;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.editor.client.Editor.Ignore;
+import com.google.gwt.editor.client.Editor.Path;
 import com.google.gwt.event.shared.EventBus;
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.inject.Inject;
 
 public class UserPasswordResetPopupView extends AbstractModelBoundPopupView<UserPasswordResetModel>
@@ -28,6 +32,10 @@ public class UserPasswordResetPopupView extends AbstractModelBoundPopupView<User
     interface ViewIdHandler extends ElementIdHandler<UserPasswordResetPopupView> {
         ViewIdHandler idHandler = GWT.create(ViewIdHandler.class);
     }
+
+    @UiField
+    @Ignore
+    HTML messageLabel;
 
     @UiField(provided = true)
     @Path(value = "password.entity")
@@ -62,5 +70,15 @@ public class UserPasswordResetPopupView extends AbstractModelBoundPopupView<User
     @Override
     public void cleanup() {
         driver.cleanup();
+    }
+
+    @Override
+    public void setMessage(String message) {
+        if (message != null && !message.isEmpty()) {
+            messageLabel.setHTML(SafeHtmlUtils.fromString(message).asString().replace("\n", "<br/>")); //$NON-NLS-1$ //$NON-NLS-2$
+            messageLabel.setVisible(true);
+        } else {
+            messageLabel.setVisible(false);
+        }
     }
 }
