@@ -40,6 +40,17 @@
             font-weight: bold;
             color: #5cb85c;
         }
+
+        .errorDetail {
+            color: #a94442;
+            background-color: #f2dede;
+            border: 1px solid #ebccd1;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            display: none;
+        }
     </ui:style>
 
     <g:FlowPanel addStyleNames="{style.mainPanel}">
@@ -58,6 +69,7 @@
                          text="{constants.statusNormal}"
                          addStyleNames="{style.statusLabel}" />
             </g:HorizontalPanel>
+            <g:HTML ui:field="securityAuditErrorLabel" addStyleNames="{style.errorDetail}" visible="false"/>
         </g:FlowPanel>
 
         <!-- Integrity Verification Section -->
@@ -75,6 +87,7 @@
                          text="{constants.statusNormal}"
                          addStyleNames="{style.statusLabel}" />
             </g:HorizontalPanel>
+            <g:HTML ui:field="integrityVerificationErrorLabel" addStyleNames="{style.errorDetail}" visible="false"/>
         </g:FlowPanel>
     </g:FlowPanel>
 </ui:UiBinder>

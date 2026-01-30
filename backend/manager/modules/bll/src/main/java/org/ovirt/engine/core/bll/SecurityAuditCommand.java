@@ -49,14 +49,18 @@ public class SecurityAuditCommand<T extends ActionParametersBase> extends Comman
         // Check if script exists and is executable
         java.io.File scriptFile = new java.io.File(SECURITY_AUDIT_SCRIPT);
         if (!scriptFile.exists()) {
+            String errorMsg = "보안 감사 스크립트를 찾을 수 없습니다: " + SECURITY_AUDIT_SCRIPT;
             log.error("Security audit script not found: {}", SECURITY_AUDIT_SCRIPT);
             logAuditEvent(AuditLogType.SECURITY_AUDIT_FAILED, "Security audit script not found: " + SECURITY_AUDIT_SCRIPT);
+            getReturnValue().getExecuteFailedMessages().add(errorMsg);
             setSucceeded(false);
             return;
         }
         if (!scriptFile.canExecute()) {
+            String errorMsg = "보안 감사 스크립트를 실행할 수 없습니다: " + SECURITY_AUDIT_SCRIPT;
             log.error("Security audit script is not executable: {}", SECURITY_AUDIT_SCRIPT);
             logAuditEvent(AuditLogType.SECURITY_AUDIT_FAILED, "Security audit script is not executable: " + SECURITY_AUDIT_SCRIPT);
+            getReturnValue().getExecuteFailedMessages().add(errorMsg);
             setSucceeded(false);
             return;
         }
@@ -86,18 +90,22 @@ public class SecurityAuditCommand<T extends ActionParametersBase> extends Comman
                 logAuditEvent(AuditLogType.SECURITY_AUDIT_COMPLETED, "Security audit completed successfully");
                 setSucceeded(true);
             } else {
+                String errorMsg = "보안 감사 실패 (종료 코드: " + exitCode + ")\n" + output.toString();
                 logAuditEvent(AuditLogType.SECURITY_AUDIT_FAILED,
                     "Security audit failed with exit code: " + exitCode);
+                getReturnValue().getExecuteFailedMessages().add(errorMsg);
                 setSucceeded(false);
             }
 
-            // Store the output in return value if needed
+            // Store the output in return value
             getReturnValue().setActionReturnValue(output.toString());
 
         } catch (Exception e) {
+            String errorMsg = "보안 감사 실행 중 오류 발생: " + e.getMessage();
             log.error("Failed to execute security audit script", e);
             logAuditEvent(AuditLogType.SECURITY_AUDIT_FAILED,
                 "Security audit failed with error: " + e.getMessage());
+            getReturnValue().getExecuteFailedMessages().add(errorMsg);
             setSucceeded(false);
         }
     }

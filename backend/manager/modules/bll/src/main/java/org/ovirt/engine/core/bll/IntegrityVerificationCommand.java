@@ -72,16 +72,20 @@ public class IntegrityVerificationCommand<T extends ActionParametersBase> extend
                         "Integrity verification completed successfully");
                 setSucceeded(true);
             } else {
+                String errorMsg = "무결성 검사 실패 (종료 코드: " + exitCode + ")\n" + output.toString();
                 logAuditEvent(AuditLogType.INTEGRITY_VERIFICATION_FAILED,
                         "Integrity verification failed with exit code: " + exitCode);
+                getReturnValue().getExecuteFailedMessages().add(errorMsg);
                 setSucceeded(false);
             }
 
             getReturnValue().setActionReturnValue(output.toString());
         } catch (Exception e) {
+            String errorMsg = "무결성 검사 실행 중 오류 발생: " + e.getMessage();
             log.error("Failed to execute integrity verification", e);
             logAuditEvent(AuditLogType.INTEGRITY_VERIFICATION_FAILED,
                     "Integrity verification failed with error: " + e.getMessage());
+            getReturnValue().getExecuteFailedMessages().add(errorMsg);
             setSucceeded(false);
         }
     }
