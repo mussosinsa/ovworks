@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 public class IntegrityVerificationCommand<T extends ActionParametersBase> extends CommandBase<T> {
 
     private static final Logger log = LoggerFactory.getLogger(IntegrityVerificationCommand.class);
+    private static final String SUDO_COMMAND = "/usr/bin/sudo"; //$NON-NLS-1$
     private static final String INTEGRITY_CHECK_COMMAND = "/usr/sbin/aide"; //$NON-NLS-1$
     private static final String INTEGRITY_CHECK_OPTION = "--check"; //$NON-NLS-1$
 
@@ -50,7 +51,9 @@ public class IntegrityVerificationCommand<T extends ActionParametersBase> extend
         logAuditEvent(AuditLogType.INTEGRITY_VERIFICATION_STARTED, "Integrity verification started");
 
         try {
-            ProcessBuilder processBuilder = new ProcessBuilder(INTEGRITY_CHECK_COMMAND, INTEGRITY_CHECK_OPTION);
+            // Use sudo to run AIDE with proper privileges to access protected files
+            ProcessBuilder processBuilder = new ProcessBuilder(
+                    SUDO_COMMAND, "-n", INTEGRITY_CHECK_COMMAND, INTEGRITY_CHECK_OPTION); //$NON-NLS-1$
             processBuilder.redirectErrorStream(true);
             Process process = processBuilder.start();
 
