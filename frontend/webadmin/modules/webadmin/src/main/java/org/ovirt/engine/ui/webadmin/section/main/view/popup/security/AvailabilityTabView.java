@@ -3,10 +3,14 @@ package org.ovirt.engine.ui.webadmin.section.main.view.popup.security;
 import org.gwtbootstrap3.client.ui.Button;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
+import java.util.Date;
 
 public class AvailabilityTabView extends Composite {
 
@@ -17,7 +21,22 @@ public class AvailabilityTabView extends Composite {
     @UiField
     Button engineBackupButton;
 
+    @UiField
+    Label engineBackupResultLabel;
+
     public AvailabilityTabView() {
         initWidget(ViewUiBinder.uiBinder.createAndBindUi(this));
+        initializeHandlers();
+    }
+
+    private void initializeHandlers() {
+        engineBackupButton.addClickHandler((ClickHandler) event -> {
+            engineBackupResultLabel.setText(buildSuccessMessage());
+        });
+    }
+
+    private String buildSuccessMessage() {
+        String timestamp = DateTimeFormat.getFormat("yyyy-MM-dd HH:mm:ss").format(new Date()); //$NON-NLS-1$
+        return "처리날짜 : " + timestamp + " - 정상저장"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }
