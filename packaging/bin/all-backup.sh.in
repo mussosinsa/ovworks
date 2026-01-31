@@ -14,8 +14,13 @@ mkdir -p "${DEST_DIR}"
 timestamp="$(date +%Y%m%d%H%M%S)"
 archive="${DEST_DIR%/}/${timestamp}.tar.gz"
 
-if sudo -n tar cvfz "${archive}" /var/log/ovirt-engine/; then
+if sudo -n tar --ignore-failed-read cvfz "${archive}" /var/log/ovirt-engine/; then
     echo "SUCCESS: ${archive}"
+    exit 0
+fi
+
+if [ -f "${archive}" ]; then
+    echo "SUCCESS (with warnings): ${archive}"
     exit 0
 fi
 
