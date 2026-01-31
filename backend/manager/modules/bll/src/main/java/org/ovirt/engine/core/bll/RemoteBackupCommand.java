@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 public class RemoteBackupCommand extends CommandBase<AuditLogBackupParameters> {
 
     private static final Logger log = LoggerFactory.getLogger(RemoteBackupCommand.class);
+    private static final String SUDO_COMMAND = "/usr/bin/sudo"; //$NON-NLS-1$
     private static final String SH_COMMAND = "/bin/sh"; //$NON-NLS-1$
     private static final String SYSTEMCTL_COMMAND = "/bin/systemctl"; //$NON-NLS-1$
     private static final String RSYSLOG_CONF = "/etc/rsyslog.conf"; //$NON-NLS-1$
@@ -48,7 +49,7 @@ public class RemoteBackupCommand extends CommandBase<AuditLogBackupParameters> {
                 + " || printf '%s' '" + escapedBlock + "' >> " + RSYSLOG_CONF; //$NON-NLS-1$ //$NON-NLS-2$
 
         CommandResult addResult = runCommand(Arrays.asList(
-                SH_COMMAND, "-c", addCommand)); //$NON-NLS-1$
+                SUDO_COMMAND, "-n", SH_COMMAND, "-c", addCommand)); //$NON-NLS-1$ //$NON-NLS-2$
         if (addResult.exitCode != 0) {
             getReturnValue().getExecuteFailedMessages().add("rsyslog.conf 갱신 실패 (종료 코드: " //$NON-NLS-1$
                     + addResult.exitCode + ")\n" + addResult.output); //$NON-NLS-1$
@@ -58,7 +59,7 @@ public class RemoteBackupCommand extends CommandBase<AuditLogBackupParameters> {
         }
 
         CommandResult restartResult = runCommand(Arrays.asList(
-                SYSTEMCTL_COMMAND, "restart", "rsyslog")); //$NON-NLS-1$ //$NON-NLS-2$
+                SUDO_COMMAND, "-n", SYSTEMCTL_COMMAND, "restart", "rsyslog")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         getReturnValue().setActionReturnValue(combineOutput(addResult.output, restartResult.output));
         if (restartResult.exitCode == 0) {
             setSucceeded(true);
