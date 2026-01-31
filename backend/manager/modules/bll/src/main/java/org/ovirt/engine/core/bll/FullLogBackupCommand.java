@@ -48,7 +48,7 @@ public class FullLogBackupCommand extends CommandBase<AuditLogBackupParameters> 
 
         CommandResult result = runCommand(Arrays.asList(
                 BACKUP_SCRIPT, directory.toString())); //$NON-NLS-1$
-        getReturnValue().setActionReturnValue(result.output);
+        getReturnValue().setActionReturnValue(""); //$NON-NLS-1$
         if (result.exitCode == 0) {
             setSucceeded(true);
         } else if (result.output != null && result.output.startsWith("SUCCESS")) { //$NON-NLS-1$
