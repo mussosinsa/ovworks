@@ -57,20 +57,7 @@ public class AuditLogProtectionTabView extends Composite {
 
     private String buildSuccessMessage(String backupPath) {
         return "처리날짜 : " + currentTimestamp() + " - 정상저장\n" //$NON-NLS-1$ //$NON-NLS-2$
-                + "실행 명령: tar cvfz " + buildPath(backupPath, archiveFilename()) //$NON-NLS-1$
-                + " /var/log/ovirt-engine/"; //$NON-NLS-1$
-    }
-
-    private String buildPath(String basePath, String filename) {
-        if (basePath.endsWith("/")) { //$NON-NLS-1$
-            return basePath + filename;
-        }
-        return basePath + "/" + filename; //$NON-NLS-1$
-    }
-
-    private String archiveFilename() {
-        return DateTimeFormat.getFormat("yyyyMMddHHmmss").format(new Date()) //$NON-NLS-1$
-                + ".tar.gz"; //$NON-NLS-1$
+                + "실행 명령: /usr/share/ovirt-engine/bin/all-backup.sh " + backupPath; //$NON-NLS-1$
     }
 
     private String currentTimestamp() {

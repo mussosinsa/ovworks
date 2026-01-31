@@ -5,8 +5,6 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -25,8 +23,6 @@ public class FullLogBackupCommand extends CommandBase<AuditLogBackupParameters> 
 
     private static final Logger log = LoggerFactory.getLogger(FullLogBackupCommand.class);
     private static final String BACKUP_SCRIPT = "/usr/share/ovirt-engine/bin/all-backup.sh"; //$NON-NLS-1$
-    private static final DateTimeFormatter FILE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss"); //$NON-NLS-1$
-
     public FullLogBackupCommand(AuditLogBackupParameters parameters, CommandContext cmdContext) {
         super(parameters, cmdContext);
     }
@@ -50,10 +46,8 @@ public class FullLogBackupCommand extends CommandBase<AuditLogBackupParameters> 
             return;
         }
 
-        String filename = FILE_FORMATTER.format(LocalDateTime.now()) + ".tar.gz"; //$NON-NLS-1$
-        Path archivePath = directory.resolve(filename);
         CommandResult result = runCommand(Arrays.asList(
-                BACKUP_SCRIPT, archivePath.toString())); //$NON-NLS-1$
+                BACKUP_SCRIPT, directory.toString())); //$NON-NLS-1$
         getReturnValue().setActionReturnValue(result.output);
         if (result.exitCode == 0) {
             setSucceeded(true);
