@@ -15,6 +15,8 @@ public class AuditLogListModel extends ListWithDetailsModel {
         setTitle("Audit Log Management"); //$NON-NLS-1$
         setHelpTag(HelpTag.audit_log);
         setHashName("audit_log"); //$NON-NLS-1$
+        setDefaultSearchString(""); //$NON-NLS-1$
+        setSearchString(""); //$NON-NLS-1$
 
         // Initialize with dummy items to display the view
         initializeItems();
