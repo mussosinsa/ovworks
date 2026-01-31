@@ -3,6 +3,10 @@ package org.ovirt.engine.ui.webadmin.section.main.view.popup.security;
 import java.util.Date;
 
 import org.gwtbootstrap3.client.ui.Button;
+import org.ovirt.engine.core.common.action.ActionType;
+import org.ovirt.engine.core.common.action.AuditLogBackupParameters;
+import org.ovirt.engine.ui.frontend.Frontend;
+import org.ovirt.engine.ui.uicompat.FrontendActionAsyncResult;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -42,17 +46,19 @@ public class AuditLogProtectionTabView extends Composite {
                 fullLogBackupResultLabel.setText("저장 위치를 입력해 주세요."); //$NON-NLS-1$
                 return;
             }
-            fullLogBackupResultLabel.setHTML(formatHtml(buildSuccessMessage(backupPath)));
+            AuditLogBackupParameters parameters = new AuditLogBackupParameters();
+            parameters.setBackupPath(backupPath);
+            fullLogBackupResultLabel.setText("처리 중..."); //$NON-NLS-1$
+            Frontend.getInstance().runAction(ActionType.FullLogBackup, parameters, result -> {
+                handleResult(result, buildSuccessMessage(backupPath), fullLogBackupResultLabel);
+            });
         });
     }
 
     private String buildSuccessMessage(String backupPath) {
-        Date now = new Date();
-        String timestamp = DateTimeFormat.getFormat("yyyy-MM-dd HH:mm:ss").format(now); //$NON-NLS-1$
-        String fileSuffix = DateTimeFormat.getFormat("yyyyMMddHHmmss").format(now); //$NON-NLS-1$
-        String archivePath = buildPath(backupPath, fileSuffix + ".tar.gz"); //$NON-NLS-1$
-        return "처리날짜 : " + timestamp + " - 정상저장\n" //$NON-NLS-1$ //$NON-NLS-2$
-                + "실행 명령: tar cvfz " + archivePath + " /var/log/ovirt-engine/"; //$NON-NLS-1$ //$NON-NLS-2$
+        return "처리날짜 : " + currentTimestamp() + " - 정상저장\n" //$NON-NLS-1$ //$NON-NLS-2$
+                + "실행 명령: tar cvfz " + buildPath(backupPath, archiveFilename()) //$NON-NLS-1$
+                + " /var/log/ovirt-engine/"; //$NON-NLS-1$
     }
 
     private String buildPath(String basePath, String filename) {
@@ -60,6 +66,43 @@ public class AuditLogProtectionTabView extends Composite {
             return basePath + filename;
         }
         return basePath + "/" + filename; //$NON-NLS-1$
+    }
+
+    private String archiveFilename() {
+        return DateTimeFormat.getFormat("yyyyMMddHHmmss").format(new Date()) //$NON-NLS-1$
+                + ".tar.gz"; //$NON-NLS-1$
+    }
+
+    private String currentTimestamp() {
+        return DateTimeFormat.getFormat("yyyy-MM-dd HH:mm:ss").format(new Date()); //$NON-NLS-1$
+    }
+
+    private void handleResult(FrontendActionAsyncResult result, String successMessage, HTML target) {
+        StringBuilder details = new StringBuilder();
+        if (result != null && result.getReturnValue() != null) {
+            if (result.getReturnValue().getSucceeded()) {
+                details.append(successMessage);
+                Object actionReturnValue = result.getReturnValue().getActionReturnValue();
+                if (actionReturnValue instanceof String && !((String) actionReturnValue).isEmpty()) {
+                    details.append("\n").append(actionReturnValue); //$NON-NLS-1$
+                }
+                target.setHTML(formatHtml(details.toString()));
+                return;
+            }
+            if (result.getReturnValue().getExecuteFailedMessages() != null) {
+                result.getReturnValue().getExecuteFailedMessages().forEach(msg -> {
+                    details.append(msg).append("\n"); //$NON-NLS-1$
+                });
+            }
+            Object actionReturnValue = result.getReturnValue().getActionReturnValue();
+            if (actionReturnValue instanceof String && !((String) actionReturnValue).isEmpty()) {
+                details.append(actionReturnValue);
+            }
+        }
+        if (details.length() == 0) {
+            details.append("백업 실행 중 오류가 발생했습니다."); //$NON-NLS-1$
+        }
+        target.setHTML(formatHtml(details.toString().trim()));
     }
 
     private String formatHtml(String message) {
