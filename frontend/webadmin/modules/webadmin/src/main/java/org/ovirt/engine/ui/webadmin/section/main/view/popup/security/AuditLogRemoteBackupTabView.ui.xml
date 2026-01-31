@@ -24,6 +24,11 @@
             margin-bottom: 15px;
         }
 
+        .sectionDescription {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
         .buttonPanel {
             margin-top: 15px;
         }
@@ -36,6 +41,9 @@
     <g:FlowPanel addStyleNames="{style.mainPanel}">
         <g:FlowPanel addStyleNames="{style.sectionPanel}">
             <g:HTML addStyleNames="{style.sectionTitle}">감사기록 원격 백업</g:HTML>
+            <g:HTML addStyleNames="{style.sectionDescription}">
+                원격 주소는 /etc/rsyslog.conf 설정 후 작동합니다.
+            </g:HTML>
             <g:HorizontalPanel addStyleNames="{style.buttonPanel}">
                 <b:Button ui:field="remoteBackupButton"
                           text="원격 주소(/etc/rsyslog.conf)"
