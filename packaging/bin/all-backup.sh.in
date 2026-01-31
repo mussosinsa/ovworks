@@ -14,10 +14,10 @@ mkdir -p "${DEST_DIR}"
 timestamp="$(date +%Y%m%d%H%M%S)"
 archive="${DEST_DIR%/}/${timestamp}.tar.gz"
 
-if tar cvfz "${archive}" /var/log/ovirt-engine/; then
+if sudo -n tar cvfz "${archive}" /var/log/ovirt-engine/; then
     echo "SUCCESS: ${archive}"
     exit 0
-else
-    echo "FAIL: ${archive}"
-    exit 1
 fi
+
+echo "FAIL: ${archive}"
+exit 1
