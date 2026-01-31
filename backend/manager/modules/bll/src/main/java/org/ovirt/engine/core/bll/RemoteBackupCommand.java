@@ -22,6 +22,7 @@ public class RemoteBackupCommand extends CommandBase<AuditLogBackupParameters> {
     private static final String SH_COMMAND = "/bin/sh"; //$NON-NLS-1$
     private static final String SYSTEMCTL_COMMAND = "/bin/systemctl"; //$NON-NLS-1$
     private static final String RSYSLOG_CONF = "/etc/rsyslog.conf"; //$NON-NLS-1$
+    private static final String RSYSLOG_MARKER = "# ov-works audit log remote backup"; //$NON-NLS-1$
 
     public RemoteBackupCommand(AuditLogBackupParameters parameters, CommandContext cmdContext) {
         super(parameters, cmdContext);
@@ -36,10 +37,15 @@ public class RemoteBackupCommand extends CommandBase<AuditLogBackupParameters> {
             return;
         }
 
-        String line = "*.* @@" + remoteAddress.trim(); //$NON-NLS-1$
-        String escapedLine = escapeForSingleQuotes(line);
-        String addCommand = "grep -Fq '" + escapedLine + "' " + RSYSLOG_CONF //$NON-NLS-1$ //$NON-NLS-2$
-                + " || echo '" + escapedLine + "' >> " + RSYSLOG_CONF; //$NON-NLS-1$ //$NON-NLS-2$
+        String block = RSYSLOG_MARKER + "\n" //$NON-NLS-1$
+                + "module(load=\"imfile\")\n" //$NON-NLS-1$
+                + "input(type=\"imfile\" File=\"/var/log/ovirt-engine/*.log\" Tag=\"ovirt-engine\" " //$NON-NLS-1$
+                + "Severity=\"info\" Facility=\"local0\")\n" //$NON-NLS-1$
+                + "local0.* @@"+ remoteAddress.trim() + "\n"; //$NON-NLS-1$ //$NON-NLS-2$
+
+        String escapedBlock = escapeForSingleQuotes(block);
+        String addCommand = "grep -Fq '" + RSYSLOG_MARKER + "' " + RSYSLOG_CONF //$NON-NLS-1$ //$NON-NLS-2$
+                + " || printf '%s' '" + escapedBlock + "' >> " + RSYSLOG_CONF; //$NON-NLS-1$ //$NON-NLS-2$
 
         CommandResult addResult = runCommand(Arrays.asList(
                 SH_COMMAND, "-c", addCommand)); //$NON-NLS-1$
