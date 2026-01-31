@@ -60,8 +60,8 @@
                 원격 주소는 /etc/rsyslog.conf 설정 후 작동합니다.
             </g:HTML>
             <g:HorizontalPanel addStyleNames="{style.inputRow}">
-                <g:Label addStyleNames="{style.inputLabel}">저장 위치</g:Label>
-                <g:TextBox ui:field="remoteBackupPathInput" width="320px" />
+                <g:Label addStyleNames="{style.inputLabel}">원격 서버 주소</g:Label>
+                <g:TextBox ui:field="remoteBackupAddressInput" width="320px" />
             </g:HorizontalPanel>
             <g:HorizontalPanel addStyleNames="{style.buttonPanel}">
                 <b:Button ui:field="remoteBackupButton"
@@ -69,7 +69,7 @@
                           type="PRIMARY"
                           addStyleNames="{style.actionButton}" />
             </g:HorizontalPanel>
-            <g:Label ui:field="remoteBackupResultLabel" addStyleNames="{style.resultLabel}" />
+            <g:HTML ui:field="remoteBackupResultLabel" addStyleNames="{style.resultLabel}" />
         </g:FlowPanel>
     </g:FlowPanel>
 </ui:UiBinder>

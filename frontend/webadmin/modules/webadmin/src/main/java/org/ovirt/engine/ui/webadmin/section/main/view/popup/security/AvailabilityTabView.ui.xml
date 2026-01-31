@@ -69,7 +69,7 @@
                           type="PRIMARY"
                           addStyleNames="{style.actionButton}" />
             </g:HorizontalPanel>
-            <g:Label ui:field="engineBackupResultLabel" addStyleNames="{style.resultLabel}" />
+            <g:HTML ui:field="engineBackupResultLabel" addStyleNames="{style.resultLabel}" />
         </g:FlowPanel>
     </g:FlowPanel>
 </ui:UiBinder>
