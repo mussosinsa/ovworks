@@ -24,8 +24,7 @@ import org.slf4j.LoggerFactory;
 public class FullLogBackupCommand extends CommandBase<AuditLogBackupParameters> {
 
     private static final Logger log = LoggerFactory.getLogger(FullLogBackupCommand.class);
-    private static final String TAR_COMMAND = "/bin/tar"; //$NON-NLS-1$
-    private static final String LOG_SOURCE = "/var/log/ovirt-engine/"; //$NON-NLS-1$
+    private static final String BACKUP_SCRIPT = "/usr/share/ovirt-engine/bin/all-backup.sh"; //$NON-NLS-1$
     private static final DateTimeFormatter FILE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss"); //$NON-NLS-1$
 
     public FullLogBackupCommand(AuditLogBackupParameters parameters, CommandContext cmdContext) {
@@ -54,7 +53,7 @@ public class FullLogBackupCommand extends CommandBase<AuditLogBackupParameters> 
         String filename = FILE_FORMATTER.format(LocalDateTime.now()) + ".tar.gz"; //$NON-NLS-1$
         Path archivePath = directory.resolve(filename);
         CommandResult result = runCommand(Arrays.asList(
-                TAR_COMMAND, "cvfz", archivePath.toString(), LOG_SOURCE)); //$NON-NLS-1$
+                BACKUP_SCRIPT, archivePath.toString())); //$NON-NLS-1$
         getReturnValue().setActionReturnValue(result.output);
         if (result.exitCode == 0) {
             setSucceeded(true);
