@@ -11,6 +11,7 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
 public class AuditLogRemoteBackupTabView extends Composite {
@@ -25,6 +26,9 @@ public class AuditLogRemoteBackupTabView extends Composite {
     @UiField
     Label remoteBackupResultLabel;
 
+    @UiField
+    TextBox remoteBackupPathInput;
+
     public AuditLogRemoteBackupTabView() {
         initWidget(ViewUiBinder.uiBinder.createAndBindUi(this));
         initializeHandlers();
@@ -32,12 +36,17 @@ public class AuditLogRemoteBackupTabView extends Composite {
 
     private void initializeHandlers() {
         remoteBackupButton.addClickHandler((ClickHandler) event -> {
-            remoteBackupResultLabel.setText(buildSuccessMessage());
+            String backupPath = remoteBackupPathInput.getText().trim();
+            if (backupPath.isEmpty()) {
+                remoteBackupResultLabel.setText("저장 위치를 입력해 주세요."); //$NON-NLS-1$
+                return;
+            }
+            remoteBackupResultLabel.setText(buildSuccessMessage(backupPath));
         });
     }
 
-    private String buildSuccessMessage() {
+    private String buildSuccessMessage(String backupPath) {
         String timestamp = DateTimeFormat.getFormat("yyyy-MM-dd HH:mm:ss").format(new Date()); //$NON-NLS-1$
-        return "처리날짜 : " + timestamp + " - 정상저장"; //$NON-NLS-1$ //$NON-NLS-2$
+        return "처리날짜 : " + timestamp + " - 정상저장 (" + backupPath + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 }

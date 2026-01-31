@@ -29,6 +29,15 @@
             margin-bottom: 10px;
         }
 
+        .inputRow {
+            margin-top: 10px;
+        }
+
+        .inputLabel {
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
         .resultLabel {
             margin-top: 10px;
             color: #1f6b8a;
@@ -50,6 +59,10 @@
             <g:HTML addStyleNames="{style.sectionDescription}">
                 engine-backup을 실행합니다.
             </g:HTML>
+            <g:HorizontalPanel addStyleNames="{style.inputRow}">
+                <g:Label addStyleNames="{style.inputLabel}">저장 위치</g:Label>
+                <g:TextBox ui:field="engineBackupPathInput" width="320px" />
+            </g:HorizontalPanel>
             <g:HorizontalPanel addStyleNames="{style.buttonPanel}">
                 <b:Button ui:field="engineBackupButton"
                           text="engine-backup 실행"
