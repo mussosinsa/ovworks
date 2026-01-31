@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 public class EngineBackupCommand extends CommandBase<AuditLogBackupParameters> {
 
     private static final Logger log = LoggerFactory.getLogger(EngineBackupCommand.class);
-    private static final String SUDO_COMMAND = "/usr/bin/sudo"; //$NON-NLS-1$
     private static final String ENGINE_BACKUP_COMMAND = "/usr/bin/engine-backup"; //$NON-NLS-1$
 
     public EngineBackupCommand(AuditLogBackupParameters parameters, CommandContext cmdContext) {
@@ -51,7 +50,7 @@ public class EngineBackupCommand extends CommandBase<AuditLogBackupParameters> {
         Path backupFile = directory.resolve("engine_backup.tar.gz"); //$NON-NLS-1$
         Path logFile = directory.resolve("engine_backup.log"); //$NON-NLS-1$
         CommandResult result = runCommand(Arrays.asList(
-                SUDO_COMMAND, "-n", ENGINE_BACKUP_COMMAND, "--mode=backup", //$NON-NLS-1$ //$NON-NLS-2$
+                ENGINE_BACKUP_COMMAND, "--mode=backup", //$NON-NLS-1$
                 "--file=" + backupFile, "--log=" + logFile)); //$NON-NLS-1$ //$NON-NLS-2$
         getReturnValue().setActionReturnValue(result.output);
         if (result.exitCode == 0) {
