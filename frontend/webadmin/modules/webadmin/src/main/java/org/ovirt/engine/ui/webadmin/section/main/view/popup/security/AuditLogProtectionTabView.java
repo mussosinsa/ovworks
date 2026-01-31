@@ -1,5 +1,7 @@
 package org.ovirt.engine.ui.webadmin.section.main.view.popup.security;
 
+import java.util.Date;
+
 import org.gwtbootstrap3.client.ui.Button;
 
 import com.google.gwt.core.client.GWT;
@@ -10,7 +12,6 @@ import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
-import java.util.Date;
 
 public class AuditLogProtectionTabView extends Composite {
 
