@@ -51,8 +51,12 @@ public class RemoteBackupCommand extends CommandBase<AuditLogBackupParameters> {
         CommandResult addResult = runCommand(Arrays.asList(
                 SUDO_COMMAND, "-n", SH_COMMAND, "-c", addCommand)); //$NON-NLS-1$ //$NON-NLS-2$
         if (addResult.exitCode != 0) {
-            getReturnValue().getExecuteFailedMessages().add("rsyslog.conf 갱신 실패 (종료 코드: " //$NON-NLS-1$
-                    + addResult.exitCode + ")\n" + addResult.output); //$NON-NLS-1$
+            if (isSudoPasswordRequired(addResult.output)) {
+                getReturnValue().getExecuteFailedMessages().add("rsyslog.conf 갱신을 위한 sudo 권한이 필요합니다."); //$NON-NLS-1$
+            } else {
+                getReturnValue().getExecuteFailedMessages().add("rsyslog.conf 갱신 실패 (종료 코드: " //$NON-NLS-1$
+                        + addResult.exitCode + ")\n" + addResult.output); //$NON-NLS-1$
+            }
             getReturnValue().setActionReturnValue(addResult.output);
             setSucceeded(false);
             return;
@@ -64,8 +68,12 @@ public class RemoteBackupCommand extends CommandBase<AuditLogBackupParameters> {
         if (restartResult.exitCode == 0) {
             setSucceeded(true);
         } else {
-            getReturnValue().getExecuteFailedMessages().add("rsyslog 재시작 실패 (종료 코드: " //$NON-NLS-1$
-                    + restartResult.exitCode + ")\n" + restartResult.output); //$NON-NLS-1$
+            if (isSudoPasswordRequired(restartResult.output)) {
+                getReturnValue().getExecuteFailedMessages().add("rsyslog 재시작을 위한 sudo 권한이 필요합니다."); //$NON-NLS-1$
+            } else {
+                getReturnValue().getExecuteFailedMessages().add("rsyslog 재시작 실패 (종료 코드: " //$NON-NLS-1$
+                        + restartResult.exitCode + ")\n" + restartResult.output); //$NON-NLS-1$
+            }
             setSucceeded(false);
         }
     }
@@ -115,6 +123,14 @@ public class RemoteBackupCommand extends CommandBase<AuditLogBackupParameters> {
             exitCode = 1;
         }
         return new CommandResult(exitCode, output.toString().trim());
+    }
+
+    private boolean isSudoPasswordRequired(String output) {
+        if (output == null) {
+            return false;
+        }
+        String lowerOutput = output.toLowerCase();
+        return lowerOutput.contains("password is required"); //$NON-NLS-1$
     }
 
     private static final class CommandResult {

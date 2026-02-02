@@ -56,8 +56,13 @@ public class EngineBackupCommand extends CommandBase<AuditLogBackupParameters> {
         if (result.exitCode == 0) {
             setSucceeded(true);
         } else {
-            getReturnValue().getExecuteFailedMessages().add("engine-backup 실패 (종료 코드: " //$NON-NLS-1$
-                    + result.exitCode + ")\n" + result.output); //$NON-NLS-1$
+            if (containsEngineNotificationFailure(result.output)) {
+                getReturnValue().getExecuteFailedMessages()
+                        .add("engine-backup 실행 중 엔진 알림에 실패했습니다."); //$NON-NLS-1$
+            } else {
+                getReturnValue().getExecuteFailedMessages().add("engine-backup 실패 (종료 코드: " //$NON-NLS-1$
+                        + result.exitCode + ")\n" + result.output); //$NON-NLS-1$
+            }
             setSucceeded(false);
         }
     }
@@ -93,6 +98,13 @@ public class EngineBackupCommand extends CommandBase<AuditLogBackupParameters> {
             exitCode = 1;
         }
         return new CommandResult(exitCode, output.toString().trim());
+    }
+
+    private boolean containsEngineNotificationFailure(String output) {
+        if (output == null) {
+            return false;
+        }
+        return output.contains("Failed notifying engine"); //$NON-NLS-1$
     }
 
     private static final class CommandResult {
