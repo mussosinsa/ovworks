@@ -2,6 +2,8 @@ package org.ovirt.engine.core.sso.service;
 
 import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -36,6 +38,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class AuthenticationService {
     private static Logger log = LoggerFactory.getLogger(AuthenticationService.class);
+
+    private static final AdminLoginLockoutService ADMIN_LOGIN_LOCKOUT_SERVICE = new AdminLoginLockoutService();
+    private static final int DEFAULT_ADMIN_MAX_FAILURES = 5;
+    private static final int DEFAULT_ADMIN_LOCK_HOURS = 24;
+    private static final String DEFAULT_PROTECTED_ADMIN_USERNAME = "admin";
+    private static final String DEFAULT_PROTECTED_ADMIN_PROFILE = "internal";
 
     public static void loginOnBehalf(SsoContext ssoContext, HttpServletRequest request, String username)
             throws Exception {
@@ -139,6 +147,49 @@ public class AuthenticationService {
         ExtensionProfile profile = getExtensionProfile(ssoContext, credentials.getProfile());
         String user = mapUser(profile, credentials);
         if (authRecord == null) {
+            boolean protectedAdmin = isProtectedAdminLogin(ssoContext, credentials);
+            String principalKey = adminPrincipalKey(credentials);
+            String sourceAddress = resolveSourceAddress(request);
+            Instant now = Instant.now();
+            if (protectedAdmin) {
+                Instant lockedUntil = ADMIN_LOGIN_LOCKOUT_SERVICE.getLockedUntil(principalKey);
+                if (lockedUntil != null && !lockedUntil.isAfter(now)) {
+                    ADMIN_LOGIN_LOCKOUT_SERVICE.recordSuccess(principalKey);
+                    String unlockAuditMessage = String.format(
+                            "USER_ACCOUNT_UNLOCKED user=%s sourceIp=%s unlockAt=%s",
+                            credentials.getUsernameWithProfile(),
+                            sourceAddress,
+                            now);
+                    log.info(unlockAuditMessage);
+                    SsoService.notifyClientOfAuditLogEvent(
+                            ssoContext,
+                            sourceAddress,
+                            ssoContext.getSsoLocalConfig().getProperty("ENGINE_SSO_CLIENT_ID"),
+                            Optional.ofNullable(credentials).map(Credentials::getUsernameWithProfile).orElse("N/A"),
+                            unlockAuditMessage);
+                }
+            }
+            if (protectedAdmin && ADMIN_LOGIN_LOCKOUT_SERVICE.isLocked(principalKey, now)) {
+                Instant lockedUntil = ADMIN_LOGIN_LOCKOUT_SERVICE.getLockedUntil(principalKey);
+                String auditMessage = String.format(
+                        "USER_ACCOUNT_LOCKED user=%s sourceIp=%s lockedUntil=%s",
+                        credentials.getUsernameWithProfile(),
+                        sourceAddress,
+                        lockedUntil);
+                log.warn(auditMessage);
+                SsoService.notifyClientOfAuditLogEvent(
+                        ssoContext,
+                        sourceAddress,
+                        ssoContext.getSsoLocalConfig().getProperty("ENGINE_SSO_CLIENT_ID"),
+                        Optional.ofNullable(credentials).map(Credentials::getUsernameWithProfile).orElse("N/A"),
+                        auditMessage);
+                String errorCode = SsoConstants.APP_ERROR_USER_ACCOUNT_DISABLED;
+                String errorMessage = ssoContext.getLocalizationUtils().localize(
+                        errorCode,
+                        (Locale) request.getAttribute(SsoConstants.LOCALE));
+                throw new AuthenticationException(errorCode, errorMessage);
+            }
+
             log.debug("AuthenticationUtils.handleCredentials invoking AUTHENTICATE_CREDENTIALS on authn");
             ExtMap outputMap = profile.authn.invoke(new ExtMap()
                     .mput(
@@ -167,16 +218,42 @@ public class AuthenticationService {
                         errorCode,
                         (Locale) request.getAttribute(SsoConstants.LOCALE));
 
-                SsoSession ssoSession = SsoService.getSsoSession(request, false);
-                String sourceAddr = ssoSession == null ? null : ssoSession.getSourceAddr();
+                String auditMessage = errorMessage;
+                if (protectedAdmin) {
+                    AdminLoginLockoutService.FailureResult failureResult = ADMIN_LOGIN_LOCKOUT_SERVICE.recordFailure(
+                            principalKey,
+                            Instant.now(),
+                            getAdminMaxFailures(ssoContext),
+                            getAdminLockDuration(ssoContext));
+                    if (failureResult.isLocked()) {
+                        auditMessage = String.format(
+                                "USER_ACCOUNT_LOCKED user=%s sourceIp=%s failCount=%d lockedUntil=%s",
+                                credentials.getUsernameWithProfile(),
+                                sourceAddress,
+                                failureResult.getFailureCount(),
+                                failureResult.getLockedUntil());
+                    } else {
+                        auditMessage = String.format(
+                                "USER_LOGIN_FAILED user=%s sourceIp=%s failCount=%d reason=%s",
+                                credentials.getUsernameWithProfile(),
+                                sourceAddress,
+                                failureResult.getFailureCount(),
+                                errorCode);
+                    }
+                    log.warn(auditMessage);
+                }
+
                 SsoService.notifyClientOfAuditLogEvent(
                         ssoContext,
-                        sourceAddr == null ? request.getRemoteAddr() : sourceAddr,
+                        sourceAddress,
                         ssoContext.getSsoLocalConfig().getProperty("ENGINE_SSO_CLIENT_ID"),
                         Optional.ofNullable(credentials).map(Credentials::getUsernameWithProfile).orElse("N/A"),
-                        errorMessage);
+                        auditMessage);
 
                 throw new AuthenticationException(errorCode, errorMessage);
+            }
+            if (protectedAdmin) {
+                ADMIN_LOGIN_LOCKOUT_SERVICE.recordSuccess(principalKey);
             }
             log.debug("AuthenticationUtils.handleCredentials AUTHENTICATE_CREDENTIALS on authn succeeded");
             authRecord = outputMap.get(Authn.InvokeKeys.AUTH_RECORD);
@@ -190,6 +267,37 @@ public class AuthenticationService {
                 credentials.getProfile(),
                 authRecord,
                 principalRecord);
+    }
+
+    private static String resolveSourceAddress(HttpServletRequest request) {
+        SsoSession ssoSession = SsoService.getSsoSession(request, false);
+        String sourceAddr = ssoSession == null ? null : ssoSession.getSourceAddr();
+        return sourceAddr == null ? request.getRemoteAddr() : sourceAddr;
+    }
+
+    private static int getAdminMaxFailures(SsoContext ssoContext) {
+        return ssoContext.getSsoLocalConfig().getInteger("ENGINE_SSO_ADMIN_LOCK_MAX_FAILURES", DEFAULT_ADMIN_MAX_FAILURES);
+    }
+
+    private static Duration getAdminLockDuration(SsoContext ssoContext) {
+        int hours = ssoContext.getSsoLocalConfig().getInteger("ENGINE_SSO_ADMIN_LOCK_HOURS", DEFAULT_ADMIN_LOCK_HOURS);
+        return Duration.ofHours(hours);
+    }
+
+    private static boolean isProtectedAdminLogin(SsoContext ssoContext, Credentials credentials) {
+        String protectedUser = StringUtils.defaultIfEmpty(
+                ssoContext.getSsoLocalConfig().getProperty("ENGINE_SSO_PROTECTED_ADMIN_USERNAME", true),
+                DEFAULT_PROTECTED_ADMIN_USERNAME);
+        String protectedProfile = StringUtils.defaultIfEmpty(
+                ssoContext.getSsoLocalConfig().getProperty("ENGINE_SSO_PROTECTED_ADMIN_PROFILE", true),
+                DEFAULT_PROTECTED_ADMIN_PROFILE);
+        return credentials.getUsername().equalsIgnoreCase(protectedUser)
+                && credentials.getProfile().equalsIgnoreCase(protectedProfile);
+    }
+
+    private static String adminPrincipalKey(Credentials credentials) {
+        return String.format("%s@%s", credentials.getUsername().toLowerCase(Locale.ROOT),
+                credentials.getProfile().toLowerCase(Locale.ROOT));
     }
 
     private static ExtMap getMappedAuthRecord(ExtensionProfile profile, ExtMap authRecord) {
