@@ -23,6 +23,8 @@ AUDIT_LOG="/var/log/ovirt-engine/security-audit-$(date +%Y%m%d-%H%M%S).log"
 AUDIT_RESULTS="/tmp/ovirt-security-audit-results.json"
 INTEGRITY_BASELINE="/var/lib/ovirt-engine/security/integrity-baseline.sha256"
 SESSION_TIMEOUT_TARGET=600
+ADMIN_NOTIFY_EMAIL="${ADMIN_NOTIFY_EMAIL:-root@localhost}"
+AUDIT_RETENTION_DAYS=365
 
 ###############################################################################
 # Logging Functions
@@ -378,24 +380,75 @@ check_ip_block_audit_events() {
     fi
 }
 
+
+notify_admin_storage_action() {
+    local subject="$1"
+    local body="$2"
+
+    if command -v mail >/dev/null 2>&1; then
+        echo "$body" | mail -s "$subject" "$ADMIN_NOTIFY_EMAIL" || true
+        log_info "Admin notification sent to $ADMIN_NOTIFY_EMAIL"
+    elif command -v mailx >/dev/null 2>&1; then
+        echo "$body" | mailx -s "$subject" "$ADMIN_NOTIFY_EMAIL" || true
+        log_info "Admin notification sent to $ADMIN_NOTIFY_EMAIL"
+    else
+        logger -t ovirt-security-audit "$subject - $body" || true
+        log_warn "mail/mailx not found; notification sent via syslog logger"
+    fi
+}
+
+compress_and_cleanup_old_audit_logs() {
+    local audit_dir="$1"
+    local archive_dir="$audit_dir/archive"
+    local archive_file="$archive_dir/ovirt-engine-audit-older-than-${AUDIT_RETENTION_DAYS}d-$(date +%Y%m%d-%H%M%S).tar.gz"
+
+    mkdir -p "$archive_dir"
+
+    mapfile -t old_files < <(find "$audit_dir" -type f -mtime +$AUDIT_RETENTION_DAYS ! -path "$archive_dir/*" 2>/dev/null)
+
+    if [ "${#old_files[@]}" -eq 0 ]; then
+        log_warn "No audit files older than ${AUDIT_RETENTION_DAYS} days found for cleanup"
+        return 1
+    fi
+
+    if tar -czf "$archive_file" "${old_files[@]}" 2>/tmp/ovirt-audit-compress.err; then
+        rm -f "${old_files[@]}"
+        log_pass "Compressed and removed ${#old_files[@]} old audit files -> $archive_file"
+        notify_admin_storage_action \
+            "[oVirt] Audit log storage emergency cleanup executed" \
+            "Filesystem usage exceeded 95%. Compressed and removed ${#old_files[@]} files older than ${AUDIT_RETENTION_DAYS} days. Archive: $archive_file"
+        return 0
+    else
+        log_fail "Failed to compress old audit logs (see /tmp/ovirt-audit-compress.err)"
+        notify_admin_storage_action \
+            "[oVirt] Audit log storage emergency cleanup FAILED" \
+            "Filesystem usage exceeded 95%, but archive creation failed. Check /tmp/ovirt-audit-compress.err"
+        return 1
+    fi
+}
+
 check_audit_storage_capacity() {
     log_info "Checking audit storage capacity thresholds..."
 
-    local audit_dir="/var/log/ovirt-engine"
+    local audit_dir="${AUDIT_STORAGE_DIR_OVERRIDE:-/var/log/ovirt-engine}"
     if [ ! -d "$audit_dir" ]; then
         log_warn "Audit directory missing: $audit_dir"
         return
     fi
 
     local usage
-    usage=$(df -P "$audit_dir" | awk 'NR==2 {gsub(/%/,"",$5); print $5}')
+    usage="${AUDIT_STORAGE_USAGE_OVERRIDE:-}"
+    if [ -z "$usage" ]; then
+        usage=$(df -P "$audit_dir" | awk 'NR==2 {gsub(/%/,"",$5); print $5}')
+    fi
     if [ -z "$usage" ]; then
         log_warn "Unable to determine filesystem usage for $audit_dir"
         return
     fi
 
     if [ "$usage" -ge 95 ]; then
-        log_fail "Audit storage usage critical: ${usage}% (execute emergency offload now)"
+        log_fail "Audit storage usage critical: ${usage}% (triggering emergency cleanup for files older than ${AUDIT_RETENTION_DAYS} days)"
+        compress_and_cleanup_old_audit_logs "$audit_dir" || true
     elif [ "$usage" -ge 85 ]; then
         log_warn "Audit storage usage high: ${usage}% (compress/archive and offload)"
     elif [ "$usage" -ge 70 ]; then
