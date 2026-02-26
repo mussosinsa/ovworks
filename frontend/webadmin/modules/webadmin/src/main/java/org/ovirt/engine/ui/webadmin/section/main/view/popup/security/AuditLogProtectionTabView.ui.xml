@@ -51,6 +51,12 @@
         .actionButton {
             margin-right: 15px;
         }
+
+        .listBox {
+            width: 500px;
+            height: 180px;
+            margin-top: 10px;
+        }
     </ui:style>
 
     <g:FlowPanel addStyleNames="{style.mainPanel}">
@@ -68,7 +74,21 @@
                           text="전체 로그 백업"
                           type="PRIMARY"
                           addStyleNames="{style.actionButton}" />
+                <b:Button ui:field="refreshBackupListButton"
+                          text="감사기록 조회"
+                          type="INFO"
+                          addStyleNames="{style.actionButton}" />
             </g:HorizontalPanel>
+
+            <g:ListBox ui:field="backupFileListBox" addStyleNames="{style.listBox}" />
+
+            <g:HorizontalPanel addStyleNames="{style.buttonPanel}">
+                <b:Button ui:field="restoreSelectedBackupButton"
+                          text="복구 (현재 감사기록 백업 후 복구)"
+                          type="WARNING"
+                          addStyleNames="{style.actionButton}" />
+            </g:HorizontalPanel>
+
             <g:HTML ui:field="fullLogBackupResultLabel" addStyleNames="{style.resultLabel}" />
         </g:FlowPanel>
     </g:FlowPanel>
