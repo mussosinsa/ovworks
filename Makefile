@@ -208,6 +208,7 @@ GENERATED = \
 	build/python-check.sh \
 	build/shell-check.sh \
 	packaging/bin/engine-backup.sh \
+	packaging/bin/all-backup.sh \
 	packaging/bin/engine-host-update.py \
 	packaging/bin/engine-migrate-he.py \
 	packaging/bin/engine-prolog.sh \
@@ -274,6 +275,7 @@ generated-files:	$(GENERATED)
 	chmod a+x build/python-check.sh
 	chmod a+x build/shell-check.sh
 	chmod a+x packaging/bin/engine-backup.sh
+	chmod a+x packaging/bin/all-backup.sh
 	chmod a+x packaging/bin/engine-host-update.py
 	chmod a+x packaging/bin/engine-migrate-he.py
 	chmod a+x packaging/bin/vdsm_to_network_name_map
@@ -621,4 +623,3 @@ install-dev:	\
 	if [ -e "$(DESTDIR)$(PKG_STATE_DIR)/jboss_runtime/deployments" ]; then \
 		touch "$(DESTDIR)$(PKG_STATE_DIR)/jboss_runtime/deployments/engine.ear.deployed"; \
 	fi
-
