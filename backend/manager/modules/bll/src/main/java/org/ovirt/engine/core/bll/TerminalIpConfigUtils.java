@@ -24,15 +24,23 @@ public final class TerminalIpConfigUtils {
 
     public static String readRequireIp() throws IOException {
         String content = Files.readString(getConfigPath(), StandardCharsets.UTF_8);
+        return readRequireIpFromContent(content);
+    }
+
+    static String readRequireIpFromContent(String content) {
         Matcher matcher = REQUIRE_IP_PATTERN.matcher(content);
         StringBuilder result = new StringBuilder();
         while (matcher.find()) {
-            if (result.length() > 0) {
-                result.append("\n"); //$NON-NLS-1$
+            if (result.length() == 0) {
+                result.append("<RequireAll>\n"); //$NON-NLS-1$
             }
-            result.append(matcher.group(0));
+            result.append("                ").append(matcher.group(0).trim()).append("\n"); //$NON-NLS-1$ //$NON-NLS-2$
         }
-        return result.length() > 0 ? result.toString() : null;
+        if (result.length() == 0) {
+            return null;
+        }
+        result.append("</RequireAll>"); //$NON-NLS-1$
+        return result.toString();
     }
 
     public static void updateRequireIp(String ipValue) throws IOException {
@@ -56,6 +64,9 @@ public final class TerminalIpConfigUtils {
         for (String line : rawLines) {
             String candidate = line.trim();
             if (candidate.isEmpty()) {
+                continue;
+            }
+            if ("<RequireAll>".equalsIgnoreCase(candidate) || "</RequireAll>".equalsIgnoreCase(candidate)) { //$NON-NLS-1$ //$NON-NLS-2$
                 continue;
             }
             if (REQUIRE_IP_FULL_PATTERN.matcher(candidate).matches()) {
