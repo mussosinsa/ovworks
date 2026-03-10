@@ -11,6 +11,7 @@
 
 
 import gettext
+import os
 
 from otopi import plugin
 from otopi import util
@@ -86,6 +87,52 @@ class Plugin(plugin.PluginBase):
         self.environment[oenginecons.EngineDBEnv.NEED_DBMSUPGRADE] = False
         self.environment[oenginecons.EngineDBEnv.JUST_RESTORED] = False
 
+
+    _ENCRYPTOR_PATH = '/usr/share/ovirt-engine/encryptor/encryptor.py'
+
+    def _decryptDatabaseConfig(self):
+        databaseConfig = (
+            oenginecons.FileLocations.OVIRT_ENGINE_SERVICE_CONFIG_DATABASE
+        )
+        if not os.path.exists(databaseConfig):
+            return
+
+        if not os.path.exists(self._ENCRYPTOR_PATH):
+            self.logger.debug(
+                'Encryptor tool not found at %s, skipping decryption of %s',
+                self._ENCRYPTOR_PATH,
+                databaseConfig,
+            )
+            return
+
+        python = self.command.get('python3', optional=True)
+        if python is None:
+            python = '/usr/bin/python3'
+
+        for args in (
+            ('--decrypt', databaseConfig),
+            ('-d', databaseConfig),
+        ):
+            rc, stdout, stderr = self.execute(
+                (python, self._ENCRYPTOR_PATH) + args,
+                raiseOnError=False,
+            )
+            if rc == 0:
+                self.logger.debug(
+                    'Decrypted database config %s using %s %s',
+                    databaseConfig,
+                    self._ENCRYPTOR_PATH,
+                    ' '.join(args),
+                )
+                return
+
+        raise RuntimeError(_(
+            'Cannot decrypt database config file {file} using {tool}'
+        ).format(
+            file=databaseConfig,
+            tool=self._ENCRYPTOR_PATH,
+        ))
+
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
         name=oengcommcons.Stages.DB_CONNECTION_SETUP,
@@ -99,6 +146,8 @@ class Plugin(plugin.PluginBase):
             dbenvkeys=oenginecons.Const.ENGINE_DB_ENV_KEYS,
         )
         dbovirtutils.detectCommands()
+        self.command.detect('python3')
+        self._decryptDatabaseConfig()
 
         config = configfile.ConfigFile([
             oenginecons.FileLocations.OVIRT_ENGINE_SERVICE_CONFIG_DEFAULTS,
