@@ -105,6 +105,18 @@ class Plugin(plugin.PluginBase):
             )
             return
 
+        originalContent = None
+        try:
+            with open(databaseConfig, 'r') as f:
+                originalContent = f.read()
+        except Exception:
+            self.logger.warning(
+                'Cannot read %s before decryption attempt',
+                databaseConfig,
+                exc_info=True,
+            )
+            return
+
         python = self.command.get('python3', optional=True)
         if python is None:
             python = '/usr/bin/python3'
@@ -117,7 +129,11 @@ class Plugin(plugin.PluginBase):
                 (python, self._ENCRYPTOR_PATH) + args,
                 raiseOnError=False,
             )
-            if rc == 0:
+            if rc != 0:
+                continue
+
+            decryptedConfig = configfile.ConfigFile([databaseConfig])
+            if decryptedConfig.get('ENGINE_DB_PASSWORD'):
                 self.logger.debug(
                     'Decrypted database config %s using %s %s',
                     databaseConfig,
@@ -126,12 +142,19 @@ class Plugin(plugin.PluginBase):
                 )
                 return
 
-        raise RuntimeError(_(
-            'Cannot decrypt database config file {file} using {tool}'
-        ).format(
-            file=databaseConfig,
-            tool=self._ENCRYPTOR_PATH,
-        ))
+            self.logger.debug(
+                'Decryption command succeeded but %s has no ENGINE_DB_PASSWORD; '
+                'restoring original content',
+                databaseConfig,
+            )
+            with open(databaseConfig, 'w') as f:
+                f.write(originalContent)
+
+        self.logger.warning(
+            'Failed to decrypt %s with %s; using original content',
+            databaseConfig,
+            self._ENCRYPTOR_PATH,
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
