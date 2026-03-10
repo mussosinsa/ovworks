@@ -89,30 +89,39 @@ class Plugin(plugin.PluginBase):
 
 
     _ENCRYPTOR_PATH = '/usr/share/ovirt-engine/encryptor/encryptor.py'
+    _DECRYPT_ALLOWED_FILES = frozenset((
+        'internal.properties',
+        '10-setup-database.conf',
+        '10-setup-dwh-database.conf',
+    ))
 
-    def _decryptDatabaseConfig(self):
-        databaseConfig = (
-            oenginecons.FileLocations.OVIRT_ENGINE_SERVICE_CONFIG_DATABASE
-        )
-        if not os.path.exists(databaseConfig):
+    def _decryptConfigFile(self, configPath):
+        if os.path.basename(configPath) not in self._DECRYPT_ALLOWED_FILES:
+            self.logger.debug(
+                'Skipping decrypt for unsupported config file %s',
+                configPath,
+            )
+            return
+
+        if not os.path.exists(configPath):
             return
 
         if not os.path.exists(self._ENCRYPTOR_PATH):
             self.logger.debug(
                 'Encryptor tool not found at %s, skipping decryption of %s',
                 self._ENCRYPTOR_PATH,
-                databaseConfig,
+                configPath,
             )
             return
 
         originalContent = None
         try:
-            with open(databaseConfig, 'r') as f:
+            with open(configPath, 'r') as f:
                 originalContent = f.read()
         except Exception:
             self.logger.warning(
                 'Cannot read %s before decryption attempt',
-                databaseConfig,
+                configPath,
                 exc_info=True,
             )
             return
@@ -122,12 +131,12 @@ class Plugin(plugin.PluginBase):
             python = '/usr/bin/python3'
 
         def _restore_original_content():
-            with open(databaseConfig, 'w') as f:
+            with open(configPath, 'w') as f:
                 f.write(originalContent)
 
         for args in (
-            ('--decrypt', databaseConfig),
-            ('-d', databaseConfig),
+            ('--decrypt', configPath),
+            ('-d', configPath),
         ):
             rc, stdout, stderr = self.execute(
                 (python, self._ENCRYPTOR_PATH) + args,
@@ -137,7 +146,7 @@ class Plugin(plugin.PluginBase):
                 self.logger.debug(
                     'Decrypt attempt failed for %s using %s %s (rc=%s). '
                     'Restoring original content and trying next mode',
-                    databaseConfig,
+                    configPath,
                     self._ENCRYPTOR_PATH,
                     ' '.join(args),
                     rc,
@@ -145,27 +154,29 @@ class Plugin(plugin.PluginBase):
                 _restore_original_content()
                 continue
 
-            decryptedConfig = configfile.ConfigFile([databaseConfig])
-            if decryptedConfig.get('ENGINE_DB_PASSWORD'):
-                self.logger.debug(
-                    'Decrypted database config %s using %s %s',
-                    databaseConfig,
-                    self._ENCRYPTOR_PATH,
-                    ' '.join(args),
-                )
-                return
+            if os.path.basename(configPath) == '10-setup-database.conf':
+                decryptedConfig = configfile.ConfigFile([configPath])
+                if not decryptedConfig.get('ENGINE_DB_PASSWORD'):
+                    self.logger.debug(
+                        'Decryption command succeeded but %s has no ENGINE_DB_PASSWORD; '
+                        'restoring original content',
+                        configPath,
+                    )
+                    _restore_original_content()
+                    continue
 
             self.logger.debug(
-                'Decryption command succeeded but %s has no ENGINE_DB_PASSWORD; '
-                'restoring original content',
-                databaseConfig,
+                'Decrypted config %s using %s %s',
+                configPath,
+                self._ENCRYPTOR_PATH,
+                ' '.join(args),
             )
-            _restore_original_content()
+            return
 
         _restore_original_content()
         self.logger.warning(
             'Failed to decrypt %s with %s; using original content',
-            databaseConfig,
+            configPath,
             self._ENCRYPTOR_PATH,
         )
 
@@ -183,7 +194,15 @@ class Plugin(plugin.PluginBase):
         )
         dbovirtutils.detectCommands()
         self.command.detect('python3')
-        self._decryptDatabaseConfig()
+        self._decryptConfigFile(
+            oenginecons.FileLocations.OVIRT_ENGINE_SERVICE_CONFIG_DATABASE
+        )
+        self._decryptConfigFile(
+            oenginecons.FileLocations.OVIRT_ENGINE_SERVICE_CONFIG_DWH_DATABASE
+        )
+        self._decryptConfigFile(
+            oenginecons.FileLocations.AAA_JDBC_CONFIG_DB
+        )
 
         config = configfile.ConfigFile([
             oenginecons.FileLocations.OVIRT_ENGINE_SERVICE_CONFIG_DEFAULTS,
