@@ -121,6 +121,10 @@ class Plugin(plugin.PluginBase):
         if python is None:
             python = '/usr/bin/python3'
 
+        def _restore_original_content():
+            with open(databaseConfig, 'w') as f:
+                f.write(originalContent)
+
         for args in (
             ('--decrypt', databaseConfig),
             ('-d', databaseConfig),
@@ -130,6 +134,15 @@ class Plugin(plugin.PluginBase):
                 raiseOnError=False,
             )
             if rc != 0:
+                self.logger.debug(
+                    'Decrypt attempt failed for %s using %s %s (rc=%s). '
+                    'Restoring original content and trying next mode',
+                    databaseConfig,
+                    self._ENCRYPTOR_PATH,
+                    ' '.join(args),
+                    rc,
+                )
+                _restore_original_content()
                 continue
 
             decryptedConfig = configfile.ConfigFile([databaseConfig])
@@ -147,9 +160,9 @@ class Plugin(plugin.PluginBase):
                 'restoring original content',
                 databaseConfig,
             )
-            with open(databaseConfig, 'w') as f:
-                f.write(originalContent)
+            _restore_original_content()
 
+        _restore_original_content()
         self.logger.warning(
             'Failed to decrypt %s with %s; using original content',
             databaseConfig,
