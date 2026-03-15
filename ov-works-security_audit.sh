@@ -604,11 +604,13 @@ EOF
     echo "Results saved to: $AUDIT_RESULTS"
 
     # Return appropriate exit code
-    if [ $FAIL_COUNT -gt 0 ]; then
+    # Default strict mode keeps CLI behavior (non-zero on failures).
+    # SecurityAuditCommand sets SECURITY_AUDIT_STRICT=0 to return results
+    # without failing the action when checks report vulnerabilities.
+    if [ "${SECURITY_AUDIT_STRICT:-1}" = "1" ] && [ $FAIL_COUNT -gt 0 ]; then
         exit 1
-    else
-        exit 0
     fi
+    exit 0
 }
 
 # Run main function
