@@ -8,6 +8,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.ovirt.engine.core.bll.utils.PermissionSubject;
+import org.ovirt.engine.core.common.AuditLogType;
+import org.ovirt.engine.core.common.VdcObjectType;
+import org.ovirt.engine.core.common.businessentities.ActionGroup;
+import org.ovirt.engine.core.compat.Guid;
+
 import org.ovirt.engine.core.bll.context.CommandContext;
 import org.ovirt.engine.core.common.action.ActionParametersBase;
 import org.ovirt.engine.core.common.businessentities.EngineConfigEntry;
@@ -78,5 +84,17 @@ public class ListEngineConfigPropertiesCommand<T extends ActionParametersBase> e
             }
         }
         return null;
+    }
+
+
+    @Override
+    public List<PermissionSubject> getPermissionCheckSubjects() {
+        return Collections.singletonList(new PermissionSubject(Guid.SYSTEM, VdcObjectType.System,
+                ActionGroup.CONFIGURE_ENGINE));
+    }
+
+    @Override
+    public AuditLogType getAuditLogTypeValue() {
+        return AuditLogType.UNASSIGNED;
     }
 }

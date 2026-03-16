@@ -2,9 +2,16 @@ package org.ovirt.engine.core.bll;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.Collections;
+import java.util.List;
 
 import org.ovirt.engine.core.bll.context.CommandContext;
+import org.ovirt.engine.core.bll.utils.PermissionSubject;
+import org.ovirt.engine.core.common.AuditLogType;
+import org.ovirt.engine.core.common.VdcObjectType;
 import org.ovirt.engine.core.common.action.EngineConfigValueParameters;
+import org.ovirt.engine.core.common.businessentities.ActionGroup;
+import org.ovirt.engine.core.compat.Guid;
 
 public class GetEngineConfigValueCommand<T extends EngineConfigValueParameters> extends CommandBase<T> {
 
@@ -46,5 +53,17 @@ public class GetEngineConfigValueCommand<T extends EngineConfigValueParameters> 
             getReturnValue().getExecuteFailedMessages().add(e.getMessage());
             setSucceeded(false);
         }
+    }
+
+
+    @Override
+    public List<PermissionSubject> getPermissionCheckSubjects() {
+        return Collections.singletonList(new PermissionSubject(Guid.SYSTEM, VdcObjectType.System,
+                ActionGroup.CONFIGURE_ENGINE));
+    }
+
+    @Override
+    public AuditLogType getAuditLogTypeValue() {
+        return AuditLogType.UNASSIGNED;
     }
 }
