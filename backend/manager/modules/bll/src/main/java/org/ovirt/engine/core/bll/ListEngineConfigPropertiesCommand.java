@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.ovirt.engine.core.bll.context.CommandContext;
@@ -14,7 +13,6 @@ import org.ovirt.engine.core.common.AuditLogType;
 import org.ovirt.engine.core.common.VdcObjectType;
 import org.ovirt.engine.core.common.action.ActionParametersBase;
 import org.ovirt.engine.core.common.businessentities.ActionGroup;
-import org.ovirt.engine.core.common.businessentities.EngineConfigEntry;
 import org.ovirt.engine.core.compat.Guid;
 
 public class ListEngineConfigPropertiesCommand<T extends ActionParametersBase> extends CommandBase<T> {
@@ -46,7 +44,7 @@ public class ListEngineConfigPropertiesCommand<T extends ActionParametersBase> e
                 return;
             }
 
-            List<EngineConfigEntry> entries = new ArrayList<>();
+            List<String> entries = new ArrayList<>();
             try (BufferedReader reader = new BufferedReader(new FileReader(propertiesFile))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
@@ -61,11 +59,11 @@ public class ListEngineConfigPropertiesCommand<T extends ActionParametersBase> e
                     String name = trimmed.substring(0, idx);
                     String description = trimmed.substring(idx + ".description=".length())
                             .replaceAll("^\"|\"$", ""); //$NON-NLS-1$ //$NON-NLS-2$
-                    entries.add(new EngineConfigEntry(name, description, "")); //$NON-NLS-1$
+                    entries.add(name + "	" + description); //$NON-NLS-1$
                 }
             }
 
-            Collections.sort(entries, Comparator.comparing(EngineConfigEntry::getName, String.CASE_INSENSITIVE_ORDER));
+            Collections.sort(entries, String.CASE_INSENSITIVE_ORDER);
             getReturnValue().setActionReturnValue(entries);
             setSucceeded(true);
         } catch (Exception e) {

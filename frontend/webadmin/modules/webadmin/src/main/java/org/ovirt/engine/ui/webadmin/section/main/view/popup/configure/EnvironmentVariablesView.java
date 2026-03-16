@@ -7,7 +7,6 @@ import org.gwtbootstrap3.client.ui.Button;
 import org.ovirt.engine.core.common.action.ActionParametersBase;
 import org.ovirt.engine.core.common.action.ActionType;
 import org.ovirt.engine.core.common.action.EngineConfigValueParameters;
-import org.ovirt.engine.core.common.businessentities.EngineConfigEntry;
 import org.ovirt.engine.ui.frontend.Frontend;
 import org.ovirt.engine.ui.uicompat.FrontendActionAsyncResult;
 
@@ -27,6 +26,18 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
 
 public class EnvironmentVariablesView extends Composite {
+
+    private static final class ConfigRow {
+        private String name;
+        private String description;
+        private String value;
+
+        ConfigRow(String name, String description) {
+            this.name = name;
+            this.description = description;
+            this.value = ""; //$NON-NLS-1$
+        }
+    }
 
     interface ViewUiBinder extends UiBinder<Widget, EnvironmentVariablesView> {
         ViewUiBinder uiBinder = GWT.create(ViewUiBinder.class);
@@ -48,12 +59,12 @@ public class EnvironmentVariablesView extends Composite {
     TextBox valueTextBox;
 
     @UiField(provided = true)
-    CellTable<EngineConfigEntry> configTable;
+    CellTable<ConfigRow> configTable;
 
     @UiField
     HTML resultLabel;
 
-    private final ListDataProvider<EngineConfigEntry> provider = new ListDataProvider<>();
+    private final ListDataProvider<ConfigRow> provider = new ListDataProvider<>();
 
     public EnvironmentVariablesView() {
         configTable = new CellTable<>();
@@ -65,22 +76,22 @@ public class EnvironmentVariablesView extends Composite {
     }
 
     private void initColumns() {
-        Column<EngineConfigEntry, String> nameCol = new Column<EngineConfigEntry, String>(new TextCell()) {
+        Column<ConfigRow, String> nameCol = new Column<ConfigRow, String>(new TextCell()) {
             @Override
-            public String getValue(EngineConfigEntry object) {
-                return object != null ? object.getName() : ""; //$NON-NLS-1$
+            public String getValue(ConfigRow object) {
+                return object != null ? object.name : ""; //$NON-NLS-1$
             }
         };
-        Column<EngineConfigEntry, String> descCol = new Column<EngineConfigEntry, String>(new TextCell()) {
+        Column<ConfigRow, String> descCol = new Column<ConfigRow, String>(new TextCell()) {
             @Override
-            public String getValue(EngineConfigEntry object) {
-                return object != null ? object.getDescription() : ""; //$NON-NLS-1$
+            public String getValue(ConfigRow object) {
+                return object != null ? object.description : ""; //$NON-NLS-1$
             }
         };
-        Column<EngineConfigEntry, String> valueCol = new Column<EngineConfigEntry, String>(new TextCell()) {
+        Column<ConfigRow, String> valueCol = new Column<ConfigRow, String>(new TextCell()) {
             @Override
-            public String getValue(EngineConfigEntry object) {
-                return object != null ? object.getValue() : ""; //$NON-NLS-1$
+            public String getValue(ConfigRow object) {
+                return object != null ? object.value : ""; //$NON-NLS-1$
             }
         };
 
@@ -94,10 +105,10 @@ public class EnvironmentVariablesView extends Composite {
         refreshButton.addClickHandler((ClickHandler) event -> refreshEntries());
 
         configTable.addDomHandler((ClickEvent event) -> {
-            EngineConfigEntry selected = configTable.getVisibleItem(configTable.getKeyboardSelectedRow());
+            ConfigRow selected = configTable.getVisibleItem(configTable.getKeyboardSelectedRow());
             if (selected != null) {
-                keyTextBox.setValue(selected.getName());
-                valueTextBox.setValue(selected.getValue());
+                keyTextBox.setValue(selected.name);
+                valueTextBox.setValue(selected.value);
             }
         }, ClickEvent.getType());
 
@@ -109,14 +120,19 @@ public class EnvironmentVariablesView extends Composite {
         resultLabel.setText("환경변수 목록 조회 중..."); //$NON-NLS-1$
         Frontend.getInstance().runAction(ActionType.ListEngineConfigProperties, new ActionParametersBase(),
                 result -> {
-                    List<EngineConfigEntry> entries = new ArrayList<>();
+                    List<ConfigRow> entries = new ArrayList<>();
                     if (result != null && result.getReturnValue() != null && result.getReturnValue().getSucceeded()) {
                         Object value = result.getReturnValue().getActionReturnValue();
                         if (value instanceof List<?>) {
                             for (Object item : (List<?>) value) {
-                                if (item instanceof EngineConfigEntry) {
-                                    entries.add((EngineConfigEntry) item);
+                                if (item == null) {
+                                    continue;
                                 }
+                                String line = item.toString();
+                                String[] parts = line.split("\t", 2); //$NON-NLS-1$
+                                String name = parts.length > 0 ? parts[0] : ""; //$NON-NLS-1$
+                                String description = parts.length > 1 ? parts[1] : ""; //$NON-NLS-1$
+                                entries.add(new ConfigRow(name, description));
                             }
                         }
                         provider.getList().clear();
@@ -182,9 +198,9 @@ public class EnvironmentVariablesView extends Composite {
     }
 
     private void updateCurrentRow(String key, String value) {
-        for (EngineConfigEntry e : provider.getList()) {
-            if (e.getName() != null && e.getName().equals(key)) {
-                e.setValue(value);
+        for (ConfigRow e : provider.getList()) {
+            if (e.name != null && e.name.equals(key)) {
+                e.value = value;
                 configTable.redraw();
                 return;
             }
