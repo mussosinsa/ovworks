@@ -1,6 +1,11 @@
 package org.ovirt.engine.ui.webadmin.section.main.view.popup.configure;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.gwtbootstrap3.client.ui.Button;
+import org.ovirt.engine.core.common.action.ActionParametersBase;
 import org.ovirt.engine.core.common.action.ActionType;
 import org.ovirt.engine.core.common.action.EngineConfigValueParameters;
 import org.ovirt.engine.ui.frontend.Frontend;
@@ -36,13 +41,21 @@ public class EnvironmentVariablesView extends Composite {
     @UiField
     HTML resultLabel;
 
+    @UiField
+    HTML queriedKeyLabel;
+
+    @UiField
+    HTML queriedDescriptionLabel;
+
     private String lastQueriedKey;
+    private final Map<String, String> descriptionsByKey = new HashMap<>();
 
     public EnvironmentVariablesView() {
         initWidget(ViewUiBinder.uiBinder.createAndBindUi(this));
         initHandlers();
+        loadDescriptions();
         clearQueriedState();
-        resultLabel.setText("조회할 키를 입력한 뒤 조회를 눌러 주세요."); //$NON-NLS-1$
+        resultLabel.setText("변수 이름을 입력한 뒤 조회해 주세요."); //$NON-NLS-1$
     }
 
     private void initHandlers() {
@@ -51,6 +64,30 @@ public class EnvironmentVariablesView extends Composite {
 
         keyTextBox.addValueChangeHandler(event -> clearQueriedState());
         keyTextBox.addKeyUpHandler(event -> clearQueriedState());
+    }
+
+    private void loadDescriptions() {
+        Frontend.getInstance().runAction(ActionType.ListEngineConfigProperties, new ActionParametersBase(), result -> {
+            if (result == null || result.getReturnValue() == null || !result.getReturnValue().getSucceeded()) {
+                return;
+            }
+            Object payload = result.getReturnValue().getActionReturnValue();
+            if (!(payload instanceof List<?>)) {
+                return;
+            }
+            descriptionsByKey.clear();
+            for (Object row : (List<?>) payload) {
+                if (row == null) {
+                    continue;
+                }
+                String[] parts = row.toString().split("\\t", 2); //$NON-NLS-1$
+                if (parts.length > 0) {
+                    String key = parts[0].trim();
+                    String description = parts.length > 1 ? parts[1].trim() : ""; //$NON-NLS-1$
+                    descriptionsByKey.put(key, description);
+                }
+            }
+        });
     }
 
     private void queryValue() {
@@ -97,6 +134,8 @@ public class EnvironmentVariablesView extends Composite {
                     String key = keyTextBox.getText().trim();
                     String currentValue = extractEngineConfigValue((String) output, key);
                     valueTextBox.setValue(currentValue);
+                    queriedKeyLabel.setText(key + ":"); //$NON-NLS-1$
+                    queriedDescriptionLabel.setText(descriptionsByKey.getOrDefault(key, "")); //$NON-NLS-1$
                     lastQueriedKey = key;
                     updateButton.setEnabled(true);
                 }
@@ -113,6 +152,9 @@ public class EnvironmentVariablesView extends Composite {
 
     private void clearQueriedState() {
         lastQueriedKey = null;
+        queriedKeyLabel.setText("-"); //$NON-NLS-1$
+        queriedDescriptionLabel.setText("-"); //$NON-NLS-1$
+        valueTextBox.setText(""); //$NON-NLS-1$
         updateButton.setEnabled(false);
     }
 
