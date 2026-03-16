@@ -10,41 +10,45 @@
                 <h2 style="margin:4px 0 0 0;">엔진 구성 변수 관리</h2>
             </g:HTML>
 
-            <g:HTMLPanel style="padding:16px; border:1px solid #d8d8d8; background:#fff;">
-                <g:VerticalPanel width="100%" spacing="10">
-                    <g:HTML><h3 style="margin:0;">변수 이름 조회</h3></g:HTML>
-                    <g:HorizontalPanel spacing="10" verticalAlignment="ALIGN_MIDDLE">
-                        <g:TextBox ui:field="keyTextBox" width="460px" />
-                        <b:Button ui:field="queryButton" text="조회" icon="SEARCH" />
-                    </g:HorizontalPanel>
-                    <g:Label text="engine-config -g &lt;KEY&gt;" />
-                </g:VerticalPanel>
+            <g:HTMLPanel>
+                <div style="padding:16px; border:1px solid #d8d8d8; background:#fff;">
+                    <g:VerticalPanel width="100%" spacing="10">
+                        <g:HTML><h3 style="margin:0;">변수 이름 조회</h3></g:HTML>
+                        <g:HorizontalPanel spacing="10" verticalAlignment="ALIGN_MIDDLE">
+                            <g:TextBox ui:field="keyTextBox" width="460px" />
+                            <b:Button ui:field="queryButton" text="조회" icon="SEARCH" />
+                        </g:HorizontalPanel>
+                        <g:Label text="engine-config -g &lt;KEY&gt;" />
+                    </g:VerticalPanel>
+                </div>
             </g:HTMLPanel>
 
-            <g:HTMLPanel style="padding:16px; border:1px solid #d8d8d8; background:#fff;">
-                <g:VerticalPanel width="100%" spacing="10">
-                    <g:HTML><h3 style="margin:0;">구성 결과</h3></g:HTML>
+            <g:HTMLPanel>
+                <div style="padding:16px; border:1px solid #d8d8d8; background:#fff;">
+                    <g:VerticalPanel width="100%" spacing="10">
+                        <g:HTML><h3 style="margin:0;">구성 결과</h3></g:HTML>
 
-                    <g:Grid borderWidth="1" cellPadding="10" cellSpacing="0" width="100%">
-                        <g:row>
-                            <g:cell><g:HTML><b>Key</b></g:HTML></g:cell>
-                            <g:cell><g:HTML><b>Value</b></g:HTML></g:cell>
-                            <g:cell><g:HTML><b>설명</b></g:HTML></g:cell>
-                        </g:row>
-                        <g:row>
-                            <g:cell><g:HTML ui:field="queriedKeyLabel">-</g:HTML></g:cell>
-                            <g:cell>
-                                <g:HorizontalPanel spacing="8" verticalAlignment="ALIGN_MIDDLE">
-                                    <g:TextBox ui:field="valueTextBox" width="220px" />
-                                    <b:Button ui:field="updateButton" text="수정" icon="EDIT" />
-                                </g:HorizontalPanel>
-                            </g:cell>
-                            <g:cell><g:HTML ui:field="queriedDescriptionLabel">-</g:HTML></g:cell>
-                        </g:row>
-                    </g:Grid>
-                    <g:Label text="수정: engine-config -s &lt;KEY&gt;=&lt;VALUE&gt;" />
-                    <g:HTML ui:field="resultLabel" />
-                </g:VerticalPanel>
+                        <g:Grid borderWidth="1" cellPadding="10" cellSpacing="0" width="100%">
+                            <g:row>
+                                <g:cell><g:HTML><b>Key</b></g:HTML></g:cell>
+                                <g:cell><g:HTML><b>Value</b></g:HTML></g:cell>
+                                <g:cell><g:HTML><b>설명</b></g:HTML></g:cell>
+                            </g:row>
+                            <g:row>
+                                <g:cell><g:HTML ui:field="queriedKeyLabel">-</g:HTML></g:cell>
+                                <g:cell>
+                                    <g:HorizontalPanel spacing="8" verticalAlignment="ALIGN_MIDDLE">
+                                        <g:TextBox ui:field="valueTextBox" width="220px" />
+                                        <b:Button ui:field="updateButton" text="수정" icon="EDIT" />
+                                    </g:HorizontalPanel>
+                                </g:cell>
+                                <g:cell><g:HTML ui:field="queriedDescriptionLabel">-</g:HTML></g:cell>
+                            </g:row>
+                        </g:Grid>
+                        <g:Label text="수정: engine-config -s &lt;KEY&gt;=&lt;VALUE&gt;" />
+                        <g:HTML ui:field="resultLabel" />
+                    </g:VerticalPanel>
+                </div>
             </g:HTMLPanel>
         </g:VerticalPanel>
     </g:HTMLPanel>
