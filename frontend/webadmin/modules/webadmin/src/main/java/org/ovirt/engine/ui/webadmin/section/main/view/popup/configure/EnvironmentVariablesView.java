@@ -17,6 +17,7 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -42,10 +43,10 @@ public class EnvironmentVariablesView extends Composite {
     HTML resultLabel;
 
     @UiField
-    HTML queriedKeyLabel;
+    Label queriedKeyLabel;
 
     @UiField
-    HTML queriedDescriptionLabel;
+    Label queriedDescriptionLabel;
 
     private String lastQueriedKey;
     private final Map<String, String> descriptionsByKey = new HashMap<>();
