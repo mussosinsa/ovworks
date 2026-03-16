@@ -5,21 +5,22 @@
     xmlns:b="urn:import:org.gwtbootstrap3.client.ui">
 
     <g:HTMLPanel styleName="content-area" width="100%">
-        <g:VerticalPanel width="100%" spacing="10">
-            <g:HTML>
-                <h2 style="margin:8px 0 0 0; font-weight:500;">engine-config -g 조회</h2>
-            </g:HTML>
+        <g:VerticalPanel width="100%" spacing="8">
+            <g:Label text="환경변수 조회/수정" />
 
-            <g:HorizontalPanel spacing="8" verticalAlignment="ALIGN_MIDDLE">
-                <g:TextBox ui:field="keyTextBox" width="380px" />
+            <g:HorizontalPanel spacing="6" verticalAlignment="ALIGN_MIDDLE">
+                <g:Label text="키" width="40px" />
+                <g:TextBox ui:field="keyTextBox" width="320px" />
                 <b:Button ui:field="queryButton" text="조회" />
             </g:HorizontalPanel>
 
-            <g:HorizontalPanel spacing="8" verticalAlignment="ALIGN_MIDDLE">
-                <g:TextBox ui:field="valueTextBox" width="380px" />
+            <g:HorizontalPanel spacing="6" verticalAlignment="ALIGN_MIDDLE">
+                <g:Label text="값" width="40px" />
+                <g:TextBox ui:field="valueTextBox" width="320px" />
                 <b:Button ui:field="updateButton" text="수정" />
             </g:HorizontalPanel>
 
+            <g:Label text="조회: engine-config -g &lt;KEY&gt;, 수정: engine-config -s &lt;KEY&gt;=&lt;VALUE&gt;" />
             <g:HTML ui:field="resultLabel" />
         </g:VerticalPanel>
     </g:HTMLPanel>
