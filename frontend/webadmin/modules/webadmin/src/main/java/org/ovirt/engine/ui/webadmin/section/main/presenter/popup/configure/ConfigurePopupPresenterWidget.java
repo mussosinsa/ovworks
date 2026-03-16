@@ -53,16 +53,12 @@ public class ConfigurePopupPresenterWidget extends AbstractPopupPresenterWidget<
     @Override
     protected void onReveal() {
         super.onReveal();
-        roleModelProvider.getModel().search();
-        systemPermissionModelProvider.refresh();
-        systemPermissionModelProvider.getModel().search();
-        if (ApplicationModeHelper.isModeSupported(ApplicationMode.VirtOnly)) {
-            clusterPolicyModelProvider.getModel().search();
-        } else {
+        // Do not eagerly trigger query-based model searches when opening Configure popup.
+        // This keeps the dialog resilient in mixed-version deployments where QueryType
+        // RPC signatures can temporarily mismatch until full frontend/backend rollout.
+        if (!ApplicationModeHelper.isModeSupported(ApplicationMode.VirtOnly)) {
             getView().hideClusterPolicyTab();
         }
-        instanceTypeModelProvider.getModel().search();
-        sharedMacPoolModelProvider.getModel().search();
     }
 
     @Override
