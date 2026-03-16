@@ -59,7 +59,7 @@ public class ListEngineConfigPropertiesCommand<T extends ActionParametersBase> e
                     String name = trimmed.substring(0, idx);
                     String description = trimmed.substring(idx + ".description=".length())
                             .replaceAll("^\"|\"$", ""); //$NON-NLS-1$ //$NON-NLS-2$
-                    entries.add(name + "	" + description); //$NON-NLS-1$
+                    entries.add(name + "\t" + description); //$NON-NLS-1$
                 }
             }
 
