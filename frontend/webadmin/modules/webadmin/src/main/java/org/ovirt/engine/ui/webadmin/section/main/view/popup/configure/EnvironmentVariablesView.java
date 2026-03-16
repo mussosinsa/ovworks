@@ -65,6 +65,7 @@ public class EnvironmentVariablesView extends Composite {
     HTML resultLabel;
 
     private final ListDataProvider<ConfigRow> provider = new ListDataProvider<>();
+    private String lastQueriedKey;
 
     public EnvironmentVariablesView() {
         configTable = new CellTable<>();
@@ -72,6 +73,7 @@ public class EnvironmentVariablesView extends Composite {
         initWidget(ViewUiBinder.uiBinder.createAndBindUi(this));
         provider.addDataDisplay(configTable);
         initHandlers();
+        updateButton.setEnabled(false);
         refreshEntries();
     }
 
@@ -108,7 +110,8 @@ public class EnvironmentVariablesView extends Composite {
             ConfigRow selected = configTable.getVisibleItem(configTable.getKeyboardSelectedRow());
             if (selected != null) {
                 keyTextBox.setValue(selected.name);
-                valueTextBox.setValue(selected.value);
+                valueTextBox.setValue(""); //$NON-NLS-1$
+                clearQueriedState();
             }
         }, ClickEvent.getType());
 
@@ -117,6 +120,9 @@ public class EnvironmentVariablesView extends Composite {
     }
 
     private void refreshEntries() {
+        clearQueriedState();
+        keyTextBox.setValue(""); //$NON-NLS-1$
+        valueTextBox.setValue(""); //$NON-NLS-1$
         resultLabel.setText("환경변수 목록 조회 중..."); //$NON-NLS-1$
         Frontend.getInstance().runAction(ActionType.ListEngineConfigProperties, new ActionParametersBase(),
                 result -> {
@@ -145,6 +151,7 @@ public class EnvironmentVariablesView extends Composite {
     }
 
     private void queryValue() {
+        clearQueriedState();
         String key = keyTextBox.getText() != null ? keyTextBox.getText().trim() : ""; //$NON-NLS-1$
         if (key.isEmpty()) {
             resultLabel.setText("키를 입력해 주세요."); //$NON-NLS-1$
@@ -160,6 +167,11 @@ public class EnvironmentVariablesView extends Composite {
         String key = keyTextBox.getText() != null ? keyTextBox.getText().trim() : ""; //$NON-NLS-1$
         if (key.isEmpty()) {
             resultLabel.setText("키를 입력해 주세요."); //$NON-NLS-1$
+            return;
+        }
+
+        if (lastQueriedKey == null || !key.equals(lastQueriedKey)) {
+            resultLabel.setText("먼저 값을 조회한 후 수정해 주세요."); //$NON-NLS-1$
             return;
         }
 
@@ -179,12 +191,12 @@ public class EnvironmentVariablesView extends Composite {
             if (result.getReturnValue().getSucceeded()) {
                 String text = output instanceof String ? (String) output : (isUpdate ? "수정 완료" : "조회 완료"); //$NON-NLS-1$ //$NON-NLS-2$
                 if (!isUpdate && output instanceof String) {
-                    String line = ((String) output).trim();
-                    int idx = line.indexOf(':');
-                    if (idx >= 0 && idx + 1 < line.length()) {
-                        valueTextBox.setValue(line.substring(idx + 1).trim());
-                    }
-                    updateCurrentRow(keyTextBox.getText().trim(), valueTextBox.getText());
+                    String key = keyTextBox.getText().trim();
+                    String currentValue = extractEngineConfigValue((String) output, key);
+                    valueTextBox.setValue(currentValue);
+                    lastQueriedKey = key;
+                    updateButton.setEnabled(true);
+                    updateCurrentRow(key, currentValue);
                 }
                 resultLabel.setHTML(SafeHtmlUtils.fromString(text).asString().replace("\n", "<br/>")); //$NON-NLS-1$ //$NON-NLS-2$
                 return;
@@ -195,6 +207,28 @@ public class EnvironmentVariablesView extends Composite {
             }
         }
         resultLabel.setText(defaultError);
+    }
+
+    private void clearQueriedState() {
+        lastQueriedKey = null;
+        updateButton.setEnabled(false);
+    }
+
+    private String extractEngineConfigValue(String output, String key) {
+        String[] lines = output.split("\\r?\\n"); //$NON-NLS-1$
+        for (String line : lines) {
+            String trimmed = line.trim();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+            if (trimmed.startsWith(key + ":")) { //$NON-NLS-1$
+                return trimmed.substring(key.length() + 1).trim();
+            }
+            if (trimmed.startsWith(key + "=")) { //$NON-NLS-1$
+                return trimmed.substring(key.length() + 1).trim();
+            }
+        }
+        return output.trim();
     }
 
     private void updateCurrentRow(String key, String value) {
