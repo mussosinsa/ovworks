@@ -87,6 +87,16 @@ public class UserListModel extends ListWithSimpleDetailsModel<Void, DbUser> impl
         privateResetPasswordCommand = value;
     }
 
+    private UICommand privateUnlockUserCommand;
+
+    public UICommand getUnlockUserCommand() {
+        return privateUnlockUserCommand;
+    }
+
+    private void setUnlockUserCommand(UICommand value) {
+        privateUnlockUserCommand = value;
+    }
+
 
     private final UserSettingsModel userSettingsModel;
     private final UserGroupListModel groupListModel;
@@ -124,6 +134,7 @@ public class UserListModel extends ListWithSimpleDetailsModel<Void, DbUser> impl
         setRemoveCommand(new UICommand("Remove", this)); //$NON-NLS-1$
         setAssignTagsCommand(new UICommand("AssignTags", this)); //$NON-NLS-1$
         setResetPasswordCommand(new UICommand("ResetPassword", this)); //$NON-NLS-1$
+        setUnlockUserCommand(new UICommand("UnlockUser", this)); //$NON-NLS-1$
 
         updateActionAvailability();
 
@@ -408,6 +419,20 @@ public class UserListModel extends ListWithSimpleDetailsModel<Void, DbUser> impl
                 model);
     }
 
+    public void onUnlockUser() {
+        if (getSelectedItem() == null) {
+            return;
+        }
+
+        DbUser user = getSelectedItem();
+        Frontend.getInstance().runAction(ActionType.UnlockUser,
+                new IdParameters(user.getId()),
+                result -> {
+                    // Refresh list so lock-related state is updated in UI
+                    syncSearch();
+                });
+    }
+
     @Override
     public boolean isSearchStringMatch(String searchString) {
         return searchString.trim().toLowerCase().startsWith("user"); //$NON-NLS-1$
@@ -584,6 +609,7 @@ public class UserListModel extends ListWithSimpleDetailsModel<Void, DbUser> impl
             resetPasswordAllowed = !user.isGroup();
         }
         getResetPasswordCommand().setIsExecutionAllowed(resetPasswordAllowed);
+        getUnlockUserCommand().setIsExecutionAllowed(resetPasswordAllowed);
     }
 
     @Override
@@ -601,6 +627,9 @@ public class UserListModel extends ListWithSimpleDetailsModel<Void, DbUser> impl
         }
         if (command == getResetPasswordCommand()) {
             resetPassword();
+        }
+        if (command == getUnlockUserCommand()) {
+            onUnlockUser();
         }
 
         if ("Cancel".equals(command.getName())) { //$NON-NLS-1$
