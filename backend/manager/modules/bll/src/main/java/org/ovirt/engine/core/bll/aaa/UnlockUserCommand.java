@@ -107,7 +107,7 @@ public class UnlockUserCommand extends CommandBase<IdParameters> {
 
     @Override
     protected void setActionMessageParameters() {
-        addValidationMessage(EngineMessage.VAR__ACTION__EDIT);
+        addValidationMessage(EngineMessage.VAR__ACTION__UPDATE);
         addValidationMessage(EngineMessage.VAR__TYPE__USER);
     }
 
