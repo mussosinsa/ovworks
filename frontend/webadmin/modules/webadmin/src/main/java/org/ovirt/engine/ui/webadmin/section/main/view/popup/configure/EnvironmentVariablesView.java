@@ -167,12 +167,20 @@ public class EnvironmentVariablesView extends Composite {
                 continue;
             }
             if (trimmed.startsWith(key + ":")) { //$NON-NLS-1$
-                return trimmed.substring(key.length() + 1).trim();
+                return normalizeEngineConfigValue(trimmed.substring(key.length() + 1).trim());
             }
             if (trimmed.startsWith(key + "=")) { //$NON-NLS-1$
-                return trimmed.substring(key.length() + 1).trim();
+                return normalizeEngineConfigValue(trimmed.substring(key.length() + 1).trim());
             }
         }
         return output.trim();
+    }
+
+    private String normalizeEngineConfigValue(String value) {
+        int versionIdx = value.indexOf(" version:"); //$NON-NLS-1$
+        if (versionIdx >= 0) {
+            return value.substring(0, versionIdx).trim();
+        }
+        return value;
     }
 }
