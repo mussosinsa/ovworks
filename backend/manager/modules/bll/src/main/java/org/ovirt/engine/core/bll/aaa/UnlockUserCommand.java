@@ -12,6 +12,7 @@ import javax.inject.Inject;
 
 import org.ovirt.engine.core.bll.CommandBase;
 import org.ovirt.engine.core.bll.MultiLevelAdministrationHandler;
+import org.ovirt.engine.core.bll.NonTransactiveCommandAttribute;
 import org.ovirt.engine.core.bll.context.CommandContext;
 import org.ovirt.engine.core.bll.utils.PermissionSubject;
 import org.ovirt.engine.core.common.AuditLogType;
@@ -24,6 +25,7 @@ import org.ovirt.engine.core.dao.DbUserDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@NonTransactiveCommandAttribute
 public class UnlockUserCommand extends CommandBase<IdParameters> {
 
     private static final Logger log = LoggerFactory.getLogger(UnlockUserCommand.class);
