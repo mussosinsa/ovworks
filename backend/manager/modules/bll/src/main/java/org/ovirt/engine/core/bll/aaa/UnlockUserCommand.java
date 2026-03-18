@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -49,34 +51,31 @@ public class UnlockUserCommand extends CommandBase<IdParameters> {
         }
 
         String username = user.getLoginName();
+        Set<String> candidates = new LinkedHashSet<>();
+        candidates.add(username);
+        if (user.getDomain() != null && !user.getDomain().isEmpty() && !username.contains("@")) {
+            candidates.add(username + "@" + user.getDomain()); //$NON-NLS-1$
+        }
+        if (user.getNamespace() != null && !user.getNamespace().isEmpty() && !username.contains("@")) {
+            candidates.add(username + "@" + user.getNamespace()); //$NON-NLS-1$
+        }
 
         try {
-            ProcessBuilder processBuilder = new ProcessBuilder(
-                    "ovirt-aaa-jdbc-tool", //$NON-NLS-1$
-                    "user", //$NON-NLS-1$
-                    "unlock", //$NON-NLS-1$
-                    "--user=" + username); //$NON-NLS-1$
-            processBuilder.redirectErrorStream(true);
-            Process process = processBuilder.start();
-
-            StringBuilder output = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    output.append(line).append('\n');
+            StringBuilder attemptsOutput = new StringBuilder();
+            for (String candidate : candidates) {
+                CommandResult commandResult = runUnlockCommand(candidate);
+                attemptsOutput.append("[").append(candidate).append("] ").append(commandResult.output).append('\n'); //$NON-NLS-1$ //$NON-NLS-2$
+                if (commandResult.exitCode == 0) {
+                    getReturnValue().setActionReturnValue(commandResult.output);
+                    log.info("Successfully unlocked user using candidate '{}'", candidate); //$NON-NLS-1$
+                    setSucceeded(true);
+                    return;
                 }
             }
 
-            int exitCode = process.waitFor();
-            String commandOutput = output.toString().trim();
-            getReturnValue().setActionReturnValue(commandOutput);
-
-            if (exitCode == 0) {
-                setSucceeded(true);
-            } else {
-                getReturnValue().getExecuteFailedMessages().add(commandOutput);
-                setSucceeded(false);
-            }
+            getReturnValue().setActionReturnValue(attemptsOutput.toString().trim());
+            getReturnValue().getExecuteFailedMessages().add(attemptsOutput.toString().trim());
+            setSucceeded(false);
         } catch (IOException | InterruptedException e) {
             log.error("Failed to unlock user", e); //$NON-NLS-1$
             getReturnValue().getExecuteFailedMessages().add(e.getMessage());
@@ -84,6 +83,37 @@ public class UnlockUserCommand extends CommandBase<IdParameters> {
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
+        }
+    }
+
+    private CommandResult runUnlockCommand(String username) throws IOException, InterruptedException {
+        ProcessBuilder processBuilder = new ProcessBuilder(
+                "ovirt-aaa-jdbc-tool", //$NON-NLS-1$
+                "user", //$NON-NLS-1$
+                "unlock", //$NON-NLS-1$
+                "--user=" + username); //$NON-NLS-1$
+        processBuilder.redirectErrorStream(true);
+        Process process = processBuilder.start();
+
+        StringBuilder output = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                output.append(line).append('\n');
+            }
+        }
+
+        int exitCode = process.waitFor();
+        return new CommandResult(exitCode, output.toString().trim());
+    }
+
+    private static final class CommandResult {
+        private final int exitCode;
+        private final String output;
+
+        private CommandResult(int exitCode, String output) {
+            this.exitCode = exitCode;
+            this.output = output;
         }
     }
 
