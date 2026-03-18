@@ -51,14 +51,7 @@ public class UnlockUserCommand extends CommandBase<IdParameters> {
         }
 
         String username = user.getLoginName();
-        Set<String> candidates = new LinkedHashSet<>();
-        candidates.add(username);
-        if (user.getDomain() != null && !user.getDomain().isEmpty() && !username.contains("@")) {
-            candidates.add(username + "@" + user.getDomain()); //$NON-NLS-1$
-        }
-        if (user.getNamespace() != null && !user.getNamespace().isEmpty() && !username.contains("@")) {
-            candidates.add(username + "@" + user.getNamespace()); //$NON-NLS-1$
-        }
+        Set<String> candidates = buildUnlockCandidates(username, user.getDomain(), user.getNamespace());
 
         try {
             StringBuilder attemptsOutput = new StringBuilder();
@@ -84,6 +77,31 @@ public class UnlockUserCommand extends CommandBase<IdParameters> {
                 Thread.currentThread().interrupt();
             }
         }
+    }
+
+    static Set<String> buildUnlockCandidates(String loginName, String domain, String namespace) {
+        Set<String> candidates = new LinkedHashSet<>();
+        if (loginName == null || loginName.isEmpty()) {
+            return candidates;
+        }
+
+        candidates.add(loginName);
+
+        String principal = loginName;
+        int atIndex = loginName.indexOf('@');
+        if (atIndex > 0) {
+            principal = loginName.substring(0, atIndex);
+            candidates.add(principal);
+        }
+
+        if (domain != null && !domain.isEmpty()) {
+            candidates.add(principal + "@" + domain); //$NON-NLS-1$
+        }
+        if (namespace != null && !namespace.isEmpty()) {
+            candidates.add(principal + "@" + namespace); //$NON-NLS-1$
+        }
+
+        return candidates;
     }
 
     private CommandResult runUnlockCommand(String username) throws IOException, InterruptedException {
