@@ -452,13 +452,10 @@ public class UserListModel extends ListWithSimpleDetailsModel<Void, DbUser> impl
     private void showUnlockResultDialog(String loginName, boolean success, String title, String message) {
         ConfirmationModel confirmModel = new ConfirmationModel();
         confirmModel.setAlertType(success ? AlertType.SUCCESS : AlertType.ERROR);
-        setConfirmWindow(confirmModel);
+        setWindow(confirmModel);
         confirmModel.setTitle(title);
         confirmModel.setMessage(loginName + "\n" + message); //$NON-NLS-1$
-        confirmModel.getCommands().add(new UICommand("CancelConfirm", this) //$NON-NLS-1$
-                .setTitle(ConstantsManager.getInstance().getConstants().close())
-                .setIsDefault(true)
-                .setIsCancel(true));
+        confirmModel.getCommands().add(UICommand.createCancelUiCommand("Cancel", this)); //$NON-NLS-1$
     }
 
     @Override
