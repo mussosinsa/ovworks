@@ -431,17 +431,17 @@ public class UserListModel extends ListWithSimpleDetailsModel<Void, DbUser> impl
                 result -> {
                     if (result != null && result.getReturnValue() != null && result.getReturnValue().getSucceeded()) {
                         showUnlockResultDialog(user.getLoginName(), true,
-                                ConstantsManager.getInstance().getMessages().actionCompletedTitle(),
+                                "작업 완료", //$NON-NLS-1$
                                 "사용자 잠금 해제가 완료되었습니다."); //$NON-NLS-1$
                     } else {
-                        String errorMessage = ConstantsManager.getInstance().getConstants().actionFailed();
+                        String errorMessage = "잠금 해제 처리 중 오류가 발생했습니다."; //$NON-NLS-1$
                         if (result != null && result.getReturnValue() != null
                                 && result.getReturnValue().getExecuteFailedMessages() != null
                                 && !result.getReturnValue().getExecuteFailedMessages().isEmpty()) {
                             errorMessage = String.join("\n", result.getReturnValue().getExecuteFailedMessages()); //$NON-NLS-1$
                         }
                         showUnlockResultDialog(user.getLoginName(), false,
-                                ConstantsManager.getInstance().getConstants().errorPopupCaption(),
+                                "오류", //$NON-NLS-1$
                                 errorMessage);
                     }
                 });
@@ -449,7 +449,7 @@ public class UserListModel extends ListWithSimpleDetailsModel<Void, DbUser> impl
 
     private void showUnlockResultDialog(String loginName, boolean success, String title, String message) {
         ConfirmationModel confirmModel = new ConfirmationModel();
-        confirmModel.setAlertType(success ? AlertType.SUCCESS : AlertType.ERROR);
+        confirmModel.setAlertType(success ? AlertType.SUCCESS : AlertType.DANGER);
         setWindow(confirmModel);
         confirmModel.setTitle(title);
         confirmModel.setMessage(loginName + "\n" + message); //$NON-NLS-1$
