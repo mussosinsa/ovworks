@@ -125,7 +125,7 @@ public class UnlockUserCommand extends CommandBase<IdParameters> {
                 "ovirt-aaa-jdbc-tool", //$NON-NLS-1$
                 "user", //$NON-NLS-1$
                 "unlock", //$NON-NLS-1$
-                "--user=" + username); //$NON-NLS-1$
+                username);
         processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();
 
