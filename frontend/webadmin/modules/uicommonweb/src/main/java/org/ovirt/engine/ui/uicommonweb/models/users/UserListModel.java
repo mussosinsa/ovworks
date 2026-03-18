@@ -29,6 +29,7 @@ import org.ovirt.engine.ui.uicommonweb.UICommand;
 import org.ovirt.engine.ui.uicommonweb.dataprovider.AsyncDataProvider;
 import org.ovirt.engine.ui.uicommonweb.help.HelpTag;
 import org.ovirt.engine.ui.uicommonweb.models.ConfirmationModel;
+import org.ovirt.engine.ui.uicommonweb.models.ConfirmationModel.AlertType;
 import org.ovirt.engine.ui.uicommonweb.models.EntityModel;
 import org.ovirt.engine.ui.uicommonweb.models.HasEntity;
 import org.ovirt.engine.ui.uicommonweb.models.ListWithSimpleDetailsModel;
@@ -428,9 +429,36 @@ public class UserListModel extends ListWithSimpleDetailsModel<Void, DbUser> impl
         Frontend.getInstance().runAction(ActionType.UnlockUser,
                 new IdParameters(user.getId()),
                 result -> {
-                    // Refresh list so lock-related state is updated in UI
                     syncSearch();
+
+                    if (result != null && result.getReturnValue() != null && result.getReturnValue().getSucceeded()) {
+                        showUnlockResultDialog(user.getLoginName(), true,
+                                ConstantsManager.getInstance().getMessages().actionCompletedTitle(),
+                                "사용자 잠금 해제가 완료되었습니다."); //$NON-NLS-1$
+                    } else {
+                        String errorMessage = ConstantsManager.getInstance().getConstants().actionFailed();
+                        if (result != null && result.getReturnValue() != null
+                                && result.getReturnValue().getExecuteFailedMessages() != null
+                                && !result.getReturnValue().getExecuteFailedMessages().isEmpty()) {
+                            errorMessage = String.join("\n", result.getReturnValue().getExecuteFailedMessages()); //$NON-NLS-1$
+                        }
+                        showUnlockResultDialog(user.getLoginName(), false,
+                                ConstantsManager.getInstance().getConstants().errorPopupCaption(),
+                                errorMessage);
+                    }
                 });
+    }
+
+    private void showUnlockResultDialog(String loginName, boolean success, String title, String message) {
+        ConfirmationModel confirmModel = new ConfirmationModel();
+        confirmModel.setAlertType(success ? AlertType.SUCCESS : AlertType.ERROR);
+        setConfirmWindow(confirmModel);
+        confirmModel.setTitle(title);
+        confirmModel.setMessage(loginName + "\n" + message); //$NON-NLS-1$
+        confirmModel.getCommands().add(new UICommand("CancelConfirm", this) //$NON-NLS-1$
+                .setTitle(ConstantsManager.getInstance().getConstants().close())
+                .setIsDefault(true)
+                .setIsCancel(true));
     }
 
     @Override
