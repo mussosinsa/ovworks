@@ -28,8 +28,15 @@ class UnlockUserCommandTest {
     }
 
     @Test
+    void buildUnlockCandidatesSkipsWildcardNamespace() {
+        List<String> candidates = new ArrayList<>(
+                UnlockUserCommand.buildUnlockCandidates("admin", "internal-authz", "*"));
+
+        assertEquals(List.of("admin", "admin@internal-authz"), candidates);
+    }
+
+    @Test
     void unlockUserCommandIsNonTransactive() {
         assertNotNull(UnlockUserCommand.class.getAnnotation(NonTransactiveCommandAttribute.class));
     }
-
 }

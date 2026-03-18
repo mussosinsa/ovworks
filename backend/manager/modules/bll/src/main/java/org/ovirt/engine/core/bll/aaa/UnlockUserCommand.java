@@ -83,27 +83,41 @@ public class UnlockUserCommand extends CommandBase<IdParameters> {
 
     static Set<String> buildUnlockCandidates(String loginName, String domain, String namespace) {
         Set<String> candidates = new LinkedHashSet<>();
-        if (loginName == null || loginName.isEmpty()) {
+        if (loginName == null) {
             return candidates;
         }
 
-        candidates.add(loginName);
+        String normalizedLoginName = loginName.trim();
+        if (normalizedLoginName.isEmpty()) {
+            return candidates;
+        }
 
-        String principal = loginName;
-        int atIndex = loginName.indexOf('@');
+        candidates.add(normalizedLoginName);
+
+        String principal = normalizedLoginName;
+        int atIndex = normalizedLoginName.indexOf('@');
         if (atIndex > 0) {
-            principal = loginName.substring(0, atIndex);
+            principal = normalizedLoginName.substring(0, atIndex);
             candidates.add(principal);
         }
 
-        if (domain != null && !domain.isEmpty()) {
-            candidates.add(principal + "@" + domain); //$NON-NLS-1$
-        }
-        if (namespace != null && !namespace.isEmpty()) {
-            candidates.add(principal + "@" + namespace); //$NON-NLS-1$
-        }
+        addQualifiedCandidate(candidates, principal, domain);
+        addQualifiedCandidate(candidates, principal, namespace);
 
         return candidates;
+    }
+
+    private static void addQualifiedCandidate(Set<String> candidates, String principal, String qualifier) {
+        if (qualifier == null) {
+            return;
+        }
+
+        String normalizedQualifier = qualifier.trim();
+        if (normalizedQualifier.isEmpty() || "*".equals(normalizedQualifier)) {
+            return;
+        }
+
+        candidates.add(principal + "@" + normalizedQualifier); //$NON-NLS-1$
     }
 
     private CommandResult runUnlockCommand(String username) throws IOException, InterruptedException {
