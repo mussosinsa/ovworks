@@ -429,8 +429,6 @@ public class UserListModel extends ListWithSimpleDetailsModel<Void, DbUser> impl
         Frontend.getInstance().runAction(ActionType.UnlockUser,
                 new IdParameters(user.getId()),
                 result -> {
-                    syncSearch();
-
                     if (result != null && result.getReturnValue() != null && result.getReturnValue().getSucceeded()) {
                         showUnlockResultDialog(user.getLoginName(), true,
                                 ConstantsManager.getInstance().getMessages().actionCompletedTitle(),
@@ -455,7 +453,16 @@ public class UserListModel extends ListWithSimpleDetailsModel<Void, DbUser> impl
         setWindow(confirmModel);
         confirmModel.setTitle(title);
         confirmModel.setMessage(loginName + "\n" + message); //$NON-NLS-1$
-        confirmModel.getCommands().add(UICommand.createCancelUiCommand("Cancel", this)); //$NON-NLS-1$
+        UICommand closeCommand = new UICommand("CloseUnlockResult", this); //$NON-NLS-1$
+        closeCommand.setTitle(ConstantsManager.getInstance().getConstants().close());
+        closeCommand.setIsDefault(true);
+        closeCommand.setIsCancel(true);
+        confirmModel.getCommands().add(closeCommand);
+    }
+
+    private void onCloseUnlockResult() {
+        setWindow(null);
+        syncSearch();
     }
 
     @Override
@@ -655,6 +662,9 @@ public class UserListModel extends ListWithSimpleDetailsModel<Void, DbUser> impl
         }
         if (command == getUnlockUserCommand()) {
             onUnlockUser();
+        }
+        if ("CloseUnlockResult".equals(command.getName())) { //$NON-NLS-1$
+            onCloseUnlockResult();
         }
 
         if ("Cancel".equals(command.getName())) { //$NON-NLS-1$
