@@ -41,11 +41,14 @@ public class GetEngineConfigValueCommand<T extends EngineConfigValueParameters> 
 
             int exitCode = p.waitFor();
             String output = out.toString().trim();
-            getReturnValue().setActionReturnValue(output);
             if (exitCode == 0) {
+                getReturnValue().setActionReturnValue(output);
                 setSucceeded(true);
             } else {
-                getReturnValue().getExecuteFailedMessages().add(output);
+                String normalizedOutput = isMissingEngineConfigKeyOutput(output)
+                        ? "존재하지 않는 변수입니다. 다시확인하세요" : output; //$NON-NLS-1$
+                getReturnValue().setActionReturnValue(normalizedOutput);
+                getReturnValue().getExecuteFailedMessages().add(normalizedOutput);
                 setSucceeded(false);
             }
         } catch (Exception e) {
@@ -55,6 +58,16 @@ public class GetEngineConfigValueCommand<T extends EngineConfigValueParameters> 
         }
     }
 
+
+    private boolean isMissingEngineConfigKeyOutput(String output) {
+        String normalized = output == null ? "" : output.toLowerCase(); //$NON-NLS-1$
+        return normalized.contains("no such") //$NON-NLS-1$
+                || normalized.contains("not found") //$NON-NLS-1$
+                || normalized.contains("does not exist") //$NON-NLS-1$
+                || normalized.contains("doesn't exist") //$NON-NLS-1$
+                || normalized.contains("there is no variable") //$NON-NLS-1$
+                || normalized.contains("no variable named"); //$NON-NLS-1$
+    }
 
     @Override
     public List<PermissionSubject> getPermissionCheckSubjects() {

@@ -9,6 +9,8 @@ import org.ovirt.engine.core.common.action.ActionParametersBase;
 import org.ovirt.engine.core.common.action.ActionType;
 import org.ovirt.engine.core.common.action.EngineConfigValueParameters;
 import org.ovirt.engine.ui.frontend.Frontend;
+import org.ovirt.engine.ui.uicommonweb.ErrorPopupManager;
+import org.ovirt.engine.ui.uicommonweb.TypeResolver;
 import org.ovirt.engine.ui.uicompat.FrontendActionAsyncResult;
 
 import com.google.gwt.core.client.GWT;
@@ -101,7 +103,7 @@ public class EnvironmentVariablesView extends Composite {
 
         resultLabel.setText("engine-config -g 조회 중..."); //$NON-NLS-1$
         Frontend.getInstance().runAction(ActionType.GetEngineConfigValue, new EngineConfigValueParameters(key),
-                result -> handleEngineConfigResult(result, false));
+                result -> handleEngineConfigResult(result, false), false);
     }
 
     private void updateValue() {
@@ -146,6 +148,7 @@ public class EnvironmentVariablesView extends Composite {
             if (output instanceof String && !((String) output).isEmpty()) {
                 String outputText = (String) output;
                 if (!isUpdate && isMissingEngineConfigKeyError(outputText)) {
+                    showMissingVariablePopup();
                     resultLabel.setText("존재하지 않는 변수입니다. 다시확인하세요"); //$NON-NLS-1$
                     return;
                 }
@@ -154,6 +157,15 @@ public class EnvironmentVariablesView extends Composite {
             }
         }
         resultLabel.setText(defaultError);
+    }
+
+
+    private void showMissingVariablePopup() {
+        ErrorPopupManager popupManager =
+                (ErrorPopupManager) TypeResolver.getInstance().resolve(ErrorPopupManager.class);
+        if (popupManager != null) {
+            popupManager.show("존재하지 않는 변수입니다. 다시확인하세요"); //$NON-NLS-1$
+        }
     }
 
     private boolean isMissingEngineConfigKeyError(String output) {
