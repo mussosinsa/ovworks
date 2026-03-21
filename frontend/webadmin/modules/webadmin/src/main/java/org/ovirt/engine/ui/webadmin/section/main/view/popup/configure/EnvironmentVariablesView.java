@@ -101,6 +101,12 @@ public class EnvironmentVariablesView extends Composite {
             return;
         }
 
+        if (!descriptionsByKey.isEmpty() && !descriptionsByKey.containsKey(key)) {
+            showMissingVariablePopup();
+            resultLabel.setText("존재하지 않는 변수입니다. 다시확인하세요"); //$NON-NLS-1$
+            return;
+        }
+
         resultLabel.setText("engine-config -g 조회 중..."); //$NON-NLS-1$
         Frontend.getInstance().runAction(ActionType.GetEngineConfigValue, new EngineConfigValueParameters(key),
                 result -> handleEngineConfigResult(result, false), false);
