@@ -144,11 +144,26 @@ public class EnvironmentVariablesView extends Composite {
                 return;
             }
             if (output instanceof String && !((String) output).isEmpty()) {
-                resultLabel.setHTML(SafeHtmlUtils.fromString((String) output).asString().replace("\n", "<br/>")); //$NON-NLS-1$ //$NON-NLS-2$
+                String outputText = (String) output;
+                if (!isUpdate && isMissingEngineConfigKeyError(outputText)) {
+                    resultLabel.setText("존재하지 않는 변수입니다. 다시확인하세요"); //$NON-NLS-1$
+                    return;
+                }
+                resultLabel.setHTML(SafeHtmlUtils.fromString(outputText).asString().replace("\n", "<br/>")); //$NON-NLS-1$ //$NON-NLS-2$
                 return;
             }
         }
         resultLabel.setText(defaultError);
+    }
+
+    private boolean isMissingEngineConfigKeyError(String output) {
+        String normalized = output == null ? "" : output.toLowerCase(); //$NON-NLS-1$
+        return normalized.contains("no such") //$NON-NLS-1$
+                || normalized.contains("not found") //$NON-NLS-1$
+                || normalized.contains("does not exist") //$NON-NLS-1$
+                || normalized.contains("doesn't exist") //$NON-NLS-1$
+                || normalized.contains("there is no variable") //$NON-NLS-1$
+                || normalized.contains("no variable named"); //$NON-NLS-1$
     }
 
     private void clearQueriedState() {
