@@ -24,7 +24,6 @@ from ovirt_engine_setup.engine import vdcoption
 from ovirt_engine_setup.engine_common import constants as oengcommcons
 from ovirt_engine_setup.engine_common import database
 
-from ovirt_setup_lib import dialog
 
 try:
     import pwquality
@@ -42,7 +41,7 @@ def _(m):
 class Plugin(plugin.PluginBase):
     """aaa plugin."""
 
-    _MIN_ADMIN_PASSWORD_LENGTH = 10
+    _MIN_ADMIN_PASSWORD_LENGTH = 12
 
     @staticmethod
     def _generatePassword():
@@ -188,10 +187,10 @@ class Plugin(plugin.PluginBase):
         password = None
         self.logger.info(
             _(
-                'Password policy: use at least {minimum} characters '
-                '(10-12 or more recommended), combine uppercase/lowercase '
-                'letters, digits and special characters, and avoid account '
-                'names, dictionary words and sequential strings.'
+                'Password policy: use at least {minimum} characters, '
+                'combine uppercase/lowercase letters, digits and special '
+                'characters, and avoid account names, dictionary words, '
+                'sequential strings and repeated characters.'
             ).format(
                 minimum=self._MIN_ADMIN_PASSWORD_LENGTH,
             )
@@ -221,26 +220,28 @@ class Plugin(plugin.PluginBase):
             else:
                 try:
                     self._validateAdminPasswordPolicy(password)
-                    if(_use_pwquality):
+                    if _use_pwquality:
                         pwq = pwquality.PWQSettings()
                         pwq.read_config()
                         pwq.check(password, None, None)
                     valid = True
+                except RuntimeError as e:
+                    self.logger.warning(
+                        _('Password is weak: {error}').format(
+                            error=str(e),
+                        )
+                    )
+                    self.logger.warning(
+                        _('Please enter a stronger password.')
+                    )
                 except pwquality.PWQError as e:
                     self.logger.warning(
                         _('Password is weak: {error}').format(
                             error=e.args[1],
                         )
                     )
-                    valid = dialog.queryBoolean(
-                        dialog=self.dialog,
-                        name='OVESETUP_CONFIG_WEAK_ENGINE_PASSWORD',
-                        note=_(
-                            'Use weak password? '
-                            '(@VALUES@) [@DEFAULT@]: '
-                        ),
-                        prompt=True,
-                        default=False,
+                    self.logger.warning(
+                        _('Please enter a stronger password.')
                     )
 
         self.environment[
