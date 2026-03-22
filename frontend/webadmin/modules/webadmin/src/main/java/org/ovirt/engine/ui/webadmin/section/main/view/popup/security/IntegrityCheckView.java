@@ -54,11 +54,11 @@ public class IntegrityCheckView extends Composite {
         securityAuditButton.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                securityAuditStatusLabel.setText(constants.statusRunning());
-                securityAuditStatusLabel.removeStyleName("text-success"); //$NON-NLS-1$
-                securityAuditStatusLabel.removeStyleName("text-danger"); //$NON-NLS-1$
-                securityAuditStatusLabel.addStyleName("text-warning"); //$NON-NLS-1$
-                securityAuditErrorLabel.setVisible(false);
+                setRunningState(
+                        securityAuditButton,
+                        securityAuditStatusLabel,
+                        securityAuditErrorLabel
+                );
                 executeSecurityAudit();
             }
         });
@@ -66,14 +66,46 @@ public class IntegrityCheckView extends Composite {
         integrityVerificationButton.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                integrityVerificationStatusLabel.setText(constants.statusRunning());
-                integrityVerificationStatusLabel.removeStyleName("text-success"); //$NON-NLS-1$
-                integrityVerificationStatusLabel.removeStyleName("text-danger"); //$NON-NLS-1$
-                integrityVerificationStatusLabel.addStyleName("text-warning"); //$NON-NLS-1$
-                integrityVerificationErrorLabel.setVisible(false);
+                setRunningState(
+                        integrityVerificationButton,
+                        integrityVerificationStatusLabel,
+                        integrityVerificationErrorLabel
+                );
                 executeIntegrityVerification();
             }
         });
+    }
+
+    private void setRunningState(Button button, Label statusLabel, HTML errorLabel) {
+        button.setEnabled(false);
+        statusLabel.setText(constants.statusRunning());
+        resetStatusStyles(statusLabel);
+        statusLabel.addStyleName("text-warning"); //$NON-NLS-1$
+        errorLabel.setHTML(""); //$NON-NLS-1$
+        errorLabel.setVisible(false);
+    }
+
+    private void setNormalState(Button button, Label statusLabel, HTML errorLabel) {
+        button.setEnabled(true);
+        statusLabel.setText(constants.statusNormal());
+        resetStatusStyles(statusLabel);
+        statusLabel.addStyleName("text-success"); //$NON-NLS-1$
+        errorLabel.setHTML(""); //$NON-NLS-1$
+        errorLabel.setVisible(false);
+    }
+
+    private void setFailedState(Button button, Label statusLabel, HTML errorLabel, FrontendActionAsyncResult result) {
+        button.setEnabled(true);
+        statusLabel.setText(constants.statusFailed());
+        resetStatusStyles(statusLabel);
+        statusLabel.addStyleName("text-danger"); //$NON-NLS-1$
+        showErrorDetails(result, errorLabel);
+    }
+
+    private void resetStatusStyles(Label statusLabel) {
+        statusLabel.removeStyleName("text-success"); //$NON-NLS-1$
+        statusLabel.removeStyleName("text-danger"); //$NON-NLS-1$
+        statusLabel.removeStyleName("text-warning"); //$NON-NLS-1$
     }
 
     private void executeSecurityAudit() {
@@ -82,16 +114,18 @@ public class IntegrityCheckView extends Composite {
             new ActionParametersBase(),
             result -> {
                 if (result != null && result.getReturnValue() != null && result.getReturnValue().getSucceeded()) {
-                    securityAuditStatusLabel.setText(constants.statusNormal());
-                    securityAuditStatusLabel.removeStyleName("text-warning"); //$NON-NLS-1$
-                    securityAuditStatusLabel.addStyleName("text-success"); //$NON-NLS-1$
-                    securityAuditErrorLabel.setVisible(false);
+                    setNormalState(
+                            securityAuditButton,
+                            securityAuditStatusLabel,
+                            securityAuditErrorLabel
+                    );
                 } else {
-                    securityAuditStatusLabel.setText(constants.statusFailed());
-                    securityAuditStatusLabel.removeStyleName("text-warning"); //$NON-NLS-1$
-                    securityAuditStatusLabel.addStyleName("text-danger"); //$NON-NLS-1$
-                    // Display error details
-                    showErrorDetails(result, securityAuditErrorLabel);
+                    setFailedState(
+                            securityAuditButton,
+                            securityAuditStatusLabel,
+                            securityAuditErrorLabel,
+                            result
+                    );
                 }
             }
         );
@@ -103,16 +137,18 @@ public class IntegrityCheckView extends Composite {
             new ActionParametersBase(),
             result -> {
                 if (result != null && result.getReturnValue() != null && result.getReturnValue().getSucceeded()) {
-                    integrityVerificationStatusLabel.setText(constants.statusNormal());
-                    integrityVerificationStatusLabel.removeStyleName("text-warning"); //$NON-NLS-1$
-                    integrityVerificationStatusLabel.addStyleName("text-success"); //$NON-NLS-1$
-                    integrityVerificationErrorLabel.setVisible(false);
+                    setNormalState(
+                            integrityVerificationButton,
+                            integrityVerificationStatusLabel,
+                            integrityVerificationErrorLabel
+                    );
                 } else {
-                    integrityVerificationStatusLabel.setText(constants.statusFailed());
-                    integrityVerificationStatusLabel.removeStyleName("text-warning"); //$NON-NLS-1$
-                    integrityVerificationStatusLabel.addStyleName("text-danger"); //$NON-NLS-1$
-                    // Display error details
-                    showErrorDetails(result, integrityVerificationErrorLabel);
+                    setFailedState(
+                            integrityVerificationButton,
+                            integrityVerificationStatusLabel,
+                            integrityVerificationErrorLabel,
+                            result
+                    );
                 }
             }
         );
@@ -122,18 +158,18 @@ public class IntegrityCheckView extends Composite {
         StringBuilder errorMsg = new StringBuilder();
 
         if (result != null && result.getReturnValue() != null) {
-            // Get error messages from executeFailedMessages
             if (result.getReturnValue().getExecuteFailedMessages() != null
                     && !result.getReturnValue().getExecuteFailedMessages().isEmpty()) {
                 for (String msg : result.getReturnValue().getExecuteFailedMessages()) {
-                    errorMsg.append(msg).append("\n"); //$NON-NLS-1$
+                    if (msg != null && !msg.trim().isEmpty()) {
+                        errorMsg.append(msg).append("\n"); //$NON-NLS-1$
+                    }
                 }
             }
 
-            // Get action return value if it contains output
             Object actionReturnValue = result.getReturnValue().getActionReturnValue();
-            if (actionReturnValue != null && actionReturnValue instanceof String) {
-                String output = (String) actionReturnValue;
+            if (actionReturnValue instanceof String) {
+                String output = ((String) actionReturnValue).trim();
                 if (!output.isEmpty()) {
                     if (errorMsg.length() > 0) {
                         errorMsg.append("\n"); //$NON-NLS-1$
@@ -143,14 +179,14 @@ public class IntegrityCheckView extends Composite {
             }
         }
 
-        if (errorMsg.length() > 0) {
-            String htmlContent = SafeHtmlUtils.fromString(errorMsg.toString().trim())
-                    .asString()
-                    .replace("\n", "<br/>"); //$NON-NLS-1$ //$NON-NLS-2$
-            errorLabel.setHTML(htmlContent);
-            errorLabel.setVisible(true);
-        } else {
-            errorLabel.setVisible(false);
+        if (errorMsg.length() == 0) {
+            errorMsg.append("오류가 발생했습니다. 다시 실행해 주세요."); //$NON-NLS-1$
         }
+
+        String htmlContent = SafeHtmlUtils.fromString(errorMsg.toString().trim())
+                .asString()
+                .replace("\n", "<br/>"); //$NON-NLS-1$ //$NON-NLS-2$
+        errorLabel.setHTML(htmlContent);
+        errorLabel.setVisible(true);
     }
 }
