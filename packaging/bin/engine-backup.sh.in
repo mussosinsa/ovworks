@@ -26,15 +26,28 @@ die() {
 	exit 1
 }
 
-load_config() {
+load_base_config() {
 	for f in \
 		"${ENGINE_DEFAULTS}" \
 		"${ENGINE_VARS}" \
+		; do
+
+		[ -r "${f}" ] && . "${f}"
+	done
+}
+
+load_config_dir() {
+	for f in \
 		$([ -d "${ENGINE_VARS}.d" ] && find "${ENGINE_VARS}.d" -name '*.conf' | sort) \
 		; do
 
 		[ -r "${f}" ] && . "${f}"
 	done
+}
+
+load_config() {
+	load_base_config
+	load_config_dir
 }
 
 source_d() {
@@ -98,10 +111,11 @@ decrypt_config_if_allowed() {
 }
 
 my_load_config() {
-	load_config
+	load_base_config
 	decrypt_config_if_allowed "/etc/ovirt-engine/aaa/internal.properties"
 	decrypt_config_if_allowed "${ENGINE_ETC}/engine.conf.d/10-setup-database.conf"
 	decrypt_config_if_allowed "${ENGINE_ETC}/engine.conf.d/10-setup-dwh-database.conf"
+	load_config_dir
 
 	DWH_CONFIG=/etc/ovirt-engine-dwh/ovirt-engine-dwhd.conf
 	for f in "${DWH_CONFIG}" "${DWH_CONFIG}".d/*.conf; do
