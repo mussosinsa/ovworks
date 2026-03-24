@@ -24,20 +24,35 @@ public final class TerminalIpConfigUtils {
 
     public static String readRequireIp() throws IOException {
         String content = Files.readString(getConfigPath(), StandardCharsets.UTF_8);
+        return readRequireIpFromContent(content);
+    }
+
+    static String readRequireIpFromContent(String content) {
         Matcher matcher = REQUIRE_IP_PATTERN.matcher(content);
         StringBuilder result = new StringBuilder();
         while (matcher.find()) {
-            if (result.length() > 0) {
-                result.append("\n"); //$NON-NLS-1$
+            if (result.length() == 0) {
+                result.append("<RequireAll>\n"); //$NON-NLS-1$
             }
-            result.append(matcher.group(0));
+            result.append("                ").append(matcher.group(0).trim()).append("\n"); //$NON-NLS-1$ //$NON-NLS-2$
         }
-        return result.length() > 0 ? result.toString() : null;
+        if (result.length() == 0) {
+            return null;
+        }
+        result.append("</RequireAll>"); //$NON-NLS-1$
+        return result.toString();
     }
 
     public static void updateRequireIp(String ipValue) throws IOException {
         Path configPath = getConfigPath();
         String content = Files.readString(configPath, StandardCharsets.UTF_8);
+        String updatedContent = updateRequireIpInContent(content, ipValue);
+        if (!updatedContent.equals(content)) {
+            Files.writeString(configPath, updatedContent, StandardCharsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING);
+        }
+    }
+
+    static String updateRequireIpInContent(String content, String ipValue) throws IOException {
         String requireIpPrefix = "Require ip "; //$NON-NLS-1$
         Matcher prefixMatcher = REQUIRE_IP_PATTERN.matcher(content);
         if (prefixMatcher.find()) {
@@ -49,6 +64,9 @@ public final class TerminalIpConfigUtils {
         for (String line : rawLines) {
             String candidate = line.trim();
             if (candidate.isEmpty()) {
+                continue;
+            }
+            if ("<RequireAll>".equalsIgnoreCase(candidate) || "</RequireAll>".equalsIgnoreCase(candidate)) { //$NON-NLS-1$ //$NON-NLS-2$
                 continue;
             }
             if (REQUIRE_IP_FULL_PATTERN.matcher(candidate).matches()) {
@@ -68,6 +86,9 @@ public final class TerminalIpConfigUtils {
         for (String line : lines) {
             if (REQUIRE_IP_PATTERN.matcher(line).matches()) {
                 if (!replaced && replacement.length() > 0) {
+                    if (updated.length() > 0) {
+                        updated.append("\n"); //$NON-NLS-1$
+                    }
                     updated.append(replacement);
                 }
                 replaced = true;
@@ -81,8 +102,6 @@ public final class TerminalIpConfigUtils {
         if (!replaced) {
             throw new IOException("Require ip line not found in z-ovirt-engine-proxy.conf"); //$NON-NLS-1$
         }
-        if (!updated.toString().equals(content)) {
-            Files.writeString(configPath, updated.toString(), StandardCharsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING);
-        }
+        return updated.toString();
     }
 }

@@ -1,6 +1,8 @@
 package org.ovirt.engine.ui.webadmin.section.main.view.popup.security;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.gwtbootstrap3.client.ui.Button;
 import org.ovirt.engine.core.common.action.ActionType;
@@ -16,6 +18,7 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -29,10 +32,19 @@ public class AuditLogProtectionTabView extends Composite {
     Button fullLogBackupButton;
 
     @UiField
+    Button refreshBackupListButton;
+
+    @UiField
+    Button restoreSelectedBackupButton;
+
+    @UiField
     HTML fullLogBackupResultLabel;
 
     @UiField
     TextBox fullLogBackupPathInput;
+
+    @UiField
+    ListBox backupFileListBox;
 
     public AuditLogProtectionTabView() {
         initWidget(ViewUiBinder.uiBinder.createAndBindUi(this));
@@ -52,6 +64,81 @@ public class AuditLogProtectionTabView extends Composite {
             Frontend.getInstance().runAction(ActionType.FullLogBackup, parameters, result -> {
                 handleResult(result, buildSuccessMessage(backupPath), fullLogBackupResultLabel);
             });
+        });
+
+        refreshBackupListButton.addClickHandler((ClickHandler) event -> refreshBackupList());
+
+        restoreSelectedBackupButton.addClickHandler((ClickHandler) event -> {
+            String backupPath = fullLogBackupPathInput.getText().trim();
+            if (backupPath.isEmpty()) {
+                fullLogBackupResultLabel.setText("저장 위치를 입력해 주세요."); //$NON-NLS-1$
+                return;
+            }
+            if (backupFileListBox.getSelectedIndex() < 0) {
+                fullLogBackupResultLabel.setText("복구할 감사기록 파일을 선택해 주세요."); //$NON-NLS-1$
+                return;
+            }
+
+            String selectedFile = backupFileListBox.getSelectedValue();
+            AuditLogBackupParameters parameters = new AuditLogBackupParameters();
+            parameters.setBackupPath(backupPath);
+            parameters.setSelectedBackupFile(selectedFile);
+
+            fullLogBackupResultLabel.setText("복구 처리 중..."); //$NON-NLS-1$
+            Frontend.getInstance().runAction(ActionType.RestoreAuditLogBackup, parameters, result -> {
+                handleResult(result,
+                        "복구 완료\n현재 감사기록을 백업한 후 선택한 파일로 복구했습니다.", //$NON-NLS-1$
+                        fullLogBackupResultLabel);
+                refreshBackupList();
+            });
+        });
+    }
+
+    private void refreshBackupList() {
+        String backupPath = fullLogBackupPathInput.getText().trim();
+        if (backupPath.isEmpty()) {
+            fullLogBackupResultLabel.setText("저장 위치를 입력해 주세요."); //$NON-NLS-1$
+            return;
+        }
+
+        AuditLogBackupParameters parameters = new AuditLogBackupParameters();
+        parameters.setBackupPath(backupPath);
+        fullLogBackupResultLabel.setText("감사기록 목록 조회 중..."); //$NON-NLS-1$
+
+        Frontend.getInstance().runAction(ActionType.ListAuditLogBackups, parameters, result -> {
+            StringBuilder details = new StringBuilder();
+            backupFileListBox.clear();
+
+            if (result != null && result.getReturnValue() != null && result.getReturnValue().getSucceeded()) {
+                Object value = result.getReturnValue().getActionReturnValue();
+                List<String> files = new ArrayList<>();
+                if (value instanceof List<?>) {
+                    for (Object item : (List<?>) value) {
+                        if (item != null) {
+                            files.add(item.toString());
+                        }
+                    }
+                }
+                if (files.isEmpty()) {
+                    details.append("조회된 감사기록 백업 파일이 없습니다."); //$NON-NLS-1$
+                } else {
+                    files.forEach(file -> backupFileListBox.addItem(file, file));
+                    details.append("감사기록 백업 목록 조회 완료: ").append(files.size()).append("건"); //$NON-NLS-1$ //$NON-NLS-2$
+                }
+                fullLogBackupResultLabel.setHTML(formatHtml(details.toString()));
+                return;
+            }
+
+            if (result != null && result.getReturnValue() != null
+                    && result.getReturnValue().getExecuteFailedMessages() != null) {
+                result.getReturnValue().getExecuteFailedMessages().forEach(msg -> {
+                    details.append(msg).append("\n"); //$NON-NLS-1$
+                });
+            }
+            if (details.length() == 0) {
+                details.append("감사기록 목록 조회 중 오류가 발생했습니다."); //$NON-NLS-1$
+            }
+            fullLogBackupResultLabel.setHTML(formatHtml(details.toString().trim()));
         });
     }
 

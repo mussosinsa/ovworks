@@ -6,6 +6,7 @@ public class AuditLogBackupParameters extends ActionParametersBase {
 
     private String backupPath;
     private String remoteAddress;
+    private String selectedBackupFile;
 
     public AuditLogBackupParameters() {
     }
@@ -29,5 +30,13 @@ public class AuditLogBackupParameters extends ActionParametersBase {
 
     public void setRemoteAddress(String remoteAddress) {
         this.remoteAddress = remoteAddress;
+    }
+
+    public String getSelectedBackupFile() {
+        return selectedBackupFile;
+    }
+
+    public void setSelectedBackupFile(String selectedBackupFile) {
+        this.selectedBackupFile = selectedBackupFile;
     }
 }

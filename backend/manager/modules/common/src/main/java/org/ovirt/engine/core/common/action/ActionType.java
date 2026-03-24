@@ -234,6 +234,7 @@ public enum ActionType {
     LoginOnBehalf(424, false, QuotaDependency.NONE),
     CreateUserSession(425, ActionGroup.LOGIN, false, QuotaDependency.NONE),
     ResetUserPassword(426, ActionGroup.MANIPULATE_USERS, false, QuotaDependency.NONE),
+    UnlockUser(430, ActionGroup.MANIPULATE_USERS, false, QuotaDependency.NONE),
 
     // UserProfile
     UpdateUserProfileProperty(427, ActionGroup.EDIT_PROFILE, false, QuotaDependency.NONE),
@@ -571,6 +572,11 @@ public enum ActionType {
     EngineBackup(2109, ActionGroup.AUDIT_LOG_MANAGEMENT, false, QuotaDependency.NONE),
     SetTerminalAuth(2110, ActionGroup.MANIPULATE_USERS, false, QuotaDependency.NONE),
     SetTerminalIpAuth(2111, ActionGroup.MANIPULATE_USERS, false, QuotaDependency.NONE),
+    ListAuditLogBackups(2112, ActionGroup.AUDIT_LOG_MANAGEMENT, false, QuotaDependency.NONE),
+    RestoreAuditLogBackup(2113, ActionGroup.AUDIT_LOG_MANAGEMENT, false, QuotaDependency.NONE),
+    ListEngineConfigProperties(2114, ActionGroup.CONFIGURE_ENGINE, false, QuotaDependency.NONE),
+    GetEngineConfigValue(2115, ActionGroup.CONFIGURE_ENGINE, false, QuotaDependency.NONE),
+    SetEngineConfigValue(2116, ActionGroup.CONFIGURE_ENGINE, false, QuotaDependency.NONE),
 
     SetSesssionSoftLimit(3000, false, QuotaDependency.NONE),
 
