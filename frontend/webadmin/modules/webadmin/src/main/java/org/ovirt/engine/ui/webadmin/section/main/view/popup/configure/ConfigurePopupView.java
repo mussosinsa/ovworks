@@ -45,6 +45,9 @@ public class ConfigurePopupView extends AbstractPopupView<SimpleDialogPanel> imp
     @UiField(provided=true)
     SharedMacPoolView sharedMacPoolView;
 
+    @UiField(provided=true)
+    EnvironmentVariablesView environmentVariablesView;
+
     @Inject
     public ConfigurePopupView(
             EventBus eventBus,
@@ -52,13 +55,15 @@ public class ConfigurePopupView extends AbstractPopupView<SimpleDialogPanel> imp
             SystemPermissionView systemPermissionView,
             ClusterPolicyView clusterPolicyView,
             InstanceTypesView instanceTypesView,
-            SharedMacPoolView sharedMacPoolView) {
+            SharedMacPoolView sharedMacPoolView,
+            EnvironmentVariablesView environmentVariablesView) {
         super(eventBus);
         this.roleView = roleView;
         this.systemPermissionView = systemPermissionView;
         this.clusterPolicyView = clusterPolicyView;
         this.instanceTypesView = instanceTypesView;
         this.sharedMacPoolView = sharedMacPoolView;
+        this.environmentVariablesView = environmentVariablesView;
 
         initWidget(ViewUiBinder.uiBinder.createAndBindUi(this));
     }

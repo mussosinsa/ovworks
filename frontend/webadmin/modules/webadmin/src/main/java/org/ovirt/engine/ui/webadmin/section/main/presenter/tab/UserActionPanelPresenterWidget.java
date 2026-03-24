@@ -41,6 +41,12 @@ public class UserActionPanelPresenterWidget extends ActionPanelPresenterWidget<V
         //        return getModel().getRemoveCommand();
         //    }
         //});
+        addActionButton(new WebAdminButtonDefinition<Void, DbUser>("잠금해제") { //$NON-NLS-1$
+            @Override
+            protected UICommand resolveCommand() {
+                return getModel().getUnlockUserCommand();
+            }
+        });
         addActionButton(new WebAdminButtonDefinition<Void, DbUser>(constants.resetPasswordUser()) {
             @Override
             protected UICommand resolveCommand() {

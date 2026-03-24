@@ -26,15 +26,28 @@ die() {
 	exit 1
 }
 
-load_config() {
+load_base_config() {
 	for f in \
 		"${ENGINE_DEFAULTS}" \
 		"${ENGINE_VARS}" \
+		; do
+
+		[ -r "${f}" ] && . "${f}"
+	done
+}
+
+load_config_dir() {
+	for f in \
 		$([ -d "${ENGINE_VARS}.d" ] && find "${ENGINE_VARS}.d" -name '*.conf' | sort) \
 		; do
 
 		[ -r "${f}" ] && . "${f}"
 	done
+}
+
+load_config() {
+	load_base_config
+	load_config_dir
 }
 
 source_d() {
@@ -49,10 +62,63 @@ source_d() {
 
 source_d init
 
-my_load_config() {
-	load_config
 
+_DECRYPT_ALLOWED_BASENAMES="internal.properties 10-setup-database.conf 10-setup-dwh-database.conf"
+ENCRYPTOR_TOOL="/usr/share/ovirt-engine/encryptor/encryptor.py"
+
+decrypt_config_if_allowed() {
+	local conf="$1"
+	local base="${conf##*/}"
+	local allowed=1
+	local b
+
+	for b in ${_DECRYPT_ALLOWED_BASENAMES}; do
+		if [ "${base}" = "${b}" ]; then
+			allowed=0
+			break
+		fi
+	done
+
+	[ ${allowed} -ne 0 ] && return 0
+	[ -f "${conf}" ] || return 0
+	[ -f "${ENCRYPTOR_TOOL}" ] || return 0
+
+	local python_bin
+	python_bin="$(command -v python3 2>/dev/null || true)"
+	[ -n "${python_bin}" ] || python_bin="/usr/bin/python3"
+
+	local restore=""
+	restore="$(mktemp)" || return 0
+	cp -a "${conf}" "${restore}" || {
+		rm -f "${restore}"
+		return 0
+	}
+
+	if "${python_bin}" "${ENCRYPTOR_TOOL}" --decrypt "${conf}" >/dev/null 2>&1; then
+		rm -f "${restore}"
+		return 0
+	fi
+	cp -a "${restore}" "${conf}" >/dev/null 2>&1 || true
+
+	if "${python_bin}" "${ENCRYPTOR_TOOL}" -d "${conf}" >/dev/null 2>&1; then
+		rm -f "${restore}"
+		return 0
+	fi
+	cp -a "${restore}" "${conf}" >/dev/null 2>&1 || true
+	rm -f "${restore}"
+
+	return 0
+}
+
+my_load_config() {
+	load_base_config
 	DWH_CONFIG=/etc/ovirt-engine-dwh/ovirt-engine-dwhd.conf
+	decrypt_config_if_allowed "/etc/ovirt-engine/aaa/internal.properties"
+	decrypt_config_if_allowed "${ENGINE_ETC}/engine.conf.d/10-setup-database.conf"
+	decrypt_config_if_allowed "${ENGINE_ETC}/engine.conf.d/10-setup-dwh-database.conf"
+	decrypt_config_if_allowed "${DWH_CONFIG}.d/10-setup-database.conf"
+	load_config_dir
+
 	for f in "${DWH_CONFIG}" "${DWH_CONFIG}".d/*.conf; do
 		[ -e "${f}" ] && . "${f}"
 	done

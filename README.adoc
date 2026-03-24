@@ -130,7 +130,7 @@ when asked about it by engine-setup.
 
 ==== System settings
 
-Build locales requires at least 10240 file descriptors, create the
+Building locales requires at least 10240 file descriptors; create the
 following file, replace <user> with user that is used for building,
 and logout/login:
 

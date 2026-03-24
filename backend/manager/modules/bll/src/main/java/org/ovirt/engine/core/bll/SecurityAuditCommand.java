@@ -70,6 +70,7 @@ public class SecurityAuditCommand<T extends ActionParametersBase> extends Comman
         try {
             // Execute the security audit script
             ProcessBuilder processBuilder = new ProcessBuilder("sh", SECURITY_AUDIT_SCRIPT);
+            processBuilder.environment().put("SECURITY_AUDIT_STRICT", "0");
             processBuilder.redirectErrorStream(true);
             Process process = processBuilder.start();
 

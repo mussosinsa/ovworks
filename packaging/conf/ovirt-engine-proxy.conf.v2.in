@@ -14,6 +14,13 @@
 
 <IfModule proxy_ajp_module>
 
+<IfModule log_config_module>
+    # Audit log for denied access to admin page (e.g., blocked by Require ip rules).
+    # Captures denied client IP, request line, status and user-agent for traceability.
+    LogFormat "time=%{%Y-%m-%dT%H:%M:%S%z}t remote_ip=%a request=\"%r\" status=%>s referer=\"%{Referer}i\" user_agent=\"%{User-agent}i\"" ovirt_admin_access_denied_audit
+    CustomLog "/var/log/httpd/ovirt-engine-admin-access-denied-audit.log" ovirt_admin_access_denied_audit "expr=(%{REQUEST_STATUS} == 403) && (%{REQUEST_URI} =~ m#^/ovirt-engine/webadmin#)"
+</IfModule>
+
     #
     # Remove the Expect headers from API requests (this is needed to fix a
     # problem with some API clients):

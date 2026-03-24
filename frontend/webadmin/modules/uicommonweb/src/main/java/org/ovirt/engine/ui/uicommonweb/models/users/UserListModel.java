@@ -29,6 +29,7 @@ import org.ovirt.engine.ui.uicommonweb.UICommand;
 import org.ovirt.engine.ui.uicommonweb.dataprovider.AsyncDataProvider;
 import org.ovirt.engine.ui.uicommonweb.help.HelpTag;
 import org.ovirt.engine.ui.uicommonweb.models.ConfirmationModel;
+import org.ovirt.engine.ui.uicommonweb.models.ConfirmationModel.AlertType;
 import org.ovirt.engine.ui.uicommonweb.models.EntityModel;
 import org.ovirt.engine.ui.uicommonweb.models.HasEntity;
 import org.ovirt.engine.ui.uicommonweb.models.ListWithSimpleDetailsModel;
@@ -87,6 +88,16 @@ public class UserListModel extends ListWithSimpleDetailsModel<Void, DbUser> impl
         privateResetPasswordCommand = value;
     }
 
+    private UICommand privateUnlockUserCommand;
+
+    public UICommand getUnlockUserCommand() {
+        return privateUnlockUserCommand;
+    }
+
+    private void setUnlockUserCommand(UICommand value) {
+        privateUnlockUserCommand = value;
+    }
+
 
     private final UserSettingsModel userSettingsModel;
     private final UserGroupListModel groupListModel;
@@ -124,6 +135,7 @@ public class UserListModel extends ListWithSimpleDetailsModel<Void, DbUser> impl
         setRemoveCommand(new UICommand("Remove", this)); //$NON-NLS-1$
         setAssignTagsCommand(new UICommand("AssignTags", this)); //$NON-NLS-1$
         setResetPasswordCommand(new UICommand("ResetPassword", this)); //$NON-NLS-1$
+        setUnlockUserCommand(new UICommand("UnlockUser", this)); //$NON-NLS-1$
 
         updateActionAvailability();
 
@@ -408,6 +420,51 @@ public class UserListModel extends ListWithSimpleDetailsModel<Void, DbUser> impl
                 model);
     }
 
+    public void onUnlockUser() {
+        if (getSelectedItem() == null) {
+            return;
+        }
+
+        DbUser user = getSelectedItem();
+        Frontend.getInstance().runAction(ActionType.UnlockUser,
+                new IdParameters(user.getId()),
+                result -> {
+                    if (result != null && result.getReturnValue() != null && result.getReturnValue().getSucceeded()) {
+                        showUnlockResultDialog(user.getLoginName(), true,
+                                "작업 완료", //$NON-NLS-1$
+                                "사용자 잠금 해제가 완료되었습니다."); //$NON-NLS-1$
+                    } else {
+                        String errorMessage = "잠금 해제 처리 중 오류가 발생했습니다."; //$NON-NLS-1$
+                        if (result != null && result.getReturnValue() != null
+                                && result.getReturnValue().getExecuteFailedMessages() != null
+                                && !result.getReturnValue().getExecuteFailedMessages().isEmpty()) {
+                            errorMessage = String.join("\n", result.getReturnValue().getExecuteFailedMessages()); //$NON-NLS-1$
+                        }
+                        showUnlockResultDialog(user.getLoginName(), false,
+                                "오류", //$NON-NLS-1$
+                                errorMessage);
+                    }
+                });
+    }
+
+    private void showUnlockResultDialog(String loginName, boolean success, String title, String message) {
+        ConfirmationModel confirmModel = new ConfirmationModel();
+        confirmModel.setAlertType(success ? AlertType.SUCCESS : AlertType.DANGER);
+        setWindow(confirmModel);
+        confirmModel.setTitle(title);
+        confirmModel.setMessage(loginName + "\n" + message); //$NON-NLS-1$
+        UICommand closeCommand = new UICommand("CloseUnlockResult", this); //$NON-NLS-1$
+        closeCommand.setTitle(ConstantsManager.getInstance().getConstants().close());
+        closeCommand.setIsDefault(true);
+        closeCommand.setIsCancel(true);
+        confirmModel.getCommands().add(closeCommand);
+    }
+
+    private void onCloseUnlockResult() {
+        setWindow(null);
+        syncSearch();
+    }
+
     @Override
     public boolean isSearchStringMatch(String searchString) {
         return searchString.trim().toLowerCase().startsWith("user"); //$NON-NLS-1$
@@ -584,6 +641,7 @@ public class UserListModel extends ListWithSimpleDetailsModel<Void, DbUser> impl
             resetPasswordAllowed = !user.isGroup();
         }
         getResetPasswordCommand().setIsExecutionAllowed(resetPasswordAllowed);
+        getUnlockUserCommand().setIsExecutionAllowed(resetPasswordAllowed);
     }
 
     @Override
@@ -601,6 +659,12 @@ public class UserListModel extends ListWithSimpleDetailsModel<Void, DbUser> impl
         }
         if (command == getResetPasswordCommand()) {
             resetPassword();
+        }
+        if (command == getUnlockUserCommand()) {
+            onUnlockUser();
+        }
+        if ("CloseUnlockResult".equals(command.getName())) { //$NON-NLS-1$
+            onCloseUnlockResult();
         }
 
         if ("Cancel".equals(command.getName())) { //$NON-NLS-1$
