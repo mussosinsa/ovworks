@@ -50,7 +50,7 @@ class Plugin(plugin.PluginBase):
             return
 
         try:
-            with open(config_path, 'r') as config_file:
+            with open(config_path, 'rb') as config_file:
                 original_content = config_file.read()
         except Exception:
             self.logger.warning(
@@ -65,7 +65,7 @@ class Plugin(plugin.PluginBase):
             python = '/usr/bin/python3'
 
         def _restore_original_content():
-            with open(config_path, 'w') as config_file:
+            with open(config_path, 'wb') as config_file:
                 config_file.write(original_content)
 
         for args in (

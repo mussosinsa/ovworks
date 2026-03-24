@@ -116,7 +116,7 @@ class Plugin(plugin.PluginBase):
 
         originalContent = None
         try:
-            with open(configPath, 'r') as f:
+            with open(configPath, 'rb') as f:
                 originalContent = f.read()
         except Exception:
             self.logger.warning(
@@ -131,7 +131,7 @@ class Plugin(plugin.PluginBase):
             python = '/usr/bin/python3'
 
         def _restore_original_content():
-            with open(configPath, 'w') as f:
+            with open(configPath, 'wb') as f:
                 f.write(originalContent)
 
         for args in (
