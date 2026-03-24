@@ -407,11 +407,10 @@ class Plugin(plugin.PluginBase):
             dialog=self.dialog,
             name='ovirt-provider-ovn',
             note=_(
-                '\nConfiguring ovirt-provider-ovn also sets the Default '
-                'cluster\'s default network provider to ovirt-provider-ovn.\n'
-                'Non-Default clusters may be configured with an OVN after '
-                'installation.\n'
-                'Configure ovirt-provider-ovn (@VALUES@) [@DEFAULT@]: '
+                '\novirt-provider-ovn을 설정하면 Default 클러스터의 '
+                '기본 네트워크 제공자가 ovirt-provider-ovn으로 설정됩니다.\n'
+                'Non-Default 클러스터는 설치 후 OVN으로 설정할 수 있습니다.\n'
+                'ovirt-provider-ovn을 설정하시겠습니까 (@VALUES@) [@DEFAULT@]: '
             ),
             prompt=True,
             default=True
