@@ -112,12 +112,13 @@ decrypt_config_if_allowed() {
 
 my_load_config() {
 	load_base_config
+	DWH_CONFIG=/etc/ovirt-engine-dwh/ovirt-engine-dwhd.conf
 	decrypt_config_if_allowed "/etc/ovirt-engine/aaa/internal.properties"
 	decrypt_config_if_allowed "${ENGINE_ETC}/engine.conf.d/10-setup-database.conf"
 	decrypt_config_if_allowed "${ENGINE_ETC}/engine.conf.d/10-setup-dwh-database.conf"
+	decrypt_config_if_allowed "${DWH_CONFIG}.d/10-setup-database.conf"
 	load_config_dir
 
-	DWH_CONFIG=/etc/ovirt-engine-dwh/ovirt-engine-dwhd.conf
 	for f in "${DWH_CONFIG}" "${DWH_CONFIG}".d/*.conf; do
 		[ -e "${f}" ] && . "${f}"
 	done
