@@ -11,6 +11,7 @@
 
 
 import gettext
+import os
 
 from otopi import plugin
 from otopi import util
@@ -28,9 +29,32 @@ def _(m):
 @util.export
 class Plugin(plugin.PluginBase):
     """Engine-remove plugin."""
+    _ENCRYPTOR_CONFIG_PATH = '/etc/ovirt-engine/encryptor/config.json'
+    _ENCRYPTOR_CONFIG_CONTENT = """{
+    "watch_path": [
+        "/etc/ovirt-engine",
+        "/etc/ovirt-engine-dwh"
+    ],
+    "encrypt_flag": "NO",
+    "serialNum": "saeoll20250322",
+    "iterations": 200000,
+    "salt": "6vMPyG52nDht+DTitl5zRQ==",
+    "nonce": "RDOm3KZiwA4Aq/Iu",
+    "decrypt_key_ciphertext": "i885Q0KgJooluYRyErQdW1DDf76QTQb3aYuFwo4F91fnpFUhJf2iKP7z7TTVZs/5",
+    "decrypt_key": "853cc5671453bbd9b2552354e941926812220aad114577c72372e2f5fa2ec501"
+}
+"""
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
+
+    def _write_encryptor_config(self):
+        config_dir = os.path.dirname(self._ENCRYPTOR_CONFIG_PATH)
+        if config_dir and not os.path.isdir(config_dir):
+            os.makedirs(config_dir, mode=0o700)
+
+        with open(self._ENCRYPTOR_CONFIG_PATH, 'w', encoding='utf-8') as config_file:
+            config_file.write(self._ENCRYPTOR_CONFIG_CONTENT)
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
@@ -126,6 +150,7 @@ class Plugin(plugin.PluginBase):
                 description=oenginecons.Const.ENGINE_PACKAGE_NAME,
             ),
         )
+        self._write_encryptor_config()
         self.environment[
             oenginecons.CoreEnv.ENABLE
         ] = False
