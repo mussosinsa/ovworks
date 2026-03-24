@@ -156,7 +156,7 @@ class Plugin(plugin.PluginBase):
                     dialog=self.dialog,
                     name='OVESETUP_FIX_DB_VALIDATIONS',
                     note=_(
-                        'Would you like to automatically clear '
+                        '불일치를 자동으로 정리하시겠습니까? '
                         'inconsistencies before upgraing?\n'
                         '(Answering no will stop the upgrade): '
                     ),

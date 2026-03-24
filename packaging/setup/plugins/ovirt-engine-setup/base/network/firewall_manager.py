@@ -197,7 +197,7 @@ class Plugin(plugin.PluginBase):
                 ] = self.dialog.queryString(
                     name='OVESETUP_CONFIG_FIREWALL_MANAGER',
                     note=_(
-                        'Firewall manager to configure '
+                        '설정할 방화벽 관리자 '
                         '(@VALUES@): '
                     ),
                     prompt=True,

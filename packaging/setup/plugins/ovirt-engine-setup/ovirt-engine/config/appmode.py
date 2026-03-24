@@ -84,7 +84,7 @@ class Plugin(plugin.PluginBase):
                 osetupcons.ConfigEnv.APPLICATION_MODE
             ] = self.dialog.queryString(
                 name='OVESETUP_CONFIG_APPLICATION_MODE',
-                note=_('Application mode (@VALUES@) [@DEFAULT@]: '),
+                note=_('애플리케이션 모드 (@VALUES@) [@DEFAULT@]: '),
                 prompt=True,
                 validValues=(
                     'Virt',

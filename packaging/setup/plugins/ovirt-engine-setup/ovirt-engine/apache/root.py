@@ -102,8 +102,8 @@ class Plugin(plugin.PluginBase):
                 dialog=self.dialog,
                 name='OVESETUP_APACHE_CONFIG_ROOT_REDIRECTION',
                 note=_(
-                    'Do you wish to set the application as the default page '
-                    'of the web server? (@VALUES@) [@DEFAULT@]: '
+                    '웹 서버의 기본 페이지를 애플리케이션으로 설정하시겠습니까? '
+                    '(@VALUES@) [@DEFAULT@]: '
                 ),
                 prompt=True,
                 default=self.environment[

@@ -89,7 +89,7 @@ class Plugin(plugin.PluginBase):
                 name='OVESETUP_DIALOG_CONFIRM_SETTINGS',
                 note=_(
                     '\n'
-                    'Please confirm installation settings '
+                    '설치 설정을 확인해 주세요 '
                     '(@VALUES@) [@DEFAULT@]: '
                 ),
                 prompt=True,

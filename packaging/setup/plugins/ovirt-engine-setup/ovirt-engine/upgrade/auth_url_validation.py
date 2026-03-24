@@ -92,7 +92,7 @@ class Plugin(plugin.PluginBase):
                 ),
                 note=_(
                     'Provider {} has an invalid authentication URL \'{}\'.\n'
-                    'The authentication URL must have the following format: '
+                    '인증 URL은 다음 형식이어야 합니다: '
                     '"https://hostname:port/v3" or '
                     '"http://hostname:port/v3"\n'
                     'Enter new authentication URL or [Ctrl][c] to abort: '

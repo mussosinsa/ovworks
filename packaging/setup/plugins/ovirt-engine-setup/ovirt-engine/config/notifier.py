@@ -63,13 +63,12 @@ class Plugin(plugin.PluginBase):
                 dialog=self.dialog,
                 name='OVESETUP_WAIT_NOTIFIER_FILTER',
                 note=_(
-                    'Setup found filter/s in engine-notifier configuration '
-                    'files in {conf}.d/*.conf containing the string '
-                    '"VDS_GROUP".\n You must manually change "VDS_GROUP" to '
-                    '"CLUSTER" throughout the notifier configuration in '
-                    'order to get notified on cluster related events.\n Do '
-                    'you want to continue?\n'
-                    '(Answering "no" will stop the upgrade '
+                    'Setup이 {conf}.d/*.conf 의 engine-notifier 설정 파일에서 '
+                    '"VDS_GROUP" 문자열을 포함한 필터를 찾았습니다.\n'
+                    '클러스터 관련 이벤트 알림을 받으려면 notifier 설정 전반에서 '
+                    '"VDS_GROUP"을 "CLUSTER"로 수동 변경해야 합니다.\n'
+                    '계속 진행하시겠습니까?\n'
+                    '("아니오"를 선택하면 업그레이드가 중단됩니다 '
                     '(@VALUES@) [@DEFAULT@]: '
                 ).format(
                     conf=(

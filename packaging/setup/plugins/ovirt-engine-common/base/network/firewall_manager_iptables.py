@@ -170,9 +170,8 @@ class Plugin(plugin.PluginBase):
                         dialog=self.plugin.dialog,
                         name='OVESETUP_REVIEW_IPTABLES_CHANGES',
                         note=_(
-                            'Generated iptables rules are different '
-                            'from current ones.\n'
-                            'Do you want to review them? '
+                            '생성된 iptables 규칙이 현재 규칙과 다릅니다.\n'
+                            '검토하시겠습니까? '
                             '(@VALUES@) [@DEFAULT@]: '
                         ),
                         prompt=True,
@@ -201,10 +200,9 @@ class Plugin(plugin.PluginBase):
                             dialog=self.plugin.dialog,
                             name='OVESETUP_CONFIRM_IPTABLES_CHANGES',
                             note=_(
-                                'Please review the changes:\n\n'
+                                '변경 사항을 확인해 주세요:\n\n'
                                 '{diff}\n\n'
-                                'Do you want to proceed with firewall '
-                                'configuration? '
+                                '방화벽 설정을 진행하시겠습니까? '
                                 '(@VALUES@) [@DEFAULT@]: '
                             ).format(
                                 diff=diff_lines

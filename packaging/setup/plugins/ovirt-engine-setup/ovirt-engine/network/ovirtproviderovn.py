@@ -421,7 +421,7 @@ class Plugin(plugin.PluginBase):
             dialog=self.dialog,
             name='ovirt-provider-ovn-default-credentials',
             note=_(
-                'Use default credentials (%s) for '
+                '다음 기본 자격 증명(%s)을 사용하시겠습니까: '
                 'ovirt-provider-ovn (@VALUES@) [@DEFAULT@]: ' % user
             ),
             prompt=True,
@@ -432,7 +432,7 @@ class Plugin(plugin.PluginBase):
         return self.dialog.queryString(
             name='ovirt-provider-ovn-user',
             note=_(
-                'oVirt OVN provider user'
+                'oVirt OVN provider 사용자'
                 '[@DEFAULT@]: '
             ),
             prompt=True,
@@ -443,7 +443,7 @@ class Plugin(plugin.PluginBase):
         return self.dialog.queryString(
             name='ovirt-provider-ovn-password',
             note=_(
-                'oVirt OVN provider password: '
+                'oVirt OVN provider 비밀번호: '
             ),
             prompt=True,
             hidden=True,

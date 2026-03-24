@@ -186,8 +186,8 @@ class Plugin(plugin.PluginBase):
                 dialog=self.dialog,
                 name='OVESETUP_APACHE_CONFIG_SSL',
                 note=_(
-                    'Do you wish Setup to configure that, or prefer to '
-                    'perform that manually? (@VALUES@) [@DEFAULT@]: '
+                    'Setup이 자동으로 설정하도록 하시겠습니까, 아니면 '
+                    '수동으로 수행하시겠습니까? (@VALUES@) [@DEFAULT@]: '
                 ),
                 prompt=True,
                 true=_('Automatic'),
@@ -231,9 +231,9 @@ class Plugin(plugin.PluginBase):
             dialog=self.dialog,
             name='OVESETUP_APACHE_RECONFIG_SSL',
             note=_(
-                'Apache httpd SSL was already configured in the past, '
+                'Apache httpd SSL이 과거에 이미 설정되었지만, '
                 'but some needed changes are missing there.\n'
-                'Configure again? (@VALUES@) [@DEFAULT@]: '
+                '다시 설정하시겠습니까? (@VALUES@) [@DEFAULT@]: '
             ),
             prompt=True,
             true=_('Yes'),

@@ -51,9 +51,9 @@ class Plugin(plugin.PluginBase):
             validValues=validValues,
             caseSensitive=False,
             note=_(
-                'The database requires these configurations values to be '
-                'changed. Setup can fix them for you or abort.'
-                ' Fix automatically? ('
+                '데이터베이스에 필요한 설정 값 변경이 필요합니다. '
+                'Setup이 자동으로 수정하거나 중단할 수 있습니다.'
+                ' 자동으로 수정하시겠습니까? ('
                 '@VALUES@) [@DEFAULT@]: '
             ),
             prompt=True,
