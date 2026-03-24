@@ -13,12 +13,14 @@
 from otopi import util
 
 from . import ca
+from . import decrypt
 from . import misc
 
 
 @util.export
 def createPlugins(context):
     ca.Plugin(context=context)
+    decrypt.Plugin(context=context)
     misc.Plugin(context=context)
 
 
