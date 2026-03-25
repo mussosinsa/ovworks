@@ -36,12 +36,35 @@ load_base_config() {
 	done
 }
 
+is_sourceable_config_file() {
+	local conf="$1"
+	[ -r "${conf}" ] || return 1
+	LC_ALL=C grep -q '[^[:print:][:space:]]' "${conf}" && return 1
+	return 0
+}
+
+source_config_file_if_possible() {
+	local conf="$1"
+
+	[ -e "${conf}" ] || return 0
+
+	if ! is_sourceable_config_file "${conf}"; then
+		decrypt_config_if_allowed "${conf}"
+	fi
+
+	if is_sourceable_config_file "${conf}"; then
+		. "${conf}"
+	else
+		echo "WARN: Skipping unreadable/encrypted configuration file: ${conf}" >&2
+	fi
+}
+
 load_config_dir() {
 	for f in \
 		$([ -d "${ENGINE_VARS}.d" ] && find "${ENGINE_VARS}.d" -name '*.conf' | sort) \
 		; do
 
-		[ -r "${f}" ] && . "${f}"
+		source_config_file_if_possible "${f}"
 	done
 }
 
@@ -152,7 +175,7 @@ my_load_config() {
 	load_config_dir
 
 	for f in "${DWH_CONFIG}" "${DWH_CONFIG}".d/*.conf; do
-		[ -e "${f}" ] && . "${f}"
+		source_config_file_if_possible "${f}"
 	done
 
 	load_branding
