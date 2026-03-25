@@ -65,6 +65,38 @@ source_d init
 
 _DECRYPT_ALLOWED_BASENAMES="internal.properties 10-setup-database.conf 10-setup-dwh-database.conf"
 ENCRYPTOR_TOOL="/usr/share/ovirt-engine/encryptor/encryptor.py"
+DECRYPT_RESTORE_FILES=""
+
+register_decrypt_restore_file() {
+	local original="$1"
+	local restore="$2"
+	DECRYPT_RESTORE_FILES="${DECRYPT_RESTORE_FILES}
+${original}|${restore}"
+}
+
+restore_decrypted_configs() {
+	local entry=""
+	local original=""
+	local restore=""
+
+	[ -n "${DECRYPT_RESTORE_FILES}" ] || return 0
+
+	while IFS= read -r entry; do
+		[ -n "${entry}" ] || continue
+		original="${entry%%|*}"
+		restore="${entry#*|}"
+		[ -n "${original}" ] || continue
+		[ -n "${restore}" ] || continue
+		if [ -f "${restore}" ]; then
+			cp -a "${restore}" "${original}" >/dev/null 2>&1 || true
+			rm -f "${restore}" >/dev/null 2>&1 || true
+		fi
+	done << __DECRYPT_RESTORE_FILES__
+${DECRYPT_RESTORE_FILES}
+__DECRYPT_RESTORE_FILES__
+
+	DECRYPT_RESTORE_FILES=""
+}
 
 decrypt_config_if_allowed() {
 	local conf="$1"
@@ -95,13 +127,13 @@ decrypt_config_if_allowed() {
 	}
 
 	if "${python_bin}" "${ENCRYPTOR_TOOL}" --decrypt "${conf}" >/dev/null 2>&1; then
-		rm -f "${restore}"
+		register_decrypt_restore_file "${conf}" "${restore}"
 		return 0
 	fi
 	cp -a "${restore}" "${conf}" >/dev/null 2>&1 || true
 
 	if "${python_bin}" "${ENCRYPTOR_TOOL}" -d "${conf}" >/dev/null 2>&1; then
-		rm -f "${restore}"
+		register_decrypt_restore_file "${conf}" "${restore}"
 		return 0
 	fi
 	cp -a "${restore}" "${conf}" >/dev/null 2>&1 || true
@@ -286,6 +318,7 @@ FAILURE_NOTIFIED=
 
 cleanup() {
 	ec="$?"
+	restore_decrypted_configs
 	source_d cleanup
 	if [ -n "${ENGINE_DB_USER}" -a "${ec}" = '1' -a "${MODE}" = "backup" -a -z "${FAILURE_NOTIFIED}" ] && [ -n "${LOG}" ]; then
 		FAILURE_NOTIFIED=1
