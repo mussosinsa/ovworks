@@ -39,7 +39,7 @@ load_base_config() {
 is_sourceable_config_file() {
 	local conf="$1"
 	[ -r "${conf}" ] || return 1
-	LC_ALL=C grep -q '[^[:print:][:space:]]' "${conf}" && return 1
+	bash -n "${conf}" >/dev/null 2>&1 || return 1
 	return 0
 }
 
@@ -55,6 +55,9 @@ source_config_file_if_possible() {
 	if is_sourceable_config_file "${conf}"; then
 		. "${conf}"
 	else
+		if [ "${conf}" = "${ENGINE_ETC}/engine.conf.d/10-setup-database.conf" ]; then
+			die "Cannot parse required database configuration file: ${conf}"
+		fi
 		echo "WARN: Skipping unreadable/encrypted configuration file: ${conf}" >&2
 	fi
 }
