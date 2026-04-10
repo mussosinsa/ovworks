@@ -28,6 +28,7 @@ public class SetTerminalIpAuthCommand extends CommandBase<TerminalIpAuthParamete
             setSucceeded(true);
         } catch (IOException ex) {
             log.error("Failed to update terminal IP auth config", ex); //$NON-NLS-1$
+            getReturnValue().getExecuteFailedMessages().add(ex.getMessage());
             setSucceeded(false);
         }
     }
