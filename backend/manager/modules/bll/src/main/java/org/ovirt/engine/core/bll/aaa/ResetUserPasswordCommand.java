@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 public class ResetUserPasswordCommand extends CommandBase<UserPasswordResetParameters> {
 
     private static final Logger log = LoggerFactory.getLogger(ResetUserPasswordCommand.class);
+    private static final int MIN_PASSWORD_LENGTH = 12;
 
     @Inject
     private DbUserDao dbUserDao;
@@ -54,6 +55,13 @@ public class ResetUserPasswordCommand extends CommandBase<UserPasswordResetParam
         }
 
         String username = user.getLoginName();
+
+        if (newPassword == null || newPassword.length() < MIN_PASSWORD_LENGTH) {
+            getReturnValue().getExecuteFailedMessages().add(
+                    String.format("패스워드는 최소 %d자리 이상이어야 합니다.", MIN_PASSWORD_LENGTH));
+            setSucceeded(false);
+            return;
+        }
 
         try {
             // Calculate password valid-to date (10 years from now)
