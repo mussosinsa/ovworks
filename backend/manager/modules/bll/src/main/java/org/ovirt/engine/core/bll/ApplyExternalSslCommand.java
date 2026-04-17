@@ -17,9 +17,9 @@ import org.ovirt.engine.core.bll.context.CommandContext;
 import org.ovirt.engine.core.bll.utils.PermissionSubject;
 import org.ovirt.engine.core.common.AuditLogType;
 import org.ovirt.engine.core.common.VdcObjectType;
-import org.ovirt.engine.core.common.action.ActionParametersBase;
 import org.ovirt.engine.core.common.action.ActionReturnValue;
 import org.ovirt.engine.core.common.action.ActionType;
+import org.ovirt.engine.core.common.action.ApplyExternalSslParameters;
 import org.ovirt.engine.core.common.action.VdsActionParameters;
 import org.ovirt.engine.core.common.businessentities.VDS;
 import org.ovirt.engine.core.common.businessentities.VDSStatus;
@@ -28,19 +28,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @NonTransactiveCommandAttribute
-public class ApplyExternalSslCommand extends CommandBase<ActionParametersBase> {
+public class ApplyExternalSslCommand extends CommandBase<ApplyExternalSslParameters> {
 
     private static final Logger log = LoggerFactory.getLogger(ApplyExternalSslCommand.class);
 
     private static final String ENGINE_SETUP = "/usr/bin/engine-setup"; //$NON-NLS-1$
     private static final String SYSTEMCTL = "/usr/bin/systemctl"; //$NON-NLS-1$
     private static final String OPENSSL = "/usr/bin/openssl"; //$NON-NLS-1$
-    private static final String ENGINE_CERT_FILE = "/etc/pki/ovirt-engine/certs/apache.cer"; //$NON-NLS-1$
+    private static final String DEFAULT_PRIVATE_KEY = "/etc/pki/ovirt-engine/keys/apache.key.nopass"; //$NON-NLS-1$
+    private static final String DEFAULT_SERVER_CERT = "/etc/pki/ovirt-engine/certs/apache.cer"; //$NON-NLS-1$
+    private static final String DEFAULT_CA_CHAIN = "/etc/pki/ovirt-engine/apache-ca.pem"; //$NON-NLS-1$
 
     @Inject
     private VdsDao vdsDao;
 
-    public ApplyExternalSslCommand(ActionParametersBase parameters, CommandContext cmdContext) {
+    public ApplyExternalSslCommand(ApplyExternalSslParameters parameters, CommandContext cmdContext) {
         super(parameters, cmdContext);
     }
 
@@ -80,12 +82,22 @@ public class ApplyExternalSslCommand extends CommandBase<ActionParametersBase> {
         validateExecutableExists(ENGINE_SETUP);
         validateExecutableExists(SYSTEMCTL);
         validateExecutableExists(OPENSSL);
+        validateFileExistsAndReadable(resolvePrivateKeyPath());
+        validateFileExistsAndReadable(resolveServerCertificatePath());
+        validateFileExistsAndReadable(resolveCaChainPath());
     }
 
     private void validateExecutableExists(String executablePath) throws IOException {
         File executable = new File(executablePath);
         if (!executable.exists() || !executable.canExecute()) {
             throw new IOException("Required executable is missing or not executable: " + executablePath); //$NON-NLS-1$
+        }
+    }
+
+    private void validateFileExistsAndReadable(String filePath) throws IOException {
+        File file = new File(filePath);
+        if (!file.exists() || !file.isFile() || !file.canRead()) {
+            throw new IOException("Required SSL input file is missing or not readable: " + filePath); //$NON-NLS-1$
         }
     }
 
@@ -113,18 +125,50 @@ public class ApplyExternalSslCommand extends CommandBase<ActionParametersBase> {
         runCommand(Arrays.asList(SYSTEMCTL, "is-active", "--quiet", "httpd"), "verify httpd is active"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         runCommand(Arrays.asList(SYSTEMCTL, "is-active", "--quiet", "ovirt-engine"), "verify ovirt-engine is active"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
+        runCommand(Arrays.asList("/usr/bin/chmod", "600", resolvePrivateKeyPath()), "set private key permissions"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        runCommand(Arrays.asList("/usr/bin/chown", "ovirt:ovirt", resolvePrivateKeyPath()), "set private key owner"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+
         runCommand(
                 Arrays.asList(
                         OPENSSL,
                         "x509", //$NON-NLS-1$
                         "-in", //$NON-NLS-1$
-                        ENGINE_CERT_FILE,
+                        resolveServerCertificatePath(),
                         "-noout", //$NON-NLS-1$
                         "-subject", //$NON-NLS-1$
                         "-issuer", //$NON-NLS-1$
                         "-dates" //$NON-NLS-1$
                 ),
                 "verify engine Apache certificate"); //$NON-NLS-1$
+
+        runCommand(
+                Arrays.asList(
+                        OPENSSL,
+                        "verify", //$NON-NLS-1$
+                        "-CAfile", //$NON-NLS-1$
+                        resolveCaChainPath(),
+                        resolveServerCertificatePath()
+                ),
+                "verify server certificate with provided CA chain"); //$NON-NLS-1$
+    }
+
+    private String resolvePrivateKeyPath() {
+        return normalizeOrDefault(getParameters().getServerPrivateKeyPath(), DEFAULT_PRIVATE_KEY);
+    }
+
+    private String resolveServerCertificatePath() {
+        return normalizeOrDefault(getParameters().getServerCertificatePath(), DEFAULT_SERVER_CERT);
+    }
+
+    private String resolveCaChainPath() {
+        return normalizeOrDefault(getParameters().getCaChainPath(), DEFAULT_CA_CHAIN);
+    }
+
+    private String normalizeOrDefault(String value, String defaultValue) {
+        if (value == null || value.trim().isEmpty()) {
+            return defaultValue;
+        }
+        return value.trim();
     }
 
     private void enrollHostCertificates() throws IOException {

@@ -2,18 +2,23 @@ package org.ovirt.engine.ui.webadmin.section.main.view.popup.security;
 
 import org.gwtbootstrap3.client.ui.Button;
 import org.gwtbootstrap3.client.ui.constants.ButtonType;
-import org.ovirt.engine.core.common.action.ActionParametersBase;
 import org.ovirt.engine.core.common.action.ActionType;
+import org.ovirt.engine.core.common.action.ApplyExternalSslParameters;
 import org.ovirt.engine.ui.frontend.Frontend;
 
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.TextBox;
 
 public class ExternalSslView extends Composite {
 
     private final Button applyButton = new Button("외부 SSL 적용"); //$NON-NLS-1$
+    private final TextBox privateKeyPath = new TextBox();
+    private final TextBox certificatePath = new TextBox();
+    private final TextBox caChainPath = new TextBox();
 
     public ExternalSslView() {
         FlowPanel container = new FlowPanel();
@@ -32,6 +37,20 @@ public class ExternalSslView extends Composite {
                         + "</div>"); //$NON-NLS-1$
         container.add(guide);
 
+        privateKeyPath.setWidth("100%"); //$NON-NLS-1$
+        privateKeyPath.setText("/etc/pki/ovirt-engine/keys/apache.key.nopass"); //$NON-NLS-1$
+        certificatePath.setWidth("100%"); //$NON-NLS-1$
+        certificatePath.setText("/etc/pki/ovirt-engine/certs/apache.cer"); //$NON-NLS-1$
+        caChainPath.setWidth("100%"); //$NON-NLS-1$
+        caChainPath.setText("/etc/pki/ovirt-engine/apache-ca.pem"); //$NON-NLS-1$
+
+        container.add(new Label("1. 서버 개인키 경로")); //$NON-NLS-1$
+        container.add(privateKeyPath);
+        container.add(new Label("2. 서버 인증서 경로")); //$NON-NLS-1$
+        container.add(certificatePath);
+        container.add(new Label("3. CA 체인 파일 경로")); //$NON-NLS-1$
+        container.add(caChainPath);
+
         applyButton.setType(ButtonType.PRIMARY);
         applyButton.addClickHandler(event -> applyExternalSsl());
         container.add(applyButton);
@@ -41,9 +60,13 @@ public class ExternalSslView extends Composite {
 
     private void applyExternalSsl() {
         applyButton.setEnabled(false);
+        ApplyExternalSslParameters parameters = new ApplyExternalSslParameters(
+                privateKeyPath.getText(),
+                certificatePath.getText(),
+                caChainPath.getText());
         Frontend.getInstance().runAction(
                 ActionType.ApplyExternalSsl,
-                new ActionParametersBase(),
+                parameters,
                 result -> {
                     applyButton.setEnabled(true);
                     if (result != null
