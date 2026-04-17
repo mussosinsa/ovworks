@@ -61,6 +61,17 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
         sidebarHeader.getElement().getStyle().setProperty("backgroundColor", "#f8f8f8"); //$NON-NLS-1$ //$NON-NLS-2$
         sidebar.add(sidebarHeader);
 
+        // External SSL quick shortcut (always visible)
+        HTML externalSslShortcut = new HTML("외부 SSL 적용 바로가기"); //$NON-NLS-1$
+        externalSslShortcut.getElement().getStyle().setProperty("display", "block"); //$NON-NLS-1$ //$NON-NLS-2$
+        externalSslShortcut.getElement().getStyle().setProperty("padding", "10px 15px"); //$NON-NLS-1$ //$NON-NLS-2$
+        externalSslShortcut.getElement().getStyle().setProperty("cursor", "pointer"); //$NON-NLS-1$ //$NON-NLS-2$
+        externalSslShortcut.getElement().getStyle().setProperty("color", "#1a73e8"); //$NON-NLS-1$ //$NON-NLS-2$
+        externalSslShortcut.getElement().getStyle().setProperty("fontWeight", "bold"); //$NON-NLS-1$ //$NON-NLS-2$
+        externalSslShortcut.getElement().getStyle().setProperty("borderBottom", "1px solid #e5e5e5"); //$NON-NLS-1$ //$NON-NLS-2$
+        externalSslShortcut.addClickHandler(event -> showExternalSsl());
+        sidebar.add(externalSslShortcut);
+
         // Create menu items
         integrityCheckMenuItem = new HTML("무결성 검사"); //$NON-NLS-1$
         integrityCheckMenuItem.setStyleName("security-menu-item security-menu-item-active"); //$NON-NLS-1$
