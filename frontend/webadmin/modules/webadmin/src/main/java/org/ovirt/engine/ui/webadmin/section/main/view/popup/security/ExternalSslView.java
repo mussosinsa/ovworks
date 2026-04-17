@@ -26,7 +26,9 @@ public class ExternalSslView extends Composite {
         HTML guide = new HTML(
                 "<div style='margin-bottom:10px;color:#666;'>"
                         + "외부 SSL 적용을 실행하면 engine-setup을 통해 SSL 설정을 적용하고 "
-                        + "httpd 및 ovirt-engine 서비스를 재시작합니다."
+                        + "httpd/ovirt-engine 서비스 상태와 Apache 인증서를 검증합니다. "
+                        + "또한 모든 호스트 인증서 재등록(Enroll Certificate)을 순차 실행합니다. "
+                        + "실행 전 모든 호스트를 유지보수(Maintenance) 상태로 전환해야 합니다."
                         + "</div>"); //$NON-NLS-1$
         container.add(guide);
 
