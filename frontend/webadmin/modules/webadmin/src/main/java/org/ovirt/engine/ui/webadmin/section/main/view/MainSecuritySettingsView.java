@@ -4,6 +4,7 @@ import org.ovirt.engine.ui.common.uicommon.model.MainModelProvider;
 import org.ovirt.engine.ui.uicommonweb.models.SecuritySettingsListModel;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.MainSecuritySettingsPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.ClientManagementView;
+import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.ExternalSslView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.IntegrityCheckView;
 
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -16,19 +17,23 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
 
     private final IntegrityCheckView integrityCheckView;
     private final ClientManagementView clientManagementView;
+    private final ExternalSslView externalSslView;
     private SimplePanel contentPanel;
     private HTML integrityCheckMenuItem;
     private HTML clientManagementMenuItem;
+    private HTML externalSslMenuItem;
     private HTML currentActiveMenuItem;
 
     @Inject
     public MainSecuritySettingsView(MainModelProvider<Object, SecuritySettingsListModel> modelProvider,
             IntegrityCheckView integrityCheckView,
-            ClientManagementView clientManagementView) {
+            ClientManagementView clientManagementView,
+            ExternalSslView externalSslView) {
         super(modelProvider);
 
         this.integrityCheckView = integrityCheckView;
         this.clientManagementView = clientManagementView;
+        this.externalSslView = externalSslView;
 
         // Hide the default table to show the custom layout.
         getTable().setVisible(false);
@@ -76,6 +81,14 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
         clientManagementMenuItem.getElement().getStyle().setProperty("borderBottom", "1px solid #f0f0f0"); //$NON-NLS-1$ //$NON-NLS-2$
         sidebar.add(clientManagementMenuItem);
 
+        externalSslMenuItem = new HTML("외부 SSL"); //$NON-NLS-1$
+        externalSslMenuItem.setStyleName("security-menu-item"); //$NON-NLS-1$
+        externalSslMenuItem.getElement().getStyle().setProperty("display", "block"); //$NON-NLS-1$ //$NON-NLS-2$
+        externalSslMenuItem.getElement().getStyle().setProperty("padding", "10px 15px"); //$NON-NLS-1$ //$NON-NLS-2$
+        externalSslMenuItem.getElement().getStyle().setProperty("cursor", "pointer"); //$NON-NLS-1$ //$NON-NLS-2$
+        externalSslMenuItem.getElement().getStyle().setProperty("borderBottom", "1px solid #f0f0f0"); //$NON-NLS-1$ //$NON-NLS-2$
+        sidebar.add(externalSslMenuItem);
+
         // Add sidebar to main container
         mainContainer.add(sidebar);
 
@@ -105,6 +118,7 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
     private void initializeHandlers() {
         integrityCheckMenuItem.addClickHandler(event -> showIntegrityCheck());
         clientManagementMenuItem.addClickHandler(event -> showClientManagement());
+        externalSslMenuItem.addClickHandler(event -> showExternalSsl());
     }
 
     private void showIntegrityCheck() {
@@ -115,6 +129,11 @@ public class MainSecuritySettingsView extends AbstractMainWithDetailsTableView<O
     private void showClientManagement() {
         setActiveMenuItem(clientManagementMenuItem);
         contentPanel.setWidget(clientManagementView);
+    }
+
+    private void showExternalSsl() {
+        setActiveMenuItem(externalSslMenuItem);
+        contentPanel.setWidget(externalSslView);
     }
 
     private void setActiveMenuItem(HTML menuItem) {
