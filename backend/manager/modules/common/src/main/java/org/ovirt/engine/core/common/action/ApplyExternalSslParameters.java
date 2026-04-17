@@ -7,6 +7,9 @@ public class ApplyExternalSslParameters extends ActionParametersBase {
     private String serverPrivateKeyPath;
     private String serverCertificatePath;
     private String caChainPath;
+    private String serverPrivateKeyContent;
+    private String serverCertificateContent;
+    private String caChainContent;
 
     public ApplyExternalSslParameters() {
         // For serialization.
@@ -40,5 +43,29 @@ public class ApplyExternalSslParameters extends ActionParametersBase {
 
     public void setCaChainPath(String caChainPath) {
         this.caChainPath = caChainPath;
+    }
+
+    public String getServerPrivateKeyContent() {
+        return serverPrivateKeyContent;
+    }
+
+    public void setServerPrivateKeyContent(String serverPrivateKeyContent) {
+        this.serverPrivateKeyContent = serverPrivateKeyContent;
+    }
+
+    public String getServerCertificateContent() {
+        return serverCertificateContent;
+    }
+
+    public void setServerCertificateContent(String serverCertificateContent) {
+        this.serverCertificateContent = serverCertificateContent;
+    }
+
+    public String getCaChainContent() {
+        return caChainContent;
+    }
+
+    public void setCaChainContent(String caChainContent) {
+        this.caChainContent = caChainContent;
     }
 }

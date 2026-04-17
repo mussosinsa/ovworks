@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,9 +84,39 @@ public class ApplyExternalSslCommand extends CommandBase<ApplyExternalSslParamet
         validateExecutableExists(ENGINE_SETUP);
         validateExecutableExists(SYSTEMCTL);
         validateExecutableExists(OPENSSL);
+        applyUploadedSslContentIfProvided();
         validateFileExistsAndReadable(resolvePrivateKeyPath());
         validateFileExistsAndReadable(resolveServerCertificatePath());
         validateFileExistsAndReadable(resolveCaChainPath());
+    }
+
+    private void applyUploadedSslContentIfProvided() throws IOException {
+        writeUploadedFileIfPresent(
+                getParameters().getServerPrivateKeyContent(),
+                resolvePrivateKeyPath(),
+                "server private key"); //$NON-NLS-1$
+        writeUploadedFileIfPresent(
+                getParameters().getServerCertificateContent(),
+                resolveServerCertificatePath(),
+                "server certificate"); //$NON-NLS-1$
+        writeUploadedFileIfPresent(
+                getParameters().getCaChainContent(),
+                resolveCaChainPath(),
+                "CA chain"); //$NON-NLS-1$
+    }
+
+    private void writeUploadedFileIfPresent(String uploadedContent, String destinationPath, String description) throws IOException {
+        if (uploadedContent == null || uploadedContent.trim().isEmpty()) {
+            return;
+        }
+
+        Path destination = Path.of(destinationPath);
+        Path parent = destination.getParent();
+        if (parent == null || !Files.exists(parent) || !Files.isDirectory(parent) || !Files.isWritable(parent)) {
+            throw new IOException("Cannot write uploaded " + description + " to destination: " + destinationPath); //$NON-NLS-1$ //$NON-NLS-2$
+        }
+
+        Files.writeString(destination, uploadedContent, StandardCharsets.UTF_8);
     }
 
     private void validateExecutableExists(String executablePath) throws IOException {

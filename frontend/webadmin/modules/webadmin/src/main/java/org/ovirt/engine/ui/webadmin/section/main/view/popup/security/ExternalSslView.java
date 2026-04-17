@@ -8,17 +8,17 @@ import org.ovirt.engine.ui.frontend.Frontend;
 
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.FileUpload;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.TextBox;
 
 public class ExternalSslView extends Composite {
 
     private final Button applyButton = new Button("외부 SSL 적용"); //$NON-NLS-1$
-    private final TextBox privateKeyPath = new TextBox();
-    private final TextBox certificatePath = new TextBox();
-    private final TextBox caChainPath = new TextBox();
+    private final FileUpload privateKeyUpload = new FileUpload();
+    private final FileUpload certificateUpload = new FileUpload();
+    private final FileUpload caChainUpload = new FileUpload();
 
     public ExternalSslView() {
         FlowPanel container = new FlowPanel();
@@ -37,19 +37,19 @@ public class ExternalSslView extends Composite {
                         + "</div>"); //$NON-NLS-1$
         container.add(guide);
 
-        privateKeyPath.setWidth("100%"); //$NON-NLS-1$
-        privateKeyPath.setText("/etc/pki/ovirt-engine/keys/apache.key.nopass"); //$NON-NLS-1$
-        certificatePath.setWidth("100%"); //$NON-NLS-1$
-        certificatePath.setText("/etc/pki/ovirt-engine/certs/apache.cer"); //$NON-NLS-1$
-        caChainPath.setWidth("100%"); //$NON-NLS-1$
-        caChainPath.setText("/etc/pki/ovirt-engine/apache-ca.pem"); //$NON-NLS-1$
+        privateKeyUpload.getElement().setAttribute("accept", ".key,.pem,.txt"); //$NON-NLS-1$ //$NON-NLS-2$
+        privateKeyUpload.getElement().getStyle().setProperty("width", "100%"); //$NON-NLS-1$ //$NON-NLS-2$
+        certificateUpload.getElement().setAttribute("accept", ".crt,.cer,.pem,.txt"); //$NON-NLS-1$ //$NON-NLS-2$
+        certificateUpload.getElement().getStyle().setProperty("width", "100%"); //$NON-NLS-1$ //$NON-NLS-2$
+        caChainUpload.getElement().setAttribute("accept", ".crt,.cer,.pem,.txt"); //$NON-NLS-1$ //$NON-NLS-2$
+        caChainUpload.getElement().getStyle().setProperty("width", "100%"); //$NON-NLS-1$ //$NON-NLS-2$
 
-        container.add(new Label("1. 서버 개인키 경로")); //$NON-NLS-1$
-        container.add(privateKeyPath);
-        container.add(new Label("2. 서버 인증서 경로")); //$NON-NLS-1$
-        container.add(certificatePath);
-        container.add(new Label("3. CA 체인 파일 경로")); //$NON-NLS-1$
-        container.add(caChainPath);
+        container.add(new Label("1. 서버 개인키 파일 업로드")); //$NON-NLS-1$
+        container.add(privateKeyUpload);
+        container.add(new Label("2. 서버 인증서 파일 업로드")); //$NON-NLS-1$
+        container.add(certificateUpload);
+        container.add(new Label("3. CA 체인 파일 업로드")); //$NON-NLS-1$
+        container.add(caChainUpload);
 
         applyButton.setType(ButtonType.PRIMARY);
         applyButton.addClickHandler(event -> applyExternalSsl());
@@ -59,30 +59,105 @@ public class ExternalSslView extends Composite {
     }
 
     private void applyExternalSsl() {
+        if (!hasSelectedFile(privateKeyUpload) || !hasSelectedFile(certificateUpload) || !hasSelectedFile(caChainUpload)) {
+            Window.alert("서버 개인키, 서버 인증서, CA 체인 파일을 모두 업로드해 주세요."); //$NON-NLS-1$
+            return;
+        }
+
         applyButton.setEnabled(false);
-        ApplyExternalSslParameters parameters = new ApplyExternalSslParameters(
-                privateKeyPath.getText(),
-                certificatePath.getText(),
-                caChainPath.getText());
-        Frontend.getInstance().runAction(
-                ActionType.ApplyExternalSsl,
-                parameters,
-                result -> {
-                    applyButton.setEnabled(true);
-                    if (result != null
-                            && result.getReturnValue() != null
-                            && result.getReturnValue().getSucceeded()) {
-                        Window.alert("외부 SSL 적용이 완료되었습니다."); //$NON-NLS-1$
-                    } else {
-                        String errorMessage = "외부 SSL 적용에 실패했습니다."; //$NON-NLS-1$
-                        if (result != null
-                                && result.getReturnValue() != null
-                                && result.getReturnValue().getExecuteFailedMessages() != null
-                                && !result.getReturnValue().getExecuteFailedMessages().isEmpty()) {
-                            errorMessage += "\n" + String.join("\n", result.getReturnValue().getExecuteFailedMessages()); //$NON-NLS-1$ //$NON-NLS-2$
-                        }
+        readUploadedFile(privateKeyUpload, new FileReadCallback() {
+            @Override
+            public void onSuccess(String privateKeyFileName, String privateKeyContent) {
+                readUploadedFile(certificateUpload, new FileReadCallback() {
+                    @Override
+                    public void onSuccess(String certFileName, String certContent) {
+                        readUploadedFile(caChainUpload, new FileReadCallback() {
+                            @Override
+                            public void onSuccess(String caFileName, String caContent) {
+                                ApplyExternalSslParameters parameters = new ApplyExternalSslParameters();
+                                parameters.setServerPrivateKeyContent(privateKeyContent);
+                                parameters.setServerCertificateContent(certContent);
+                                parameters.setCaChainContent(caContent);
+
+                                Frontend.getInstance().runAction(
+                                        ActionType.ApplyExternalSsl,
+                                        parameters,
+                                        result -> {
+                                            applyButton.setEnabled(true);
+                                            if (result != null
+                                                    && result.getReturnValue() != null
+                                                    && result.getReturnValue().getSucceeded()) {
+                                                Window.alert("외부 SSL 적용이 완료되었습니다."); //$NON-NLS-1$
+                                            } else {
+                                                String errorMessage = "외부 SSL 적용에 실패했습니다."; //$NON-NLS-1$
+                                                if (result != null
+                                                        && result.getReturnValue() != null
+                                                        && result.getReturnValue().getExecuteFailedMessages() != null
+                                                        && !result.getReturnValue().getExecuteFailedMessages().isEmpty()) {
+                                                    errorMessage += "\n" //$NON-NLS-1$
+                                                            + String.join("\n", result.getReturnValue().getExecuteFailedMessages()); //$NON-NLS-1$
+                                                }
+                                                Window.alert(errorMessage);
+                                            }
+                                        });
+                            }
+
+                            @Override
+                            public void onError(String errorMessage) {
+                                applyButton.setEnabled(true);
+                                Window.alert(errorMessage);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        applyButton.setEnabled(true);
                         Window.alert(errorMessage);
                     }
                 });
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                applyButton.setEnabled(true);
+                Window.alert(errorMessage);
+            }
+        });
     }
+
+    private native boolean hasSelectedFile(FileUpload upload) /*-{
+        var input = upload.@com.google.gwt.user.client.ui.FileUpload::getElement()();
+        return !!(input && input.files && input.files.length > 0);
+    }-*/;
+
+    private interface FileReadCallback {
+        void onSuccess(String fileName, String content);
+        void onError(String errorMessage);
+    }
+
+    private native void readUploadedFile(FileUpload upload, FileReadCallback callback) /*-{
+        var input = upload.@com.google.gwt.user.client.ui.FileUpload::getElement()();
+        if (!input || !input.files || input.files.length === 0) {
+            callback.@org.ovirt.engine.ui.webadmin.section.main.view.popup.security.ExternalSslView.FileReadCallback::onError(Ljava/lang/String;)(
+                "업로드할 파일을 선택해 주세요."
+            );
+            return;
+        }
+
+        var file = input.files[0];
+        var reader = new FileReader();
+        reader.onload = $entry(function (event) {
+            callback.@org.ovirt.engine.ui.webadmin.section.main.view.popup.security.ExternalSslView.FileReadCallback::onSuccess(Ljava/lang/String;Ljava/lang/String;)(
+                file.name,
+                event.target.result
+            );
+        });
+        reader.onerror = $entry(function () {
+            callback.@org.ovirt.engine.ui.webadmin.section.main.view.popup.security.ExternalSslView.FileReadCallback::onError(Ljava/lang/String;)(
+                "파일을 읽는 중 오류가 발생했습니다: " + file.name
+            );
+        });
+        reader.readAsText(file);
+    }-*/;
 }
