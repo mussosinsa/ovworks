@@ -603,6 +603,10 @@ public class RunVmCommand<T extends RunVmParams> extends RunVmCommandBase<T>
     }
 
     protected VMStatus createVm() {
+        // Hardening: block VM guest file sharing channels.
+        getVm().setSpiceFileTransferEnabled(false);
+        getVm().setSpiceCopyPasteEnabled(false);
+
         updateCdPath();
         // set the path for windows guest tools secondary cd-rom
         if (getParameters().isAttachWgt()) {

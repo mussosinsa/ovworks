@@ -83,12 +83,9 @@ public class RunVmOnceCommand<T extends RunVmOnceParams> extends RunVmCommand<T>
         if (getParameters().getBootMenuEnabled() != null) {
             getVm().setBootMenuEnabled(getParameters().getBootMenuEnabled());
         }
-        if (getParameters().getSpiceFileTransferEnabled() != null) {
-            getVm().setSpiceFileTransferEnabled(getParameters().getSpiceFileTransferEnabled());
-        }
-        if (getParameters().getSpiceCopyPasteEnabled() != null) {
-            getVm().setSpiceCopyPasteEnabled(getParameters().getSpiceCopyPasteEnabled());
-        }
+        // Hardening: do not allow enabling VM file sharing channels in Run Once.
+        getVm().setSpiceFileTransferEnabled(false);
+        getVm().setSpiceCopyPasteEnabled(false);
         if (getParameters().getBootSequence() != null) {
             getVm().setBootSequence(getParameters().getBootSequence());
         }
