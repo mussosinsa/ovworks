@@ -110,7 +110,7 @@ public class SubTabNetworkProfileView extends AbstractSubTabTableView<NetworkVie
             }
         };
         networkFilterColumn.makeSortable();
-        getTable().addColumn(networkFilterColumn, constants.networkFilterNameVnicProfile(), "200px"); //$NON-NLS-1$
+        getTable().addColumn(networkFilterColumn, constants.networkFilterNameVnicProfile(), "240px"); //$NON-NLS-1$
 
         AbstractBooleanColumn<VnicProfileView> portMirroringColumn =
                 new AbstractBooleanColumn<VnicProfileView>(constants.portMirroringEnabled()) {
