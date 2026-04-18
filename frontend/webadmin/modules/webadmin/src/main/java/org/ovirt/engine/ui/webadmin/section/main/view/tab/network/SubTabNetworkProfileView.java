@@ -3,8 +3,8 @@ package org.ovirt.engine.ui.webadmin.section.main.view.tab.network;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.ovirt.engine.core.common.businessentities.network.NetworkView;
 import org.ovirt.engine.core.common.businessentities.network.NetworkFilter;
+import org.ovirt.engine.core.common.businessentities.network.NetworkView;
 import org.ovirt.engine.core.common.businessentities.network.VnicProfileView;
 import org.ovirt.engine.ui.common.idhandler.ElementIdHandler;
 import org.ovirt.engine.ui.common.presenter.FragmentParams;
