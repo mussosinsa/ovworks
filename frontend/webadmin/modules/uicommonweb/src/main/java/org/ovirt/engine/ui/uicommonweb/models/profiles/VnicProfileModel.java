@@ -338,8 +338,21 @@ public abstract class VnicProfileModel extends Model {
                 && !networkQoS.getId().equals(Guid.Empty)
                 ? networkQoS.getId() : null);
         NetworkFilter networkFilter = getNetworkFilter().getSelectedItem();
-        vnicProfile.setNetworkFilterId(networkFilter != null
-                ? networkFilter.getId() : null);
+        if (!vnicProfile.isPassthrough()) {
+            NetworkFilter mandatoryNetworkFilter = Linq.firstOrNull(
+                    getNetworkFilter().getItems(),
+                    new Linq.NamePredicate(NetworkFilter.BLOCK_FILE_SHARING));
+            Guid networkFilterId = null;
+            if (mandatoryNetworkFilter != null) {
+                networkFilterId = mandatoryNetworkFilter.getId();
+            } else if (networkFilter != null) {
+                networkFilterId = networkFilter.getId();
+            }
+            vnicProfile.setNetworkFilterId(networkFilterId);
+        } else {
+            vnicProfile.setNetworkFilterId(networkFilter != null
+                    ? networkFilter.getId() : null);
+        }
         VnicProfile failoverVnicProfile = getFailoverVnicProfile().getSelectedItem();
         vnicProfile.setFailoverVnicProfileId(failoverVnicProfile != null ? failoverVnicProfile.getId() : null);
         vnicProfile.setPortMirroring(getPortMirroring().getEntity());
