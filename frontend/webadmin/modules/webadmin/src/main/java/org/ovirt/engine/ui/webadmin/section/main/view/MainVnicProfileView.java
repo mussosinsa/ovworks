@@ -3,6 +3,7 @@ package org.ovirt.engine.ui.webadmin.section.main.view;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.ovirt.engine.core.common.businessentities.network.NetworkFilter;
 import org.ovirt.engine.core.common.businessentities.network.VnicProfileView;
 import org.ovirt.engine.ui.common.idhandler.ElementIdHandler;
 import org.ovirt.engine.ui.common.presenter.FragmentParams;
@@ -113,11 +114,14 @@ public class MainVnicProfileView extends AbstractMainWithDetailsTableView<VnicPr
         AbstractTextColumn<VnicProfileView> networkFilterColumn = new AbstractTextColumn<VnicProfileView>() {
             @Override
             public String getValue(VnicProfileView object) {
-                return object.getNetworkFilterName();
+                if (object != null && !object.isPassthrough()) {
+                    return NetworkFilter.BLOCK_FILE_SHARING;
+                }
+                return object != null ? object.getNetworkFilterName() : ""; //$NON-NLS-1$
             }
         };
         networkFilterColumn.makeSortable();
-        getTable().addColumn(networkFilterColumn, constants.networkFilterNameVnicProfile(), "240px"); //$NON-NLS-1$
+        getTable().addColumn(networkFilterColumn, constants.networkFilterNameVnicProfile(), "200px"); //$NON-NLS-1$
 
         AbstractBooleanColumn<VnicProfileView> portMirroringColumn =
                 new AbstractBooleanColumn<VnicProfileView>(constants.portMirroringEnabled()) {
