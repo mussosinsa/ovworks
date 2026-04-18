@@ -34,13 +34,17 @@
     <!-- Regular expression that matches types that GWT compiler shouldn't prune (avoid dead code optimization) -->
     <gwt.dontPrune>-Dgwt.dontPrune=org\.ovirt\.engine\.core\.(common|compat)\..*</gwt.dontPrune>
     <!-- Custom JVM arguments for GWT compiler and Dev Mode -->
-    <gwt.jvmArgs>-Xms1024M -Xmx8192M</gwt.jvmArgs>
+    <gwt.jvmXms>512M</gwt.jvmXms>
+    <gwt.jvmXmx>4096M</gwt.jvmXmx>
+    <gwt.jvmArgs>-Xms${gwt.jvmXms} -Xmx${gwt.jvmXmx}</gwt.jvmArgs>
+    <!-- Limit GWT permutation thread fan-out to reduce peak memory usage in constrained environments -->
+    <gwt.maxThreads>2</gwt.maxThreads>
     <!-- GWT compiler and Dev Mode JVM arguments, these override any Maven JVM arguments -->
     <!-- * use thread-based workers with maximum of 4 simultaneous threads, this value be lowered via gwt.compiler.localWorkers -->
     <!-- * scope Java temp directory and Java Preference subsystem files into project's build directory -->
     <!-- * use custom Java logging configuration -->
     <!-- Do not override this property, use gwt.jvmArgs instead! -->
-    <gwt-plugin.extraJvmArgs>-Dgwt.jjs.permutationWorkerFactory=com.google.gwt.dev.ThreadedPermutationWorkerFactory -Dgwt.jjs.maxThreads=4 -Djava.io.tmpdir="${project.build.directory}/tmp" -Djava.util.prefs.systemRoot="${project.build.directory}/tmp" -Djava.util.prefs.userRoot="${project.build.directory}/tmp" -Djava.util.logging.config.class=org.ovirt.engine.ui.gwtaop.JavaLoggingConfig ${gwt.jvmArgs}</gwt-plugin.extraJvmArgs>
+    <gwt-plugin.extraJvmArgs>-Dgwt.jjs.permutationWorkerFactory=com.google.gwt.dev.ThreadedPermutationWorkerFactory -Dgwt.jjs.maxThreads=${gwt.maxThreads} -Djava.io.tmpdir="${project.build.directory}/tmp" -Djava.util.prefs.systemRoot="${project.build.directory}/tmp" -Djava.util.prefs.userRoot="${project.build.directory}/tmp" -Djava.util.logging.config.class=org.ovirt.engine.ui.gwtaop.JavaLoggingConfig ${gwt.jvmArgs}</gwt-plugin.extraJvmArgs>
     <!-- Control target browsers for GWT compilation, maps to 'user.agent' deferred binding property in *.gwt.xml -->
     <!-- By default, compile for Firefox browser only, use 'all-user-agents' profile to compile for all browsers -->
     <gwt.userAgent>gecko1_8</gwt.userAgent>
