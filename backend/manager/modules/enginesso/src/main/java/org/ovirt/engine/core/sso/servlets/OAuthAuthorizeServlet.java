@@ -12,6 +12,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
@@ -105,8 +106,15 @@ public class OAuthAuthorizeServlet extends HttpServlet {
             HttpServletResponse response,
             SsoSession ssoSession) throws Exception {
         log.debug("Entered login queryString: {}", request.getQueryString());
-        String redirectUrl;
+        String clientSerial = request.getHeader("X-Client-Serial");
+        HttpSession session = request.getSession();
 
+        if (clientSerial != null) {
+            session.setAttribute("CLIENT_SERIAL", clientSerial);
+        }
+        log.info("CLIENT_SERIAL: {}", clientSerial);
+
+        String redirectUrl;
         if (SsoService.isUserAuthenticated(request)) {
             log.debug("User is authenticated redirecting to interactive-redirect-to-module");
             redirectUrl = request.getContextPath() + SsoConstants.INTERACTIVE_REDIRECT_TO_MODULE_URI;
@@ -177,4 +185,5 @@ public class OAuthAuthorizeServlet extends HttpServlet {
         }
         return authSeqList;
     }
+
 }

@@ -1,5 +1,6 @@
 package org.ovirt.engine.core;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Locale;
@@ -27,6 +28,9 @@ import org.ovirt.engine.core.utils.servlet.UnsupportedLocaleHelper;
 import org.ovirt.engine.core.uutils.net.URLBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * This Servlet serves the welcome page to allow users to select either web admin or user portal.
@@ -126,7 +130,7 @@ public class WelcomeServlet extends HttpServlet {
             ServletException {
         log.debug("Entered WelcomeServlet");
 
-	log.info("AAAAAAAAAAAAAAAAAA");
+        log.info("AAAAAAAAAAAAAAAAAA");
         log.debug("Entered WelcomeServlet");
         log.info("Entering WelcomeServlet with client serial validation");
 
