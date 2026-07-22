@@ -61,6 +61,24 @@ public class SsoDao {
         }, "Unable to find client info for client id " + clientId);
     }
 
+
+    public String getVdcOptionValue(String optionName) {
+        return executeQuery(ds -> {
+            String sql = "SELECT option_value FROM vdc_options WHERE option_name = ? ORDER BY option_id DESC LIMIT 1";
+            try (
+                    Connection connection = ds.getConnection();
+                    PreparedStatement ps = connection.prepareStatement(sql)) {
+                ps.setString(1, optionName);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getString("option_value");
+                    }
+                }
+            }
+            return null;
+        }, "Unable to find vdc option value for option " + optionName);
+    }
+
     public Map<String, List<String>> getAllSsoScopeDependencies() {
         return executeQuery(ds -> {
             Map<String, List<String>> map = new HashMap<>();

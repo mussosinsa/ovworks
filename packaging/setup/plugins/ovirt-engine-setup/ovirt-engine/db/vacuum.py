@@ -74,9 +74,9 @@ class Plugin(plugin.PluginBase):
             # some projects like check_postgres may supply that report
             # already. See https://github.com/bucardo/check_postgres
             note=_(
-                'Perform full vacuum on the engine database {db}@{host}?'
-                '\nThis operation may take a while'
-                ' depending on this setup health and the'
+                'engine 데이터베이스 {db}@{host} 에 대해 전체 vacuum을 수행하시겠습니까?'
+                '\n이 작업은 시간이 걸릴 수 있으며'
+                ' 현재 설정 상태와'
                 '\nconfiguration of the db vacuum process.'
                 '\nSee'
                 ' https://www.postgresql.org/docs/12/sql-vacuum.html'

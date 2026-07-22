@@ -132,8 +132,8 @@ class Plugin(plugin.PluginBase):
                 dialog=self.dialog,
                 name='OVESETUP_MEMCHECK_ENABLED',
                 note=_(
-                    'Do you want Setup to continue, with amount of memory '
-                    'less than recommended? (@VALUES@) [@DEFAULT@]: '
+                    '권장 메모리보다 적은 상태로 Setup을 계속 진행하시겠습니까? '
+                    '(@VALUES@) [@DEFAULT@]: '
                 ),
                 prompt=True,
                 true=_('Yes'),

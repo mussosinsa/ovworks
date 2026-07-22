@@ -520,6 +520,8 @@ public enum HelpTag {
 
     security_settings("security_settings", HelpTagType.UNKNOWN), //$NON-NLS-1$
 
+    audit_log("audit_log", HelpTagType.UNKNOWN), //$NON-NLS-1$
+
     set_unlimited_specific_quota("set_unlimited_specific_quota", HelpTagType.WEBADMIN, "Quota main tab -> New Quota dialog -> confirmation dialog on setting an 'unlimited' quota on a certain resource."), //$NON-NLS-1$ //$NON-NLS-2$
 
     snapshots("snapshots", HelpTagType.UNKNOWN), //$NON-NLS-1$

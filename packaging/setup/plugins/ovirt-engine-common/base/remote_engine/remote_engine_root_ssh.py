@@ -70,7 +70,7 @@ class Plugin(plugin.PluginBase):
                             self.dialog.queryString(
                                 name='SSH_ACCESS_REMOTE_ENGINE_PORT',
                                 note=_(
-                                    'ssh port on remote engine server '
+                                    '원격 engine 서버 ssh 포트 '
                                     '[@DEFAULT@]: '
                                 ),
                                 prompt=True,
@@ -129,7 +129,7 @@ class Plugin(plugin.PluginBase):
                         password = self.dialog.queryString(
                             name='SSH_ACCESS_REMOTE_ENGINE_PASSWORD',
                             note=_(
-                                'root password on remote engine server '
+                                '원격 engine 서버 root 비밀번호 '
                                 '{fqdn}: '
                             ).format(
                                 fqdn=self._fqdn,

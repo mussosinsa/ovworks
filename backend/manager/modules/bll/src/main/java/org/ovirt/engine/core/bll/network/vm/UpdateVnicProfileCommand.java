@@ -8,10 +8,12 @@ import javax.inject.Inject;
 
 import org.ovirt.engine.core.bll.RenamedEntityInfoProvider;
 import org.ovirt.engine.core.bll.context.CommandContext;
+import org.ovirt.engine.core.bll.network.cluster.NetworkHelper;
 import org.ovirt.engine.core.bll.validator.VnicProfileValidator;
 import org.ovirt.engine.core.common.AuditLogType;
 import org.ovirt.engine.core.common.VdcObjectType;
 import org.ovirt.engine.core.common.action.VnicProfileParameters;
+import org.ovirt.engine.core.common.businessentities.network.NetworkFilter;
 import org.ovirt.engine.core.common.businessentities.network.VmNic;
 import org.ovirt.engine.core.common.businessentities.network.VnicProfile;
 import org.ovirt.engine.core.common.errors.EngineMessage;
@@ -31,6 +33,8 @@ public class UpdateVnicProfileCommand<T extends VnicProfileParameters>
     private VmNicDao vmNicDao;
     @Inject
     private AuditLogDirector auditLogDirector;
+    @Inject
+    private NetworkHelper networkHelper;
 
     private VnicProfile oldVnicProfile;
 
@@ -61,9 +65,20 @@ public class UpdateVnicProfileCommand<T extends VnicProfileParameters>
     @Override
     protected void executeCommand() {
         getOldVnicProfile();
+        enforceMandatoryNetworkFilter();
         markVnicsOutOfSync();
         vnicProfileDao.update(getVnicProfile());
         setSucceeded(true);
+    }
+
+    private void enforceMandatoryNetworkFilter() {
+        if (getVnicProfile().isPassthrough()) {
+            getVnicProfile().setNetworkFilterId(null);
+            return;
+        }
+
+        NetworkFilter networkFilter = networkHelper.resolveVnicProfileDefaultNetworkFilter();
+        getVnicProfile().setNetworkFilterId(networkFilter == null ? null : networkFilter.getId());
     }
 
     private void markVnicsOutOfSync() {

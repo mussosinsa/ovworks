@@ -34,7 +34,7 @@
                     <e:ListModelListBoxEditor ui:field="networkQoSEditor" label="{constants.profileQoSInstanceTypeLabel}" usePatternFly="true" labelColSize="SM_6" widgetColSize="SM_6" />
                 </b:Row>
                 <b:Row>
-                    <e:ListModelListBoxEditor ui:field="networkFilterEditor" label="{constants.profileNetworkFilterLabel}" usePatternFly="true" labelColSize="SM_6" widgetColSize="SM_6" />
+                    <e:ListModelListBoxEditor ui:field="networkFilterEditor" label="{constants.profileNetworkFilterLabel}" usePatternFly="true" labelColSize="SM_4" widgetColSize="SM_8" />
                 </b:Row>
                 <b:Row>
                     <b:Column size="SM_12">
@@ -74,4 +74,3 @@
     </d:SimpleDialogPanel>
 
 </ui:UiBinder>
-

@@ -13,6 +13,7 @@ public class NetworkFilter implements Queryable, BusinessEntity<Guid>, Nameable 
     private static final long serialVersionUID = 479750365026775507L;
 
     public static final String VDSM_NO_MAC_SPOOFING = "vdsm-no-mac-spoofing";
+    public static final String BLOCK_FILE_SHARING = "block-file-sharing";
 
     private String name;
     /**

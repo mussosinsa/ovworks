@@ -12,12 +12,14 @@
 
 from otopi import util
 
+from . import acl
 from . import engine
 from . import memcheck
 
 
 @util.export
 def createPlugins(context):
+    acl.Plugin(context=context)
     engine.Plugin(context=context)
     memcheck.Plugin(context=context)
 

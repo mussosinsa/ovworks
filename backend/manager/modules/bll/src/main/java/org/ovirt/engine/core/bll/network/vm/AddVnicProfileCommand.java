@@ -62,7 +62,7 @@ public class AddVnicProfileCommand<T extends AddVnicProfileParameters> extends V
     }
 
     private void updateDefaultNetworkFilterIfRequired() {
-        if (getParameters().isUseDefaultNetworkFilterId() && !getVnicProfile().isPassthrough()) {
+        if (!getVnicProfile().isPassthrough()) {
             final NetworkFilter networkFilter = networkHelper.resolveVnicProfileDefaultNetworkFilter();
             if (networkFilter != null) {
                 final Guid networkFilterId = networkFilter.getId();

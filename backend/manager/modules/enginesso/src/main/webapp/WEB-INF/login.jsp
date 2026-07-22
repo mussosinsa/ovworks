@@ -1,5 +1,8 @@
 <%@ page pageEncoding="UTF-8" session="true" %>
 <%@ page import="org.ovirt.engine.core.sso.api.SsoConstants" %>
+<%@ page import="org.ovirt.engine.core.sso.utils.LoginEnvelopeCrypto" %>
+<%@ page import="java.util.logging.Level" %>
+<%@ page import="java.util.logging.Logger" %>
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -11,6 +14,17 @@
 <fmt:setBundle basename="sso-messages" var="loginpage" />
 <sso:getContext var="ssoContext" locale="ssoLocale" />
 <sso:getSession var="ssoSession" />
+<%
+    Logger logger = Logger.getLogger("org.ovirt.engine.sso.login");
+    String loginEncryptionPublicKey;
+    try {
+        loginEncryptionPublicKey = LoginEnvelopeCrypto.readRsaPublicKey();
+    } catch (Exception ex) {
+        loginEncryptionPublicKey = ""; //$NON-NLS-1$
+        logger.log(Level.WARNING, "Unable to read login encryption RSA public key.", ex);
+    }
+    pageContext.setAttribute("loginEncryptionPublicKey", loginEncryptionPublicKey); //$NON-NLS-1$
+%>
 
 <!DOCTYPE html>
 <html>
@@ -26,6 +40,122 @@
     <obrand:stylesheets />
     <obrand:javascripts />
     <script src="retain-fragment.js" type="text/javascript"></script>
+    <script type="text/javascript">
+    (function () {
+        function normalizePublicKey(key) {
+            if (!key) {
+                return null;
+            }
+
+            var trimmed = key.trim();
+            if (!trimmed) {
+                return null;
+            }
+
+            if (trimmed.indexOf('BEGIN PUBLIC KEY') === -1) {
+                var lines = trimmed.match(/.{1,64}/g) || [];
+                trimmed = '-----BEGIN PUBLIC KEY-----\n' + lines.join('\n') + '\n-----END PUBLIC KEY-----';
+            }
+
+            return trimmed;
+        }
+
+        function pemToArrayBuffer(pem) {
+            var base64 = pem.replace(/-----BEGIN PUBLIC KEY-----/g, '')
+                .replace(/-----END PUBLIC KEY-----/g, '')
+                .replace(/\s+/g, '');
+            var binary = window.atob(base64);
+            var bytes = new Uint8Array(binary.length);
+
+            for (var i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
+
+            return bytes.buffer;
+        }
+
+        function arrayBufferToBase64(buffer) {
+            var bytes = new Uint8Array(buffer);
+            var binary = '';
+
+            for (var i = 0; i < bytes.byteLength; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+
+            return window.btoa(binary);
+        }
+
+        async function encryptText(publicKey, value) {
+            var encrypted = await window.crypto.subtle.encrypt(
+                { name: 'RSA-OAEP' },
+                publicKey,
+                new TextEncoder().encode(value)
+            );
+
+            return arrayBufferToBase64(encrypted);
+        }
+
+        async function encryptAndSubmit(form) {
+            var publicKeyValue = normalizePublicKey(document.getElementById('loginPublicKey').value);
+
+            if (!publicKeyValue) {
+                throw new Error('LOGIN_ENCRYPTION_PUBLIC_KEY_MISSING');
+            }
+
+            if (!window.crypto || !window.crypto.subtle) {
+                throw new Error('LOGIN_ENCRYPTION_WEBCRYPTO_UNAVAILABLE');
+            }
+
+            var publicKey = await window.crypto.subtle.importKey(
+                'spki',
+                pemToArrayBuffer(publicKeyValue),
+                { name: 'RSA-OAEP', hash: 'SHA-256' },
+                false,
+                ['encrypt']
+            );
+            var usernameField = document.getElementById('username');
+            var passwordField = document.getElementById('password');
+
+            document.getElementById('encryptedUsername').value = await encryptText(publicKey, usernameField.value);
+            document.getElementById('encryptedPassword').value = await encryptText(publicKey, passwordField.value);
+
+            usernameField.value = '';
+            passwordField.value = '';
+            form.submit();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var form = document.getElementById('loginForm');
+
+            if (!form) {
+                return;
+            }
+
+            form.addEventListener('submit', function (event) {
+                if (form.dataset.encrypting === 'true') {
+                    return;
+                }
+
+                event.preventDefault();
+                form.dataset.encrypting = 'true';
+                encryptAndSubmit(form).catch(function (error) {
+                    form.dataset.encrypting = 'false';
+                    if (window.console && window.console.error) {
+                        window.console.error('Login encryption failed before submit.', error);
+                    }
+
+                    if (error && error.message === 'LOGIN_ENCRYPTION_PUBLIC_KEY_MISSING') {
+                        window.alert('로그인 암호화 키를 불러오지 못했습니다. 관리자에게 문의하세요.');
+                    } else if (error && error.message === 'LOGIN_ENCRYPTION_WEBCRYPTO_UNAVAILABLE') {
+                        window.alert('현재 브라우저에서 로그인 암호화를 지원하지 않습니다. 최신 브라우저를 사용해 주세요.');
+                    } else {
+                        window.alert('로그인 정보 암호화에 실패했습니다. 관리자에게 문의하세요.');
+                    }
+                });
+            });
+        });
+    }());
+    </script>
 </head>
 <body class="ovirt-container">
     <c:if test="${ssoSession.status == 'authenticated'}">
@@ -79,6 +209,10 @@
                             <a href="${ssoContext.changePasswordUrl}"><fmt:message key="loginpage.changepasswordlink" bundle="${loginpage}" /></a>
                             <c:set target="${ssoSession}" property="loginErrorCode" value="" />
                         </c:if>
+
+                        <input type="hidden" id="loginPublicKey" value="${fn:escapeXml(loginEncryptionPublicKey)}">
+                        <input type="hidden" id="encryptedUsername" name="encryptedUsername">
+                        <input type="hidden" id="encryptedPassword" name="encryptedPassword">
 
                         <input
                             type="hidden" class="pf-c-form-control" id="sessionIdToken"

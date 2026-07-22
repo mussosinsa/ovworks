@@ -50,8 +50,15 @@ public class NewVnicProfileModel extends VnicProfileModel {
 
     @Override
     protected void initSelectedNetworkFilter() {
-        getNetworkFilter().setSelectedItem(Linq.firstOrNull(getNetworkFilter().getItems(),
-                new Linq.NamePredicate(NetworkFilter.VDSM_NO_MAC_SPOOFING)));
+        NetworkFilter defaultFilter = Linq.firstOrNull(
+                getNetworkFilter().getItems(),
+                new Linq.NamePredicate(NetworkFilter.BLOCK_FILE_SHARING));
+        if (defaultFilter == null) {
+            defaultFilter = Linq.firstOrNull(
+                    getNetworkFilter().getItems(),
+                    new Linq.NamePredicate(NetworkFilter.VDSM_NO_MAC_SPOOFING));
+        }
+        getNetworkFilter().setSelectedItem(defaultFilter);
     }
 
     @Override

@@ -51,6 +51,8 @@ public enum QueryType implements Serializable {
     GetVmByVmIdForUpdate(QueryAuthType.User),
     HasTpmData,
     HasNvramData,
+    GetTerminalAuthSerial(QueryAuthType.User),
+    GetTerminalIpAuth(QueryAuthType.User),
 
     // Vds queries
     GetVdsByVdsId,

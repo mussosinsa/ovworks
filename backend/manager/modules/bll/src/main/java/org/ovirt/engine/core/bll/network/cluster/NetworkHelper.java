@@ -30,8 +30,6 @@ import org.ovirt.engine.core.common.businessentities.network.NetworkFilter;
 import org.ovirt.engine.core.common.businessentities.network.ProviderNetwork;
 import org.ovirt.engine.core.common.businessentities.network.VdsNetworkInterface;
 import org.ovirt.engine.core.common.businessentities.network.VnicProfile;
-import org.ovirt.engine.core.common.config.Config;
-import org.ovirt.engine.core.common.config.ConfigValues;
 import org.ovirt.engine.core.compat.Guid;
 import org.ovirt.engine.core.dao.network.InterfaceDao;
 import org.ovirt.engine.core.dao.network.NetworkDao;
@@ -128,10 +126,7 @@ public class NetworkHelper {
     }
 
     public NetworkFilter resolveVnicProfileDefaultNetworkFilter() {
-        if (Config.<Boolean> getValue(ConfigValues.EnableMACAntiSpoofingFilterRules)) {
-            return networkFilterDao.getNetworkFilterByName(NetworkFilter.VDSM_NO_MAC_SPOOFING);
-        }
-        return null;
+        return networkFilterDao.getNetworkFilterByName(NetworkFilter.BLOCK_FILE_SHARING);
     }
 
     public Network getNetworkByVnicProfileId(Guid vnicProfileId) {

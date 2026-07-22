@@ -194,5 +194,6 @@ public final class WebAdminApplicationPlaces {
     public static final String DEFAULT_MAIN_SECTION_PLACE = virtualMachineMainPlace;
 
     public static final String securitySettingsMainPlace = "securitySettings"; //$NON-NLS-1$
+    public static final String auditLogMainPlace = "allbackup"; //$NON-NLS-1$
 
 }

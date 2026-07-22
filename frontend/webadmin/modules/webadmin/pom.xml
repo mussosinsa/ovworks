@@ -273,6 +273,8 @@
               <runTarget>ovirt-engine/webadmin/WebAdmin.html</runTarget>
               <module>org.ovirt.engine.ui.webadmin.WebAdmin</module>
               <webappDirectory>${project.build.directory}/generated-gwt</webappDirectory>
+              <localWorkers>2</localWorkers>
+              <extraJvmArgs>${aspectj.agent} ${gwt-plugin.extraJvmArgs} ${gwt.dontPrune} --add-opens=java.base/java.lang.invoke=ALL-UNNAMED</extraJvmArgs>
             </configuration>
             <executions>
               <execution>

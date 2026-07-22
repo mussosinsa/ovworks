@@ -17,6 +17,7 @@ import org.ovirt.engine.core.sso.api.SsoContext;
 import org.ovirt.engine.core.sso.api.SsoSession;
 import org.ovirt.engine.core.sso.service.AuthenticationService;
 import org.ovirt.engine.core.sso.service.SsoService;
+import org.ovirt.engine.core.sso.utils.LoginEnvelopeCrypto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,7 +123,19 @@ public class InteractiveAuthServlet extends HttpServlet {
     private Credentials getUserCredentials(HttpServletRequest request) {
         String username = SsoService.getFormParameter(request, USERNAME);
         String password = SsoService.getFormParameter(request, PASSWORD);
+        String encryptedUsername = SsoService.getFormParameter(request, "encryptedUsername"); //$NON-NLS-1$
+        String encryptedPassword = SsoService.getFormParameter(request, "encryptedPassword"); //$NON-NLS-1$
         String profile = SsoService.getFormParameter(request, PROFILE);
+        try {
+            if (encryptedUsername != null && !encryptedUsername.isEmpty()) {
+                username = LoginEnvelopeCrypto.decrypt(encryptedUsername);
+            }
+            if (encryptedPassword != null && !encryptedPassword.isEmpty()) {
+                password = LoginEnvelopeCrypto.decrypt(encryptedPassword);
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException("Unable to decrypt interactive login credentials", ex); //$NON-NLS-1$
+        }
         Credentials credentials;
         // The code is invoked from the login screen as well as when the user changes password.
         // If the login form parameters are not present the code has been invoked from change password flow and

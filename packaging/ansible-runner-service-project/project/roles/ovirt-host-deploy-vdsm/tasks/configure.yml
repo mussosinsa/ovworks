@@ -74,6 +74,27 @@
   ansible.builtin.command: vdsm-tool configure --force
   changed_when: true
 
+- name: Ensure libvirt nwfilter directory exists
+  ansible.builtin.file:
+    path: /etc/libvirt/nwfilter
+    state: directory
+    mode: '0755'
+
+- name: Install block-file-sharing nwfilter
+  ansible.builtin.copy:
+    src: block-file-sharing.xml
+    dest: /etc/libvirt/nwfilter/block-file-sharing.xml
+    owner: root
+    group: root
+    mode: '0644'
+  register: block_file_sharing_nwfilter
+
+- name: Restart libvirtd to load nwfilter changes
+  ansible.builtin.systemd:
+    name: libvirtd
+    state: restarted
+  when: block_file_sharing_nwfilter.changed
+
 - name: Check existence of /etc/fapolicyd/rules.d directory
   ansible.builtin.stat:
     path: /etc/fapolicyd/rules.d

@@ -359,12 +359,15 @@ public class UpdateDiskCommand<T extends UpdateDiskParameters> extends AbstractD
     }
 
     /**
-     * Validate whether a disk can be shareable. Disk can be shareable if it is not based on qcow FS,
-     * which means it should not be based on a template image with thin provisioning,
-     * it also should not contain snapshots and it is not bootable.
-     * @return Indication whether the disk can be shared or not.
+     * Validate shareability according to the hardening policy.
+     *
+     * Shareable disks are globally forbidden to prevent VM-to-VM file sharing.
      */
     private boolean validateCanUpdateShareable() {
+        if (getNewDisk().isShareable()) {
+            return failValidation(EngineMessage.ACTION_TYPE_FAILED_SHAREABLE_DISK_NOT_SUPPORTED);
+        }
+
         if (DiskStorageType.LUN == getOldDisk().getDiskStorageType()) {
             return true;
         }

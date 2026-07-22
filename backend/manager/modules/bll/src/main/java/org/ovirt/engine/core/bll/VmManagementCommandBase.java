@@ -52,9 +52,15 @@ public abstract class VmManagementCommandBase<T extends VmManagementParametersBa
     public VmManagementCommandBase(T parameters, CommandContext commandContext) {
         super(parameters, commandContext);
         if (parameters.getVmStaticData() != null) {
+            enforceNoVmFileSharing(parameters.getVmStaticData());
             setVmId(parameters.getVmStaticData().getId());
             setClusterId(parameters.getVmStaticData().getClusterId());
         }
+    }
+
+    private void enforceNoVmFileSharing(VmStatic vmStaticData) {
+        vmStaticData.setSpiceFileTransferEnabled(false);
+        vmStaticData.setSpiceCopyPasteEnabled(false);
     }
 
     @Override

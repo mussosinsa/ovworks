@@ -170,6 +170,9 @@ public class AttachDiskToVmCommand<T extends AttachDetachVmDiskParameters> exten
         if (!isOperationPerformedOnDiskSnapshot() && !disk.isShareable() && disk.getNumberOfVms() > 0) {
             return failValidation(EngineMessage.ACTION_TYPE_FAILED_NOT_SHAREABLE_DISK_ALREADY_ATTACHED);
         }
+        if (!isOperationPerformedOnDiskSnapshot() && disk.isShareable() && disk.getNumberOfVms() > 0) {
+            return failValidation(EngineMessage.ACTION_TYPE_FAILED_SHAREABLE_DISK_NOT_SUPPORTED);
+        }
 
         if (isImageDisk && storagePoolIsoMapDao.get(new StoragePoolIsoMapId(
                 ((DiskImage) disk).getStorageIds().get(0), getVm().getStoragePoolId())) == null) {

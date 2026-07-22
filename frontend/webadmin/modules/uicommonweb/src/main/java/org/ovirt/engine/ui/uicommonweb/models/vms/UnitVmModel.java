@@ -2696,21 +2696,10 @@ public class UnitVmModel extends Model implements HasValidatedTabs, ModelWithMig
     }
 
     private void updateSpiceFeatures() {
-        if (getSelectedCluster() != null) {
-            GraphicsTypes selectedGraphics = getGraphicsType().getSelectedItem();
-            boolean isSpiceUsed = selectedGraphics != null
-                    && selectedGraphics.getBackingGraphicsTypes().contains(GraphicsType.SPICE);
-            if (!isSpiceUsed) {
-                setSpiceFeatureProhibitionReason(getSpiceFileTransferEnabled());
-                setSpiceFeatureProhibitionReason(getSpiceCopyPasteEnabled());
-            }
-            getSpiceFileTransferEnabled().setIsChangeable(isSpiceUsed);
-            getSpiceCopyPasteEnabled().setIsChangeable(isSpiceUsed);
-        }
-    }
-
-    private void setSpiceFeatureProhibitionReason(EntityModel<Boolean> checkbox) {
-        checkbox.setChangeProhibitionReason(ConstantsManager.getInstance().getMessages().optionRequiresSpiceEnabled());
+        getSpiceFileTransferEnabled().setEntity(false);
+        getSpiceCopyPasteEnabled().setEntity(false);
+        getSpiceFileTransferEnabled().setIsChangeable(false);
+        getSpiceCopyPasteEnabled().setIsChangeable(false);
     }
 
     private void templateWithVersion_SelectedItemChanged() {

@@ -13,6 +13,7 @@
 import gettext
 import random
 import string
+import re
 
 from otopi import plugin
 from otopi import util
@@ -23,7 +24,6 @@ from ovirt_engine_setup.engine import vdcoption
 from ovirt_engine_setup.engine_common import constants as oengcommcons
 from ovirt_engine_setup.engine_common import database
 
-from ovirt_setup_lib import dialog
 
 try:
     import pwquality
@@ -41,6 +41,8 @@ def _(m):
 class Plugin(plugin.PluginBase):
     """aaa plugin."""
 
+    _MIN_ADMIN_PASSWORD_LENGTH = 12
+
     @staticmethod
     def _generatePassword():
         return ''.join([
@@ -52,6 +54,63 @@ class Plugin(plugin.PluginBase):
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
+
+    def _validateAdminPasswordPolicy(self, password):
+        admin_user = self.environment[
+            oenginecons.ConfigEnv.ADMIN_USER
+        ].split('@', 1)[0].lower()
+
+        if len(password) < self._MIN_ADMIN_PASSWORD_LENGTH:
+            raise RuntimeError(
+                _(
+                    'Password must be at least {length} characters long'
+                ).format(
+                    length=self._MIN_ADMIN_PASSWORD_LENGTH,
+                )
+            )
+
+        complexity_checks = (
+            (r'[a-z]', _('Password must contain a lowercase letter')),
+            (r'[A-Z]', _('Password must contain an uppercase letter')),
+            (r'[0-9]', _('Password must contain a digit')),
+            (r'[^A-Za-z0-9]', _('Password must contain a special character')),
+        )
+        for pattern, message in complexity_checks:
+            if re.search(pattern, password) is None:
+                raise RuntimeError(message)
+
+        lowered_password = password.lower()
+        if admin_user and admin_user in lowered_password:
+            raise RuntimeError(
+                _('Password must not contain the account name')
+            )
+
+        weak_words = (
+            'password',
+            'admin',
+            'ovirt',
+            'engine',
+            'welcome',
+            'qwerty',
+        )
+        for weak_word in weak_words:
+            if weak_word in lowered_password:
+                raise RuntimeError(
+                    _('Password must not contain common dictionary words')
+                )
+
+        for sequence in ('0123456789', 'abcdefghijklmnopqrstuvwxyz'):
+            for index in range(len(sequence) - 2):
+                token = sequence[index:index + 3]
+                if token in lowered_password or token[::-1] in lowered_password:
+                    raise RuntimeError(
+                        _('Password must not contain sequential characters')
+                    )
+
+        if re.search(r'(.)\1\1', password) is not None:
+            raise RuntimeError(
+                _('Password must not contain repeated characters')
+            )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_BOOT,
@@ -126,16 +185,32 @@ class Plugin(plugin.PluginBase):
     def _customization(self):
         valid = False
         password = None
+        self.logger.info(
+            _(
+                '비밀번호 정책: 최소 {minimum}자 이상으로 설정하고, '
+                '영문 대/소문자, 숫자, 특수문자를 조합하며, '
+                '계정명, 사전 단어, '
+                '연속 문자열 및 반복 문자를 피하십시오.'
+            ).format(
+                minimum=self._MIN_ADMIN_PASSWORD_LENGTH,
+            )
+        )
+        self.logger.info(
+            _(
+                '운영 정책 안내: 기존 비밀번호를 재사용하지 말고 '
+                '보안 기준에 따라 주기적으로 변경하십시오.'
+            )
+        )
         while not valid:
             password = self.dialog.queryString(
                 name='OVESETUP_CONFIG_ADMIN_SETUP',
-                note=_('Engine admin password: '),
+                note=_('Engine 관리자 비밀번호: '),
                 prompt=True,
                 hidden=True,
             )
             password2 = self.dialog.queryString(
                 name='OVESETUP_CONFIG_ADMIN_SETUP',
-                note=_('Confirm engine admin password: '),
+                note=_('Engine 관리자 비밀번호 확인: '),
                 prompt=True,
                 hidden=True,
             )
@@ -144,26 +219,29 @@ class Plugin(plugin.PluginBase):
                 self.logger.warning(_('Passwords do not match'))
             else:
                 try:
-                    if(_use_pwquality):
+                    self._validateAdminPasswordPolicy(password)
+                    if _use_pwquality:
                         pwq = pwquality.PWQSettings()
                         pwq.read_config()
                         pwq.check(password, None, None)
                     valid = True
+                except RuntimeError as e:
+                    self.logger.warning(
+                        _('Password is weak: {error}').format(
+                            error=str(e),
+                        )
+                    )
+                    self.logger.warning(
+                        _('Please enter a stronger password.')
+                    )
                 except pwquality.PWQError as e:
                     self.logger.warning(
                         _('Password is weak: {error}').format(
                             error=e.args[1],
                         )
                     )
-                    valid = dialog.queryBoolean(
-                        dialog=self.dialog,
-                        name='OVESETUP_CONFIG_WEAK_ENGINE_PASSWORD',
-                        note=_(
-                            'Use weak password? '
-                            '(@VALUES@) [@DEFAULT@]: '
-                        ),
-                        prompt=True,
-                        default=False,
+                    self.logger.warning(
+                        _('Please enter a stronger password.')
                     )
 
         self.environment[

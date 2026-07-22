@@ -79,6 +79,7 @@ import org.ovirt.engine.ui.common.view.popup.HostMaintenanceConfirmationPopupVie
 import org.ovirt.engine.ui.common.view.popup.HostRestartConfirmationPopupView;
 import org.ovirt.engine.ui.common.view.popup.HostUpgradePopupView;
 import org.ovirt.engine.ui.common.widget.MenuDetailsProvider;
+import org.ovirt.engine.ui.uicommonweb.models.AuditLogListModel;
 import org.ovirt.engine.ui.uicommonweb.models.EngineErrataListModel;
 import org.ovirt.engine.ui.uicommonweb.models.SecuritySettingsListModel;
 import org.ovirt.engine.ui.uicommonweb.models.SessionListModel;
@@ -102,6 +103,7 @@ import org.ovirt.engine.ui.uicommonweb.models.vms.VmListModel;
 import org.ovirt.engine.ui.uicommonweb.models.volumes.VolumeListModel;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.AboutPopupPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.HeaderPresenterWidget;
+import org.ovirt.engine.ui.webadmin.section.main.presenter.MainAuditLogPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.MainClusterPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.MainContentPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.MainDataCenterPresenter;
@@ -259,6 +261,7 @@ import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.vm.VmSnapshotCu
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.vm.VmSnapshotPreviewPopupPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.vm.VncInfoPopupPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.vm.register.VnicProfileMappingPopupPresenterWidget;
+import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.AuditLogActionPanelPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.SecuritySettingsActionPanelPresenterWidget;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.cluster.ClusterSubTabPanelPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.cluster.SubTabClusterAffinityGroupPresenter;
@@ -390,6 +393,7 @@ import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.virtualMachine.Su
 import org.ovirt.engine.ui.webadmin.section.main.presenter.tab.virtualMachine.VirtualMachineSubTabPanelPresenter;
 import org.ovirt.engine.ui.webadmin.section.main.view.AboutPopupView;
 import org.ovirt.engine.ui.webadmin.section.main.view.HeaderView;
+import org.ovirt.engine.ui.webadmin.section.main.view.MainAuditLogView;
 import org.ovirt.engine.ui.webadmin.section.main.view.MainClusterView;
 import org.ovirt.engine.ui.webadmin.section.main.view.MainContentView;
 import org.ovirt.engine.ui.webadmin.section.main.view.MainDataCenterView;
@@ -782,6 +786,11 @@ public class PresenterModule extends BasePresenterModule {
                 MainSecuritySettingsView.class,
                 MainSecuritySettingsPresenter.ProxyDef.class);
         bind(SecuritySettingsActionPanelPresenterWidget.class);
+        bindPresenter(MainAuditLogPresenter.class,
+                MainAuditLogPresenter.ViewDef.class,
+                MainAuditLogView.class,
+                MainAuditLogPresenter.ProxyDef.class);
+        bind(AuditLogActionPanelPresenterWidget.class);
         bindPresenter(MainStoragePresenter.class,
                 MainStoragePresenter.ViewDef.class,
                 MainStorageView.class,
@@ -1589,6 +1598,12 @@ public class PresenterModule extends BasePresenterModule {
                 new TypeLiteral<OvirtBreadCrumbsView<Object, SecuritySettingsListModel>>(){});
         bindActionPanel(new TypeLiteral<ActionPanelPresenterWidget.ViewDef<Void, Object>>(){},
             new TypeLiteral<ActionPanelView<Void, Object>>(){});
+
+        // Audit Log
+        bindSingletonPresenterWidget(
+                new TypeLiteral<SearchPanelPresenterWidget<Object, AuditLogListModel>>(){},
+                new TypeLiteral<SearchPanelPresenterWidget.ViewDef<AuditLogListModel>>(){},
+                new TypeLiteral<SearchPanelView<AuditLogListModel>>(){});
 
         // Cluster
         bindPresenterWidget(NewClusterNetworkPopupPresenterWidget.class,

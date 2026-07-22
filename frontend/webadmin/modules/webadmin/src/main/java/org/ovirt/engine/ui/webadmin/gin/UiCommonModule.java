@@ -16,6 +16,7 @@ import org.ovirt.engine.ui.uicommonweb.models.configure.scheduling.ClusterPolicy
 import org.ovirt.engine.ui.uicommonweb.models.events.AlertListModel;
 import org.ovirt.engine.ui.uicommonweb.models.events.TaskListModel;
 import org.ovirt.engine.ui.uicommonweb.models.tags.TagListModel;
+import org.ovirt.engine.ui.webadmin.gin.uicommon.AuditLogModule;
 import org.ovirt.engine.ui.webadmin.gin.uicommon.ClusterModule;
 import org.ovirt.engine.ui.webadmin.gin.uicommon.DataCenterModule;
 import org.ovirt.engine.ui.webadmin.gin.uicommon.DiskModule;
@@ -83,6 +84,7 @@ public class UiCommonModule extends BaseUiCommonModule {
         install(new MacPoolModule());
         install(new ErrataModule());
         install(new SecuritySettingsModule());
+        install(new AuditLogModule());
         install(new SessionModule());
 
         bindCommonModels();

@@ -9,6 +9,7 @@ import org.ovirt.engine.ui.webadmin.section.main.presenter.popup.configure.Confi
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.instancetypes.InstanceTypesView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.macpool.SharedMacPoolView;
 import org.ovirt.engine.ui.webadmin.section.main.view.popup.scheduling.ClusterPolicyView;
+import org.ovirt.engine.ui.webadmin.section.main.view.popup.security.ExternalSslView;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.HasClickHandlers;
@@ -45,6 +46,11 @@ public class ConfigurePopupView extends AbstractPopupView<SimpleDialogPanel> imp
     @UiField(provided=true)
     SharedMacPoolView sharedMacPoolView;
 
+    @UiField(provided=true)
+    EnvironmentVariablesView environmentVariablesView;
+    @UiField(provided=true)
+    ExternalSslView externalSslView;
+
     @Inject
     public ConfigurePopupView(
             EventBus eventBus,
@@ -52,13 +58,17 @@ public class ConfigurePopupView extends AbstractPopupView<SimpleDialogPanel> imp
             SystemPermissionView systemPermissionView,
             ClusterPolicyView clusterPolicyView,
             InstanceTypesView instanceTypesView,
-            SharedMacPoolView sharedMacPoolView) {
+            SharedMacPoolView sharedMacPoolView,
+            EnvironmentVariablesView environmentVariablesView,
+            ExternalSslView externalSslView) {
         super(eventBus);
         this.roleView = roleView;
         this.systemPermissionView = systemPermissionView;
         this.clusterPolicyView = clusterPolicyView;
         this.instanceTypesView = instanceTypesView;
         this.sharedMacPoolView = sharedMacPoolView;
+        this.environmentVariablesView = environmentVariablesView;
+        this.externalSslView = externalSslView;
 
         initWidget(ViewUiBinder.uiBinder.createAndBindUi(this));
     }
