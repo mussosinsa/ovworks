@@ -303,8 +303,8 @@ class Plugin(plugin.PluginBase):
             dialog=self.dialog,
             name='OVESETUP_WAIT_RUNNING_TASKS',
             note=_(
-                'Would you like to try to wait for that?\n'
-                '(Answering "no" will stop the upgrade (@VALUES@) '
+                '해당 작업이 완료될 때까지 기다려 보시겠습니까?\n'
+                '("아니오"를 선택하면 업그레이드가 중단됩니다 (@VALUES@) '
             ),
             prompt=True,
         ):

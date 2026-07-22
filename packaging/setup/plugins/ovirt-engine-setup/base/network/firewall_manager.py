@@ -112,10 +112,8 @@ class Plugin(plugin.PluginBase):
             else:
                 self.dialog.note(
                     text=_(
-                        '\nSetup can automatically configure the firewall '
-                        'on this system.\n'
-                        'Note: automatic configuration of the firewall may '
-                        'overwrite current settings.\n'
+                        '\nSetup이 이 시스템의 방화벽을 자동으로 설정할 수 있습니다.\n'
+                        '참고: 방화벽 자동 설정은 현재 설정을 덮어쓸 수 있습니다.\n'
                     ),
                 )
                 self.environment[
@@ -124,7 +122,7 @@ class Plugin(plugin.PluginBase):
                     dialog=self.dialog,
                     name='OVESETUP_UPDATE_FIREWALL',
                     note=_(
-                        'Do you want Setup to configure the firewall? '
+                        'Setup이 방화벽을 설정하도록 하시겠습니까? '
                         '(@VALUES@) [@DEFAULT@]: '
                     ),
                     prompt=True,
@@ -199,7 +197,7 @@ class Plugin(plugin.PluginBase):
                 ] = self.dialog.queryString(
                     name='OVESETUP_CONFIG_FIREWALL_MANAGER',
                     note=_(
-                        'Firewall manager to configure '
+                        '설정할 방화벽 관리자 '
                         '(@VALUES@): '
                     ),
                     prompt=True,

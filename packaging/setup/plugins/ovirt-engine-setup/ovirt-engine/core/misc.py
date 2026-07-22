@@ -69,7 +69,7 @@ class Plugin(plugin.PluginBase):
                     dialog=self.dialog,
                     name='OVESETUP_ENGINE_ENABLE',
                     note=_(
-                        'Configure Engine on this host '
+                        '이 호스트에서 Engine을 설정하시겠습니까 '
                         '(@VALUES@) [@DEFAULT@]: '
                     ),
                     prompt=True,

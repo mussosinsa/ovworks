@@ -228,8 +228,8 @@ class Plugin(plugin.PluginBase):
                     dialog=self.dialog,
                     name='OVESETUP_IGNORE_SNAPSHOTS_WITH_OLD_COMPAT_LEVEL',
                     note=_(
-                        '\nThe following virtual machines have snapshots with '
-                        'older compatibility levels, which are not supported '
+                        '\n다음 가상 머신에는 '
+                        '현재 업그레이드 대상 버전에서 지원하지 않는 이전 호환성 레벨의 '
                         'by the version you upgrade to, so you will not be '
                         'able to use them:\n\n'
                         '{old_snapshots}\n\n'

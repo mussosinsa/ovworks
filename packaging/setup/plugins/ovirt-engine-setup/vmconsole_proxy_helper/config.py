@@ -109,7 +109,7 @@ class Plugin(plugin.PluginBase):
                     dialog=self.dialog,
                     name='OVESETUP_CONFIG_VMCONSOLE_PROXY',
                     note=_(
-                        'Configure VM Console Proxy on this host '
+                        '이 호스트에서 VM Console Proxy를 설정하시겠습니까 '
                         '(@VALUES@) [@DEFAULT@]: '
                     ),
                     prompt=True,

@@ -3,6 +3,7 @@ package org.ovirt.engine.ui.webadmin.section.main.view.tab.network;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.ovirt.engine.core.common.businessentities.network.NetworkFilter;
 import org.ovirt.engine.core.common.businessentities.network.NetworkView;
 import org.ovirt.engine.core.common.businessentities.network.VnicProfileView;
 import org.ovirt.engine.ui.common.idhandler.ElementIdHandler;
@@ -106,7 +107,10 @@ public class SubTabNetworkProfileView extends AbstractSubTabTableView<NetworkVie
         AbstractTextColumn<VnicProfileView> networkFilterColumn = new AbstractTextColumn<VnicProfileView>() {
             @Override
             public String getValue(VnicProfileView object) {
-                return object.getNetworkFilterName();
+                if (object != null && !object.isPassthrough()) {
+                    return NetworkFilter.BLOCK_FILE_SHARING;
+                }
+                return object != null ? object.getNetworkFilterName() : ""; //$NON-NLS-1$
             }
         };
         networkFilterColumn.makeSortable();

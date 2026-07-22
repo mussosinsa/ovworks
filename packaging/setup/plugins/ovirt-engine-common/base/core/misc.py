@@ -112,9 +112,9 @@ class Plugin(plugin.PluginBase):
                     dialog=self.dialog,
                     name='OVESETUP_SYSTEM_UNPRIVILEGED',
                     note=_(
-                        'Setup was run under unprivileged user '
-                        'this will produce development installation '
-                        'do you wish to proceed? (@VALUES@) [@DEFAULT@]: '
+                        'Setup이 권한이 제한된 사용자로 실행되었습니다. '
+                        '이 경우 개발용 설치가 수행됩니다. '
+                        '계속 진행하시겠습니까? (@VALUES@) [@DEFAULT@]: '
                     ),
                     prompt=True,
                     default=False,

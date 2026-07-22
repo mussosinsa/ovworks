@@ -25,6 +25,8 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Widget;
 
 public class ClientManagementView extends Composite {
+    private static final String IPV4_REGEX =
+            "^((25[0-5]|2[0-4]\\\\d|1\\\\d\\\\d|[1-9]?\\\\d)\\\\.){3}(25[0-5]|2[0-4]\\\\d|1\\\\d\\\\d|[1-9]?\\\\d)$"; //$NON-NLS-1$
 
     interface ViewUiBinder extends UiBinder<Widget, ClientManagementView> {
         ViewUiBinder uiBinder = GWT.create(ViewUiBinder.class);
@@ -72,9 +74,36 @@ public class ClientManagementView extends Composite {
                     Window.alert("IP 주소를 입력하세요."); //$NON-NLS-1$
                     return;
                 }
+                if (!isValidSingleIpInput(ipAddress.trim())) {
+                    Window.alert("단말기 IP 인증은 CIDR/대역 입력 없이 단일 IPv4 주소만 허용됩니다."); //$NON-NLS-1$
+                    return;
+                }
                 applyTerminalIpAuth(ipAddress.trim());
             }
         });
+    }
+
+    private boolean isValidSingleIpInput(String value) {
+        String[] lines = value.split("\\r?\\n"); //$NON-NLS-1$
+        for (String line : lines) {
+            String candidate = line.trim();
+            if (candidate.isEmpty()) {
+                continue;
+            }
+            if ("<RequireAll>".equalsIgnoreCase(candidate) || "</RequireAll>".equalsIgnoreCase(candidate)) { //$NON-NLS-1$ //$NON-NLS-2$
+                continue;
+            }
+            if (candidate.matches("^\\s*Require\\s+ip\\s+.*$")) { //$NON-NLS-1$
+                candidate = candidate.replaceFirst("^\\s*Require\\s+ip\\s+", ""); //$NON-NLS-1$ //$NON-NLS-2$
+            } else if (candidate.startsWith("Require ")) { //$NON-NLS-1$
+                return false;
+            }
+            candidate = candidate.trim();
+            if (!candidate.matches(IPV4_REGEX)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void applyTerminalAuth(String serialNum) {

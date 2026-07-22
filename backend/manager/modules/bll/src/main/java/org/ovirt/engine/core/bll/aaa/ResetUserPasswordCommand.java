@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 public class ResetUserPasswordCommand extends CommandBase<UserPasswordResetParameters> {
 
     private static final Logger log = LoggerFactory.getLogger(ResetUserPasswordCommand.class);
+    private static final int MIN_PASSWORD_LENGTH = 12;
 
     @Inject
     private DbUserDao dbUserDao;
@@ -54,6 +55,13 @@ public class ResetUserPasswordCommand extends CommandBase<UserPasswordResetParam
         }
 
         String username = user.getLoginName();
+
+        String complexityError = getPasswordComplexityValidationError(newPassword);
+        if (complexityError != null) {
+            getReturnValue().getExecuteFailedMessages().add(complexityError);
+            setSucceeded(false);
+            return;
+        }
 
         try {
             // Calculate password valid-to date (10 years from now)
@@ -105,6 +113,25 @@ public class ResetUserPasswordCommand extends CommandBase<UserPasswordResetParam
                 Thread.currentThread().interrupt();
             }
         }
+    }
+
+    private String getPasswordComplexityValidationError(String password) {
+        if (password == null || password.length() < MIN_PASSWORD_LENGTH) {
+            return String.format("패스워드는 최소 %d자리 이상이어야 합니다.", MIN_PASSWORD_LENGTH);
+        }
+        if (!password.matches(".*[0-9].*")) {
+            return "패스워드에는 숫자가 최소 1개 이상 포함되어야 합니다.";
+        }
+        if (!password.matches(".*[A-Z].*")) {
+            return "패스워드에는 영문 대문자가 최소 1개 이상 포함되어야 합니다.";
+        }
+        if (!password.matches(".*[a-z].*")) {
+            return "패스워드에는 영문 소문자가 최소 1개 이상 포함되어야 합니다.";
+        }
+        if (!password.matches(".*[^A-Za-z0-9].*")) {
+            return "패스워드에는 특수문자가 최소 1개 이상 포함되어야 합니다.";
+        }
+        return null;
     }
 
     /**

@@ -76,10 +76,10 @@ class Plugin(plugin.PluginBase):
             resfilename = self.dialog.queryString(
                 name=dialog_name,
                 note=_(
-                    'Please copy {file_name} from the engine server to some '
-                    'file here.\n'
-                    'Please input the location of the local file where you '
-                    'copied {file_name} from the engine server: '
+                    'engine 서버에서 {file_name} 파일을 이 시스템의 임의 위치로 '
+                    '복사해 주세요.\n'
+                    '복사한 로컬 파일 경로를 입력해 주세요: '
+                    '{file_name}: '
                 ),
                 prompt=True,
             )

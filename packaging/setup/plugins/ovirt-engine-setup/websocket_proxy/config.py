@@ -98,7 +98,7 @@ class Plugin(plugin.PluginBase):
                 dialog=self.dialog,
                 name='OVESETUP_CONFIG_WEBSOCKET_PROXY',
                 note=_(
-                    'Configure WebSocket Proxy on this host '
+                    '이 호스트에서 WebSocket Proxy를 설정하시겠습니까 '
                     '(@VALUES@) [@DEFAULT@]: '
                 ),
                 prompt=True,

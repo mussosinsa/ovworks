@@ -187,30 +187,30 @@ class Plugin(plugin.PluginBase):
         password = None
         self.logger.info(
             _(
-                'Password policy: use at least {minimum} characters, '
-                'combine uppercase/lowercase letters, digits and special '
-                'characters, and avoid account names, dictionary words, '
-                'sequential strings and repeated characters.'
+                '비밀번호 정책: 최소 {minimum}자 이상으로 설정하고, '
+                '영문 대/소문자, 숫자, 특수문자를 조합하며, '
+                '계정명, 사전 단어, '
+                '연속 문자열 및 반복 문자를 피하십시오.'
             ).format(
                 minimum=self._MIN_ADMIN_PASSWORD_LENGTH,
             )
         )
         self.logger.info(
             _(
-                'Operational policy reminder: do not reuse old passwords and '
-                'rotate them according to your security standard.'
+                '운영 정책 안내: 기존 비밀번호를 재사용하지 말고 '
+                '보안 기준에 따라 주기적으로 변경하십시오.'
             )
         )
         while not valid:
             password = self.dialog.queryString(
                 name='OVESETUP_CONFIG_ADMIN_SETUP',
-                note=_('Engine admin password: '),
+                note=_('Engine 관리자 비밀번호: '),
                 prompt=True,
                 hidden=True,
             )
             password2 = self.dialog.queryString(
                 name='OVESETUP_CONFIG_ADMIN_SETUP',
-                note=_('Confirm engine admin password: '),
+                note=_('Engine 관리자 비밀번호 확인: '),
                 prompt=True,
                 hidden=True,
             )

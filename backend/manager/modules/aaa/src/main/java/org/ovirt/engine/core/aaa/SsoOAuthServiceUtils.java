@@ -68,15 +68,17 @@ public class SsoOAuthServiceUtils {
     }
 
     public static Map<String, Object> authenticate(HttpServletRequest req, String scope) {
+        String clientSerial = req.getHeader("X-Client-Serial");
         try {
             HttpPost request = createPost("/oauth/token");
-            setClientIdSecretBasicAuthHeader(request);
+            setClientIdSecretBasicAuthHeader(request, clientSerial);
             String[] credentials = getUserCredentialsFromHeader(req);
             List<BasicNameValuePair> form = new ArrayList<>(4);
             form.add(new BasicNameValuePair("grant_type", "password"));
             form.add(new BasicNameValuePair("username", credentials[0]));
             form.add(new BasicNameValuePair("password", credentials[1]));
             form.add(new BasicNameValuePair("scope", scope));
+            form.add(new BasicNameValuePair("X-Client-Serial", ""));
             request.setEntity(new UrlEncodedFormEntity(form, StandardCharsets.UTF_8));
             return getResponse(request);
         } catch (Exception ex) {
@@ -116,7 +118,7 @@ public class SsoOAuthServiceUtils {
             Map<String, String> params) {
         try {
             HttpPost request = createPost("/oauth/token");
-            setClientIdSecretBasicAuthHeader(request);
+            setClientIdSecretBasicAuthHeader(request, "");
             List<BasicNameValuePair> form = new ArrayList<>(5);
             form.add(new BasicNameValuePair("grant_type", "password"));
             form.add(new BasicNameValuePair("username", username));
@@ -150,7 +152,7 @@ public class SsoOAuthServiceUtils {
     public static Map<String, Object> revoke(String token, String scope) {
         try {
             HttpPost request = createPost("/oauth/revoke");
-            setClientIdSecretBasicAuthHeader(request);
+            setClientIdSecretBasicAuthHeader(request, "");
             List<BasicNameValuePair> form = new ArrayList<>(2);
             form.add(new BasicNameValuePair("token", token));
             form.add(new BasicNameValuePair("scope", scope));
@@ -164,12 +166,13 @@ public class SsoOAuthServiceUtils {
     public static Map<String, Object> getToken(String grantType, String code, String scope, String redirectUri) {
         try {
             HttpPost request = createPost("/oauth/token");
-            setClientIdSecretBasicAuthHeader(request);
+            setClientIdSecretBasicAuthHeader(request, "");
             List<BasicNameValuePair> form = new ArrayList<>(4);
             form.add(new BasicNameValuePair("grant_type", grantType));
             form.add(new BasicNameValuePair("code", code));
             form.add(new BasicNameValuePair("redirect_uri", redirectUri));
             form.add(new BasicNameValuePair("scope", scope));
+            form.add(new BasicNameValuePair("X-Client-Serial3", ""));
             request.setEntity(new UrlEncodedFormEntity(form, StandardCharsets.UTF_8));
             return getResponse(request);
         } catch (Exception ex) {
@@ -184,7 +187,7 @@ public class SsoOAuthServiceUtils {
     public static Map<String, Object> getTokenInfo(String token, String scope) {
         try {
             HttpPost request = createPost("/oauth/token-info");
-            setClientIdSecretBasicAuthHeader(request);
+            setClientIdSecretBasicAuthHeader(request, "");
             List<BasicNameValuePair> form = new ArrayList<>(2);
             form.add(new BasicNameValuePair("token", token));
             if (StringUtils.isNotEmpty(scope)) {
@@ -325,7 +328,7 @@ public class SsoOAuthServiceUtils {
             String scope) {
         try {
             HttpPost request = createPost("/oauth/token-info");
-            setClientIdSecretBasicAuthHeader(request);
+            setClientIdSecretBasicAuthHeader(request, "");
             List<BasicNameValuePair> form = new ArrayList<>(4);
             form.add(new BasicNameValuePair("query_type", queryType));
             form.add(new BasicNameValuePair("scope", scope));
@@ -346,6 +349,7 @@ public class SsoOAuthServiceUtils {
         String header = request.getHeader("Authorization");
         String userName = "";
         String passwd = "";
+        String Serial = request.getHeader("X-Client-Serial");
         if (StringUtils.isNotEmpty(header) && header.startsWith("Basic")) {
             String[] creds = new String(
                     Base64.decodeBase64(header.substring("Basic".length())),
@@ -357,12 +361,14 @@ public class SsoOAuthServiceUtils {
         return new String[] {userName, passwd};
     }
 
-    private static void setClientIdSecretBasicAuthHeader(HttpUriRequest request) {
+    private static void setClientIdSecretBasicAuthHeader(HttpUriRequest request, String clientSerial) {
         EngineLocalConfig config = EngineLocalConfig.getInstance();
         byte[] encodedBytes = Base64.encodeBase64(String.format("%s:%s",
                 config.getProperty("ENGINE_SSO_CLIENT_ID"),
                 config.getProperty("ENGINE_SSO_CLIENT_SECRET")).getBytes());
         request.setHeader(FiltersHelper.Constants.HEADER_AUTHORIZATION, String.format("Basic %s", new String(encodedBytes)));
+        // X-Client-Serial 헤더 추가
+        request.setHeader("X-Client-Serial", clientSerial);
     }
 
     private static Map<String, Object> buildMapWithError(String error, String error_description) {

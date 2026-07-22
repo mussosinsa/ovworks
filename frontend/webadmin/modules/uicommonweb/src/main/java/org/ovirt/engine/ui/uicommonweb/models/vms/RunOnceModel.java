@@ -671,13 +671,13 @@ public abstract class RunOnceModel extends Model {
         getVncKeyboardLayout().setSelectedItem(vm.getDefaultVncKeyboardLayout());
 
         setSpiceFileTransferEnabled(new EntityModel<>());
-        getSpiceFileTransferEnabled().setEntity(vm.isSpiceFileTransferEnabled());
-        getSpiceFileTransferEnabled().setIsChangeable(true);
+        getSpiceFileTransferEnabled().setEntity(false);
+        getSpiceFileTransferEnabled().setIsChangeable(false);
         getSpiceFileTransferEnabled().setIsAvailable(true);
 
         setSpiceCopyPasteEnabled(new EntityModel<>());
-        getSpiceCopyPasteEnabled().setEntity(vm.isSpiceCopyPasteEnabled());
-        getSpiceCopyPasteEnabled().setIsChangeable(true);
+        getSpiceCopyPasteEnabled().setEntity(false);
+        getSpiceCopyPasteEnabled().setIsChangeable(false);
         getSpiceCopyPasteEnabled().setIsAvailable(true);
 
         // System tab
@@ -786,8 +786,8 @@ public abstract class RunOnceModel extends Model {
 
         getDisplayProtocol().setSelectedItem(vm.getDefaultDisplayType() == DisplayType.vga ?
                 vncProtocol : qxlProtocol);
-        getSpiceFileTransferEnabled().setEntity(vm.isSpiceFileTransferEnabled());
-        getSpiceCopyPasteEnabled().setEntity(vm.isSpiceCopyPasteEnabled());
+        getSpiceFileTransferEnabled().setEntity(false);
+        getSpiceCopyPasteEnabled().setEntity(false);
 
         AsyncDataProvider.isFloppySupported(new AsyncQuery<>(isFloppySupported -> {
             if (!isFloppySupported) {
@@ -1131,8 +1131,10 @@ public abstract class RunOnceModel extends Model {
                 getRunOnceHeadlessModeIsSelected().setEntity(false);
                 getDisplayConsole_Vnc_IsSelected().setEntity(false);
                 getVncKeyboardLayout().setIsChangeable(false);
-                getSpiceFileTransferEnabled().setIsChangeable(true);
-                getSpiceCopyPasteEnabled().setIsChangeable(true);
+                getSpiceFileTransferEnabled().setEntity(false);
+                getSpiceCopyPasteEnabled().setEntity(false);
+                getSpiceFileTransferEnabled().setIsChangeable(false);
+                getSpiceCopyPasteEnabled().setIsChangeable(false);
             } else if (sender == getRunOnceHeadlessModeIsSelected() && ((EntityModel<Boolean>) sender).getEntity()) {
                 getDisplayConsole_Vnc_IsSelected().setEntity(false);
                 getDisplayConsole_Spice_IsSelected().setEntity(false);

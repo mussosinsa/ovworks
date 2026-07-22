@@ -1,8 +1,13 @@
 package org.ovirt.engine.core.sso.service;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
@@ -57,6 +62,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SsoService {
@@ -195,8 +201,71 @@ public class SsoService {
         return retVal;
     }
 
+    private static String loadSerialNumberFromConfig() {
+        try (InputStream is = new FileInputStream("/etc/ovirt-engine/encryptor/config.json")) {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode rootNode = mapper.readTree(is);
+            return rootNode.path("serialNum").asText();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException("config.json not found at /etc/ovirt-engine/encryptor/config.json", e);
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading SerialNum from config.json", e);
+        }
+    }
+
+    public static void validateClientSerial(HttpServletRequest request) {
+        String clientSerial = request.getHeader("X-Client-Serial");
+        if (StringUtils.isEmpty(clientSerial)) {
+           throw new OAuthException(SsoConstants.ERR_CODE_UNAUTHORIZED_CLIENT,
+                "Missing X-Client-Serial header");
+        }
+
+        try {
+           // 요청한 클라이언트 IP
+           String remoteAddr = request.getRemoteAddr(); // ex) 127.0.0.1
+
+           // 현재 서버의 IP 주소 목록
+           InetAddress localHost = InetAddress.getLocalHost();
+           String localIp = localHost.getHostAddress(); // ex) 127.0.0.1
+
+           // 자기 자신이 호출한 경우 예외 처리
+           if (remoteAddr.equals(localIp) || "127.0.0.1".equals(remoteAddr) || "0:0:0:0:0:0:0:1".equals(remoteAddr)) {
+               throw new OAuthException(SsoConstants.ERR_CODE_UNAUTHORIZED_CLIENT,
+                   "Request from self is not allowed");
+           }
+
+       } catch (UnknownHostException e) {
+           throw new OAuthException(SsoConstants.ERR_CODE_UNAUTHORIZED_CLIENT,
+               "Server address resolution failed");
+    }
+
+        String expectedSerial = loadSerialNumberFromConfig();
+        if (!clientSerial.equals(expectedSerial)) {
+           throw new OAuthException(SsoConstants.ERR_CODE_UNAUTHORIZED_CLIENT,
+                "Invalid client serial number");
+        }
+    }
+
     public static String getClientId(HttpServletRequest request) {
         String clientId = null;
+        log.info("***************************");
+
+        log.info("=== Request Headers ===");
+        Enumeration<String> headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String headerName = headerNames.nextElement();
+            String headerValue = request.getHeader(headerName);
+            log.info(" headerName: {}, headerValue: {} ", headerName, headerValue);
+        }
+            StringBuffer requestURL = request.getRequestURL();
+            String queryString = request.getQueryString();
+            String fullURL = (queryString == null) ? requestURL.toString() : requestURL.append('?').append(queryString).toString();
+            log.info(" headerURL: {} ", fullURL);
+
+        if (request != null && request.getHeader("X-Client-Serial") != null) {
+              validateClientSerial(request); // 추가된 검증 로직
+        }
+
         String[] retVal = getClientIdClientSecretFromHeader(request);
         if (retVal != null &&
                 StringUtils.isNotEmpty(retVal[0]) &&

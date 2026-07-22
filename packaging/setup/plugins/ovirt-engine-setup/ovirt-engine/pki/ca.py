@@ -475,7 +475,7 @@ class Plugin(plugin.PluginBase):
         ] = self.dialog.queryString(
             name='OVESETUP_PKI_ORG',
             note=_(
-                'Organization name for certificate [@DEFAULT@]: '
+                '인증서에 사용할 조직 이름 [@DEFAULT@]: '
             ),
             prompt=True,
             default=org,
@@ -522,13 +522,12 @@ class Plugin(plugin.PluginBase):
                     dialog=self.dialog,
                     name='OVESETUP_RENEW_PKI',
                     note=_(
-                        'One or more of the certificates should be renewed, '
-                        'because they expire soon, or include an invalid '
-                        'expiry date, or do not include the subjectAltName '
-                        'extension, which can cause them to be rejected by '
-                        'recent browsers and up to date hosts.\n'
-                        'See {url} for more details.\n'
-                        'Renew certificates? '
+                        '하나 이상의 인증서를 갱신해야 합니다. '
+                        '인증서 만료가 임박했거나 유효하지 않은 만료일이 포함되어 '
+                        '있거나 subjectAltName 확장이 없어서 최신 브라우저 및 '
+                        '업데이트된 호스트에서 거부될 수 있습니다.\n'
+                        '자세한 내용은 {url} 을(를) 참조하세요.\n'
+                        '인증서를 갱신하시겠습니까? '
                         '(@VALUES@) [@DEFAULT@]: '
                     ).format(
                         url=self.environment[
@@ -544,17 +543,15 @@ class Plugin(plugin.PluginBase):
                         dialog=self.dialog,
                         name='OVESETUP_SKIP_RENEW_PKI_CONFIRM',
                         note=_(
-                            'Are you really sure that you want to skip the '
-                            'PKI renewal process?\n'
-                            'Please notice that recent openssl and gnutls '
-                            'upgrades can lead hosts refusing this CA cert '
-                            'making them unusable.\n'
-                            'If you choose "Yes", setup will continue and you '
-                            'will be asked again the next '
-                            'time you run this Setup. Otherwise, this process '
-                            'will abort and you will be expected to plan a '
-                            'proper upgrade according to {url}.\n'
-                            'Skip PKI renewal process? '
+                            '정말로 PKI 갱신 절차를 건너뛰시겠습니까?\n'
+                            '최근 openssl 및 gnutls 업그레이드로 인해 일부 '
+                            '호스트가 이 CA 인증서를 거부하여 사용할 수 없게 될 수 '
+                            '있습니다.\n'
+                            '"예"를 선택하면 setup은 계속 진행되지만, 다음 Setup '
+                            '실행 시 다시 확인을 요청합니다. 그렇지 않으면 이 '
+                            '절차는 중단되며 {url} 에 따라 적절한 업그레이드를 '
+                            '계획해야 합니다.\n'
+                            'PKI 갱신 절차를 건너뛰시겠습니까? '
                             '(@VALUES@) [@DEFAULT@]: '
                         ).format(
                             url=self.environment[
@@ -593,15 +590,14 @@ class Plugin(plugin.PluginBase):
                 dialog=self.dialog,
                 name='OVESETUP_PKI_VERIFY_MISSING_CA_PEM',
                 note=_(
-                    'Found existing PKI files, but {capem} is missing. If '
-                    'you continue, Setup will overwrite existing PKI files '
-                    'with new ones, including {capem}. After Setup completes '
-                    'you must reinstall or re-enroll certificates for all '
-                    'your hosts.\n\n'
-                    'If {capem} was accidentally deleted, stop Setup, restore '
-                    '{capem} from backup ({certs}/ca.der), and then run '
-                    'Setup again.\n\n'
-                    'Continue with Setup and overwrite existing PKI files? '
+                    '기존 PKI 파일을 찾았지만 {capem} 이(가) 없습니다. '
+                    '계속하면 Setup이 기존 PKI 파일을 새 파일로 덮어씁니다. '
+                    '{capem} 이(가) 포함되며 Setup 완료 후 모든 호스트의 '
+                    '인증서를 재설치 또는 재등록해야 합니다.\n\n'
+                    '{capem} 이(가) 실수로 삭제된 경우 Setup을 중단하고, '
+                    '백업({certs}/ca.der)에서 {capem} 을(를) 복원한 뒤 Setup을 '
+                    '다시 실행하세요.\n\n'
+                    'Setup을 계속 진행하고 기존 PKI 파일을 덮어쓰시겠습니까? '
                     '(@VALUES@) [@DEFAULT@]: '
                 ).format(
                     capem=(

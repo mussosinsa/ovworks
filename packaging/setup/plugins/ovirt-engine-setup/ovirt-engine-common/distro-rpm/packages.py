@@ -329,13 +329,12 @@ class Plugin(plugin.PluginBase):
                     dialog=self.dialog,
                     name='OVESETUP_RPMDISTRO_PACKAGE_UPGRADE',
                     note=_(
-                        'Setup needs to install or update the following '
-                        'packages:\n'
+                        'Setup에서 다음 패키지를 설치하거나 업데이트해야 합니다:\n'
                         '{plist}\n'
-                        'Replying "No" will abort Setup. You can pass the '
-                        'option "--offline" to prevent installing or updating '
-                        'packages.\n'
-                        'Do you wish to update them now? '
+                        '"아니오"를 선택하면 Setup이 중단됩니다. '
+                        '설치/업데이트를 막으려면 "--offline" 옵션을 '
+                        '사용할 수 있습니다.\n'
+                        '지금 업데이트하시겠습니까? '
                         '(@VALUES@) [@DEFAULT@]: '
                     ).format(
                         plist='\n'.join(self._arrangedPackageList(self._plist))
@@ -388,12 +387,11 @@ class Plugin(plugin.PluginBase):
                             dialog=self.dialog,
                             name='OVESETUP_RPMDISTRO_REQUIRE_ROLLBACK',
                             note=_(
-                                'Setup will not be able to rollback new '
-                                'packages in case of a failure, because '
-                                'the following installed packages were not '
-                                'found in enabled repositories:\n\n'
+                                '실패 시 Setup이 새 패키지를 롤백할 수 없습니다. '
+                                '다음 설치된 패키지를 활성화된 리포지토리에서 '
+                                '찾을 수 없기 때문입니다:\n\n'
                                 '{missingRollback}\n'
-                                'Do you want to abort Setup? '
+                                'Setup을 중단하시겠습니까? '
                                 '(@VALUES@) [@DEFAULT@]: '
                             ).format(
                                 missingRollback='\n'.join(

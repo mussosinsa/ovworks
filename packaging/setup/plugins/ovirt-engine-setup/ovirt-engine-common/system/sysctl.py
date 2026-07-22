@@ -107,7 +107,7 @@ class Plugin(plugin.PluginBase):
                         dialog=self.dialog,
                         name='OVESETUP_SYSTEM_SYSCTL_SHMEM',
                         note=_(
-                            'Proceed? (@VALUES@) [@DEFAULT@]: '
+                            '계속 진행하시겠습니까? (@VALUES@) [@DEFAULT@]: '
                         ),
                         prompt=True,
                         true=_('OK'),

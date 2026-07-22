@@ -1,6 +1,8 @@
 <%@ page pageEncoding="UTF-8" session="true" %>
 <%@ page import="org.ovirt.engine.core.sso.api.SsoConstants" %>
 <%@ page import="org.ovirt.engine.core.sso.utils.LoginEnvelopeCrypto" %>
+<%@ page import="java.util.logging.Level" %>
+<%@ page import="java.util.logging.Logger" %>
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -13,11 +15,13 @@
 <sso:getContext var="ssoContext" locale="ssoLocale" />
 <sso:getSession var="ssoSession" />
 <%
+    Logger logger = Logger.getLogger("org.ovirt.engine.sso.login");
     String loginEncryptionPublicKey;
     try {
         loginEncryptionPublicKey = LoginEnvelopeCrypto.readRsaPublicKey();
     } catch (Exception ex) {
         loginEncryptionPublicKey = ""; //$NON-NLS-1$
+        logger.log(Level.WARNING, "Unable to read login encryption RSA public key.", ex);
     }
     pageContext.setAttribute("loginEncryptionPublicKey", loginEncryptionPublicKey); //$NON-NLS-1$
 %>
@@ -94,8 +98,12 @@
         async function encryptAndSubmit(form) {
             var publicKeyValue = normalizePublicKey(document.getElementById('loginPublicKey').value);
 
-            if (!publicKeyValue || !window.crypto || !window.crypto.subtle) {
-                throw new Error('Login encryption prerequisites are unavailable.');
+            if (!publicKeyValue) {
+                throw new Error('LOGIN_ENCRYPTION_PUBLIC_KEY_MISSING');
+            }
+
+            if (!window.crypto || !window.crypto.subtle) {
+                throw new Error('LOGIN_ENCRYPTION_WEBCRYPTO_UNAVAILABLE');
             }
 
             var publicKey = await window.crypto.subtle.importKey(
@@ -130,9 +138,19 @@
 
                 event.preventDefault();
                 form.dataset.encrypting = 'true';
-                encryptAndSubmit(form).catch(function () {
+                encryptAndSubmit(form).catch(function (error) {
                     form.dataset.encrypting = 'false';
-                    window.alert('로그인 정보 암호화에 실패했습니다. 관리자에게 문의하세요.');
+                    if (window.console && window.console.error) {
+                        window.console.error('Login encryption failed before submit.', error);
+                    }
+
+                    if (error && error.message === 'LOGIN_ENCRYPTION_PUBLIC_KEY_MISSING') {
+                        window.alert('로그인 암호화 키를 불러오지 못했습니다. 관리자에게 문의하세요.');
+                    } else if (error && error.message === 'LOGIN_ENCRYPTION_WEBCRYPTO_UNAVAILABLE') {
+                        window.alert('현재 브라우저에서 로그인 암호화를 지원하지 않습니다. 최신 브라우저를 사용해 주세요.');
+                    } else {
+                        window.alert('로그인 정보 암호화에 실패했습니다. 관리자에게 문의하세요.');
+                    }
                 });
             });
         });

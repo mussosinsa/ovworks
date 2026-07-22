@@ -14,6 +14,8 @@ public final class TerminalIpConfigUtils {
             Pattern.compile("(?m)^(\\s*Require\\s+ip\\s+)(.*)$"); //$NON-NLS-1$
     private static final Pattern REQUIRE_IP_FULL_PATTERN =
             Pattern.compile("(?m)^\\s*Require\\s+ip\\s+.*$"); //$NON-NLS-1$
+    private static final Pattern IPV4_SINGLE_IP_PATTERN =
+            Pattern.compile("^((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.){3}(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)$"); //$NON-NLS-1$
 
     private TerminalIpConfigUtils() {
     }
@@ -74,6 +76,13 @@ public final class TerminalIpConfigUtils {
             } else if (candidate.startsWith("Require ")) { //$NON-NLS-1$
                 continue;
             }
+
+            candidate = candidate.trim();
+            if (!IPV4_SINGLE_IP_PATTERN.matcher(candidate).matches()) {
+                throw new IOException(
+                        "Only single IPv4 addresses are allowed for terminal IP auth: " + candidate); //$NON-NLS-1$
+            }
+
             if (replacement.length() > 0) {
                 replacement.append("\n"); //$NON-NLS-1$
             }

@@ -105,7 +105,7 @@ class Plugin(plugin.PluginBase):
                 dialog=self.dialog,
                 name='OVESETUP_PROVISIONING_POSTGRES_LOCATION',
                 note=_(
-                    'Where is the Engine database located? '
+                    'Engine 데이터베이스 위치는 어디입니까? '
                     '(@VALUES@) [@DEFAULT@]: '
                 ),
                 prompt=True,
@@ -128,13 +128,12 @@ class Plugin(plugin.PluginBase):
                     dialog=self.dialog,
                     name='OVESETUP_PROVISIONING_POSTGRES_ENABLED',
                     note=_(
-                        '\nSetup can configure the local postgresql server '
-                        'automatically for the engine to run. This may '
-                        'conflict with existing applications.\n'
-                        'Would you like Setup to automatically configure '
-                        'postgresql and create Engine database, '
-                        'or prefer to perform that '
-                        'manually? (@VALUES@) [@DEFAULT@]: '
+                        '\nSetup이 Engine 실행을 위해 로컬 postgresql 서버를 자동으로 '
+                        '설정할 수 있습니다. 이 설정은 기존 애플리케이션과 충돌할 수 '
+                        '있습니다.\n'
+                        'Setup이 postgresql을 자동으로 설정하고 Engine 데이터베이스를 생성하도록 하시겠습니까, '
+                        '아니면 수동으로 수행하시겠습니까? '
+                        '(@VALUES@) [@DEFAULT@]: '
                     ),
                     prompt=True,
                     true=_('Automatic'),

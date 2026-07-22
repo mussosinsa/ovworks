@@ -57,7 +57,7 @@ class Plugin(plugin.PluginBase):
                 dialog=self.dialog,
                 name='OVESETUP_CONFIG_SAN_WIPE_AFTER_DELETE',
                 note=_(
-                    'Default SAN wipe after delete '
+                    '삭제 후 기본 SAN 초기화 '
                     '(@VALUES@) [@DEFAULT@]: '
                 ),
                 prompt=True,
