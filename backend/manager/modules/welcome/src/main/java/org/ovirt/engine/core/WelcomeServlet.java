@@ -98,10 +98,54 @@ public class WelcomeServlet extends HttpServlet {
         this.engineUri = engineUri;
     }
 
+    /**
+    * Validates the client serial against the one defined in config.json.
+    *
+    * @param clientSerial Client's serial from the request header
+    * @return true if valid, false otherwise
+    */
+    private boolean isClientSerialValid(String clientSerial) {
+        try {
+            File configFile = new File("/etc/ovirt-engine/encryptor/config.json");
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode configNode = objectMapper.readTree(configFile);
+
+            // Retrieve decrypt_key and encrypt_flag
+            String validSerial = configNode.get("serialNum").asText();
+            log.debug("Loaded Serial_Num from config: {}", validSerial);
+
+            return clientSerial.equals(validSerial);
+        } catch (Exception e) {
+            log.error("Failed to read configuration from /etc/ovirt-engine/encryptor/config.json: ", e);
+            return false;
+        }
+    }
+
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException,
             ServletException {
         log.debug("Entered WelcomeServlet");
+
+	log.info("AAAAAAAAAAAAAAAAAA");
+        log.debug("Entered WelcomeServlet");
+        log.info("Entering WelcomeServlet with client serial validation");
+
+        String clientSerial = request.getHeader("X-Client-Serial");
+        log.info("Received X-Client-Serial: {}", clientSerial);
+
+        if (clientSerial == null || !isClientSerialValid(clientSerial)) {
+            log.warn("Unauthorized client serial: {}", clientSerial);
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid client serial.");
+            return;
+        }
+
+        // Continue with the original logic...
+        log.debug("Client serial validated successfully");
+
+        if (clientSerial != null) {
+            request.setAttribute("CLIENT_SERIAL", clientSerial);
+        }
+        log.info("CLIENT_SERIAL: {}", clientSerial);
 
         String reauthenticate = (String) request.getSession(true).getAttribute(WelcomeUtils.REAUTHENTICATE);
         if (StringUtils.isEmpty(reauthenticate)) {
