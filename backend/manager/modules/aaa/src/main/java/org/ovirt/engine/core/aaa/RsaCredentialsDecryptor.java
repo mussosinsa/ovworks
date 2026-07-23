@@ -39,11 +39,28 @@ final class RsaCredentialsDecryptor {
         return decrypt(value, readPrivateKey());
     }
 
+    /**
+     * Decrypt the username portion while preserving an optional plaintext SSO profile suffix.
+     */
+    static String decryptUsername(String value) throws GeneralSecurityException, IOException {
+        return decryptUsername(value, readPrivateKey());
+    }
+
     static String decrypt(String value, PrivateKey privateKey) throws GeneralSecurityException {
         byte[] encryptedBytes = Base64.getDecoder().decode(value);
         Cipher cipher = Cipher.getInstance(TRANSFORMATION);
         cipher.init(Cipher.DECRYPT_MODE, privateKey, OAEP_PARAMETERS);
         return new String(cipher.doFinal(encryptedBytes), StandardCharsets.UTF_8);
+    }
+
+    static String decryptUsername(String value, PrivateKey privateKey) throws GeneralSecurityException {
+        int profileSeparator = value.lastIndexOf('@');
+        if (profileSeparator == -1) {
+            return decrypt(value, privateKey);
+        }
+
+        return decrypt(value.substring(0, profileSeparator), privateKey)
+                + value.substring(profileSeparator);
     }
 
     private static PrivateKey readPrivateKey() throws IOException, GeneralSecurityException {

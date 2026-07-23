@@ -358,7 +358,7 @@ public class SsoOAuthServiceUtils {
             ).split(":", 2);
             if (CREDENTIALS_ENCRYPTION_RSA_OAEP_SHA256.equals(
                     request.getHeader(HEADER_CREDENTIALS_ENCRYPTION))) {
-                userName = creds.length >= 1 ? RsaCredentialsDecryptor.decrypt(creds[0]) : "";
+                userName = creds.length >= 1 ? RsaCredentialsDecryptor.decryptUsername(creds[0]) : "";
                 passwd = creds.length >= 2 ? RsaCredentialsDecryptor.decrypt(creds[1]) : "";
             } else {
                 userName = creds.length >= 1 ? creds[0] : "";

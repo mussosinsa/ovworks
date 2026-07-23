@@ -27,6 +27,22 @@ class RsaCredentialsDecryptorTest {
     }
 
     @Test
+    void decryptsUsernameAndPreservesPlaintextProfile() throws Exception {
+        KeyPair keyPair = getKeyPair();
+
+        assertEquals("admin@internal", RsaCredentialsDecryptor.decryptUsername(
+                encrypt("admin", keyPair) + "@internal", keyPair.getPrivate()));
+    }
+
+    @Test
+    void decryptsUsernameWithEncryptedProfile() throws Exception {
+        KeyPair keyPair = getKeyPair();
+
+        assertEquals("admin@internal", RsaCredentialsDecryptor.decryptUsername(
+                encrypt("admin@internal", keyPair), keyPair.getPrivate()));
+    }
+
+    @Test
     void rejectsPkcs1EncryptedCredential() throws Exception {
         KeyPair keyPair = getKeyPair();
 
