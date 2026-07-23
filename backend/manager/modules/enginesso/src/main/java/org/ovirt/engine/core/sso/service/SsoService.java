@@ -291,8 +291,16 @@ public class SsoService {
         }
 
         ClientInfo clientInfo = getSsoContext(request).getClienInfo(clientCredentials[0]);
-        return clientInfo != null && clientInfo.isTrusted() &&
-                EnvelopePBE.check(clientInfo.getClientSecret(), clientCredentials[1]);
+        if (clientInfo == null || !clientInfo.isTrusted()) {
+            return false;
+        }
+
+        try {
+            return EnvelopePBE.check(clientInfo.getClientSecret(), clientCredentials[1]);
+        } catch (Exception ex) {
+            log.warn("Unable to validate internal SSO client credentials", ex);
+            return false;
+        }
     }
 
     public static String[] getClientIdClientSecretFromHeader(HttpServletRequest request) {
