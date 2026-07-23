@@ -7,52 +7,42 @@ import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
-import java.security.interfaces.RSAKey;
+import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 
 import javax.crypto.Cipher;
+import javax.crypto.spec.OAEPParameterSpec;
+import javax.crypto.spec.PSource;
 
 /**
- * Decrypts REST API Basic-auth passwords encrypted with the login RSA public key.
+ * Decrypts REST API Basic-auth credentials encrypted with the login RSA public key.
  *
- * <p>The client sends the password as standard Base64 of an RSA PKCS#1 v1.5 ciphertext.
- * The username remains plaintext and the matching private key remains on the engine host.</p>
+ * <p>The client sends each credential field as standard Base64 of an RSA-OAEP SHA-256
+ * ciphertext. The matching private key remains on the engine host.</p>
  */
 final class RsaCredentialsDecryptor {
 
     private static final Path PRIVATE_KEY_PATH =
             Path.of("/etc/ovirt-engine/encryptor/private_pkcs8.der"); //$NON-NLS-1$
-    private static final String TRANSFORMATION = "RSA/ECB/PKCS1Padding"; //$NON-NLS-1$
+    private static final String TRANSFORMATION = "RSA/ECB/OAEPWITHSHA-256ANDMGF1PADDING"; //$NON-NLS-1$
+    private static final OAEPParameterSpec OAEP_PARAMETERS = new OAEPParameterSpec(
+            "SHA-256", //$NON-NLS-1$
+            "MGF1", //$NON-NLS-1$
+            MGF1ParameterSpec.SHA256,
+            PSource.PSpecified.DEFAULT);
 
     private RsaCredentialsDecryptor() {
     }
 
-    static String decryptIfEncrypted(String value) throws GeneralSecurityException, IOException {
-        return decryptIfEncrypted(value, readPrivateKey());
+    static String decrypt(String value) throws GeneralSecurityException, IOException {
+        return decrypt(value, readPrivateKey());
     }
 
-    static String decryptIfEncrypted(String value, PrivateKey privateKey) throws GeneralSecurityException {
-        if (value == null || value.isEmpty()) {
-            return value;
-        }
-
-        byte[] encryptedBytes;
-        try {
-            encryptedBytes = Base64.getDecoder().decode(value);
-        } catch (IllegalArgumentException ex) {
-            // A non-Base64 Basic credential is a legacy plaintext credential.
-            return value;
-        }
-
-        int rsaBlockSize = (((RSAKey) privateKey).getModulus().bitLength() + Byte.SIZE - 1) / Byte.SIZE;
-        if (encryptedBytes.length != rsaBlockSize) {
-            // Preserve compatibility with existing Basic username:password clients.
-            return value;
-        }
-
+    static String decrypt(String value, PrivateKey privateKey) throws GeneralSecurityException {
+        byte[] encryptedBytes = Base64.getDecoder().decode(value);
         Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-        cipher.init(Cipher.DECRYPT_MODE, privateKey);
+        cipher.init(Cipher.DECRYPT_MODE, privateKey, OAEP_PARAMETERS);
         return new String(cipher.doFinal(encryptedBytes), StandardCharsets.UTF_8);
     }
 
