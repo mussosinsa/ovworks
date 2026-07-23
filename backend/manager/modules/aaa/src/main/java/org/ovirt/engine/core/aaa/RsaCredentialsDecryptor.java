@@ -14,10 +14,10 @@ import java.util.Base64;
 import javax.crypto.Cipher;
 
 /**
- * Decrypts REST API Basic-auth credential fields encrypted with the login RSA public key.
+ * Decrypts REST API Basic-auth passwords encrypted with the login RSA public key.
  *
- * <p>The client sends each credential field as standard Base64 of an RSA PKCS#1 v1.5
- * ciphertext. The matching private key remains on the engine host.</p>
+ * <p>The client sends the password as standard Base64 of an RSA PKCS#1 v1.5 ciphertext.
+ * The username remains plaintext and the matching private key remains on the engine host.</p>
  */
 final class RsaCredentialsDecryptor {
 
