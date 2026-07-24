@@ -228,13 +228,15 @@ public class IntegrityCheckView extends Composite {
     }
 
     private boolean isSecurityAuditResult(AuditLogType logType) {
-        return logType == AuditLogType.SECURITY_AUDIT_COMPLETED ||
+        return logType == AuditLogType.SECURITY_AUDIT_STARTED ||
+                logType == AuditLogType.SECURITY_AUDIT_COMPLETED ||
                 logType == AuditLogType.SECURITY_AUDIT_FAILED ||
                 logType == AuditLogType.SECURITY_AUDIT_WARNING;
     }
 
     private boolean isIntegrityVerificationResult(AuditLogType logType) {
-        return logType == AuditLogType.INTEGRITY_VERIFICATION_COMPLETED ||
+        return logType == AuditLogType.INTEGRITY_VERIFICATION_STARTED ||
+                logType == AuditLogType.INTEGRITY_VERIFICATION_COMPLETED ||
                 logType == AuditLogType.INTEGRITY_VERIFICATION_FAILED ||
                 logType == AuditLogType.INTEGRITY_VERIFICATION_WARNING;
     }
@@ -271,6 +273,10 @@ public class IntegrityCheckView extends Composite {
     }
 
     private String getHistoryStatus(AuditLogType logType) {
+        if (logType == AuditLogType.SECURITY_AUDIT_STARTED ||
+                logType == AuditLogType.INTEGRITY_VERIFICATION_STARTED) {
+            return "실행 중"; //$NON-NLS-1$
+        }
         if (logType == AuditLogType.SECURITY_AUDIT_COMPLETED ||
                 logType == AuditLogType.INTEGRITY_VERIFICATION_COMPLETED) {
             return "성공"; //$NON-NLS-1$
