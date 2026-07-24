@@ -234,6 +234,8 @@ GENERATED = \
 	packaging/services/ovirt-engine/ovirt-engine.conf \
 	packaging/services/ovirt-engine/ovirt-engine.py \
 	packaging/services/ovirt-engine/ovirt-engine.systemd \
+	packaging/services/ovirt-engine/ovirt-engine-security-audit.service \
+	packaging/services/ovirt-engine/ovirt-engine-security-audit.timer \
 	packaging/services/ovirt-engine/ovirt-engine.sysv \
 	packaging/services/ovirt-fence-kdump-listener/config.py \
 	packaging/services/ovirt-fence-kdump-listener/ovirt-fence-kdump-listener.conf \
