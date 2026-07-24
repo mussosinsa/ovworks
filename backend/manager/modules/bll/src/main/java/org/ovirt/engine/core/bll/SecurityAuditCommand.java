@@ -1,9 +1,12 @@
 package org.ovirt.engine.core.bll;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.inject.Inject;
 
@@ -28,6 +31,8 @@ public class SecurityAuditCommand<T extends ActionParametersBase> extends Comman
 
     private static final Logger log = LoggerFactory.getLogger(SecurityAuditCommand.class);
     private static final String SECURITY_AUDIT_SCRIPT = "/usr/share/ovirt-engine/bin/ov-works-security_audit.sh"; //$NON-NLS-1$
+    private static final long SECURITY_AUDIT_TIMEOUT_MINUTES = 10;
+    private static final AtomicBoolean SECURITY_AUDIT_RUNNING = new AtomicBoolean();
 
     @Inject
     private AuditLogDao auditLogDao;
@@ -46,6 +51,23 @@ public class SecurityAuditCommand<T extends ActionParametersBase> extends Comman
 
     @Override
     protected void executeCommand() {
+        if (!SECURITY_AUDIT_RUNNING.compareAndSet(false, true)) {
+            String errorMsg = "보안 감사가 이미 실행 중입니다.";
+            log.warn(errorMsg);
+            logAuditEvent(AuditLogType.SECURITY_AUDIT_WARNING, "Security audit request ignored: already running");
+            getReturnValue().getExecuteFailedMessages().add(errorMsg);
+            setSucceeded(false);
+            return;
+        }
+
+        try {
+            executeSecurityAudit();
+        } finally {
+            SECURITY_AUDIT_RUNNING.set(false);
+        }
+    }
+
+    private void executeSecurityAudit() {
         // Check if script exists and is executable
         java.io.File scriptFile = new java.io.File(SECURITY_AUDIT_SCRIPT);
         if (!scriptFile.exists()) {
@@ -68,38 +90,51 @@ public class SecurityAuditCommand<T extends ActionParametersBase> extends Comman
         logAuditEvent(AuditLogType.SECURITY_AUDIT_STARTED, "Security audit started");
 
         try {
-            // Execute the security audit script
-            ProcessBuilder processBuilder = new ProcessBuilder("sh", SECURITY_AUDIT_SCRIPT);
-            processBuilder.environment().put("SECURITY_AUDIT_STRICT", "0");
-            processBuilder.redirectErrorStream(true);
-            Process process = processBuilder.start();
+            Path outputFile = Files.createTempFile("ovirt-security-audit-", ".log");
+            try {
+                // Execute the security audit script
+                ProcessBuilder processBuilder = new ProcessBuilder("sh", SECURITY_AUDIT_SCRIPT);
+                processBuilder.environment().put("SECURITY_AUDIT_STRICT", "0");
+                processBuilder.redirectErrorStream(true);
+                processBuilder.redirectOutput(outputFile.toFile());
+                Process process = processBuilder.start();
 
-            // Read output
-            StringBuilder output = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
+                if (!process.waitFor(SECURITY_AUDIT_TIMEOUT_MINUTES, TimeUnit.MINUTES)) {
+                    process.destroyForcibly();
+                    process.waitFor();
+                    String errorMsg = "보안 감사가 " + SECURITY_AUDIT_TIMEOUT_MINUTES + "분 내에 완료되지 않았습니다.";
+                    log.error(errorMsg);
+                    logAuditEvent(AuditLogType.SECURITY_AUDIT_FAILED, "Security audit timed out");
+                    getReturnValue().getExecuteFailedMessages().add(errorMsg);
+                    setSucceeded(false);
+                    return;
+                }
+
+                // The process output is redirected to a file so a full pipe cannot block the audit process.
+                StringBuilder output = new StringBuilder();
+                for (String line : Files.readAllLines(outputFile, StandardCharsets.UTF_8)) {
                     output.append(line).append("\n");
                     log.info("Security Audit: {}", line);
                 }
+
+                int exitCode = process.exitValue();
+
+                if (exitCode == 0) {
+                    logAuditEvent(AuditLogType.SECURITY_AUDIT_COMPLETED, "Security audit completed successfully");
+                    setSucceeded(true);
+                } else {
+                    String errorMsg = "보안 감사 실패 (종료 코드: " + exitCode + ")\n" + output.toString();
+                    logAuditEvent(AuditLogType.SECURITY_AUDIT_FAILED,
+                        "Security audit failed with exit code: " + exitCode);
+                    getReturnValue().getExecuteFailedMessages().add(errorMsg);
+                    setSucceeded(false);
+                }
+
+                // Store the output in return value
+                getReturnValue().setActionReturnValue(output.toString());
+            } finally {
+                Files.deleteIfExists(outputFile);
             }
-
-            // Wait for completion
-            int exitCode = process.waitFor();
-
-            if (exitCode == 0) {
-                logAuditEvent(AuditLogType.SECURITY_AUDIT_COMPLETED, "Security audit completed successfully");
-                setSucceeded(true);
-            } else {
-                String errorMsg = "보안 감사 실패 (종료 코드: " + exitCode + ")\n" + output.toString();
-                logAuditEvent(AuditLogType.SECURITY_AUDIT_FAILED,
-                    "Security audit failed with exit code: " + exitCode);
-                getReturnValue().getExecuteFailedMessages().add(errorMsg);
-                setSucceeded(false);
-            }
-
-            // Store the output in return value
-            getReturnValue().setActionReturnValue(output.toString());
 
         } catch (Exception e) {
             String errorMsg = "보안 감사 실행 중 오류 발생: " + e.getMessage();
