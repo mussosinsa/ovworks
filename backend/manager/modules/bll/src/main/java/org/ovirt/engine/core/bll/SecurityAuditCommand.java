@@ -88,16 +88,20 @@ public class SecurityAuditCommand<T extends ActionParametersBase> extends Comman
         try {
             Path outputFile = Files.createTempFile("ovirt-security-audit-", ".log");
             try {
-                // Execute the security audit script
-                ProcessBuilder processBuilder = new ProcessBuilder("sh", SECURITY_AUDIT_SCRIPT);
+                // Execute the script directly so its bash shebang is honored. Invoking it through
+                // `sh` creates an unnecessary shell process and can run the bash-specific script
+                // with an incompatible shell.
+                ProcessBuilder processBuilder = new ProcessBuilder(SECURITY_AUDIT_SCRIPT);
                 processBuilder.environment().put("SECURITY_AUDIT_STRICT", "0");
                 processBuilder.redirectErrorStream(true);
                 processBuilder.redirectOutput(outputFile.toFile());
                 Process process = processBuilder.start();
+                // The audit must never wait for an interactive child command (for example, su)
+                // to receive input from the engine process.
+                process.getOutputStream().close();
 
                 if (!process.waitFor(SECURITY_AUDIT_TIMEOUT_MINUTES, TimeUnit.MINUTES)) {
-                    process.destroyForcibly();
-                    process.waitFor();
+                    terminateProcessTree(process);
                     String errorMsg = "보안 감사가 " + SECURITY_AUDIT_TIMEOUT_MINUTES + "분 내에 완료되지 않았습니다.";
                     log.error(errorMsg);
                     logAuditEvent(AuditLogType.SECURITY_AUDIT_FAILED, "Security audit timed out");
@@ -139,6 +143,18 @@ public class SecurityAuditCommand<T extends ActionParametersBase> extends Comman
                 "Security audit failed with error: " + e.getMessage());
             getReturnValue().getExecuteFailedMessages().add(errorMsg);
             setSucceeded(false);
+        }
+    }
+
+    private void terminateProcessTree(Process process) throws InterruptedException {
+        // Shell scripts can create child processes. Destroying only the top-level shell leaves
+        // those children running and causes the UI action to remain in the running state.
+        process.toHandle().descendants().forEach(ProcessHandle::destroy);
+        process.destroy();
+        if (!process.waitFor(5, TimeUnit.SECONDS)) {
+            process.toHandle().descendants().forEach(ProcessHandle::destroyForcibly);
+            process.destroyForcibly();
+            process.waitFor();
         }
     }
 

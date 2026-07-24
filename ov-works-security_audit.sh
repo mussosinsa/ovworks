@@ -109,7 +109,7 @@ check_database_security() {
 
     # Check PostgreSQL connection encryption
     if command -v psql &> /dev/null; then
-        DB_SSL=$(su - postgres -c "psql -d engine -c 'SHOW ssl;'" 2>/dev/null | grep -c "on" || echo 0)
+        DB_SSL=$(postgres_psql -c 'SHOW ssl;' 2>/dev/null | grep -c "on" || true)
         if [ "$DB_SSL" -gt 0 ]; then
             log_pass "Database SSL is enabled"
         else
@@ -117,7 +117,7 @@ check_database_security() {
         fi
 
         # Check password encryption
-        DB_ENCRYPT=$(su - postgres -c "psql -d engine -c 'SHOW password_encryption;'" 2>/dev/null | grep -c "scram-sha-256" || echo 0)
+        DB_ENCRYPT=$(postgres_psql -c 'SHOW password_encryption;' 2>/dev/null | grep -c "scram-sha-256" || true)
         if [ "$DB_ENCRYPT" -gt 0 ]; then
             log_pass "Database password encryption is scram-sha-256"
         else
@@ -126,6 +126,18 @@ check_database_security() {
     else
         log_warn "psql command not available, skipping database checks"
     fi
+}
+
+# The engine runs this script as the ovirt user. `su - postgres` can prompt for
+# a password and wait forever because the web-admin action has no interactive
+# stdin. Use non-interactive sudo instead so unavailable database access is
+# reported as a warning rather than blocking the audit.
+postgres_psql() {
+    if ! command -v sudo >/dev/null 2>&1; then
+        return 127
+    fi
+
+    timeout 15s sudo -n -u postgres psql -d engine "$@"
 }
 
 check_network_security() {
@@ -249,7 +261,8 @@ check_audit_query_capability() {
         return
     fi
 
-    if su - postgres -c "psql -d engine -tAc \"SELECT 1 FROM information_schema.tables WHERE table_name='audit_log'\"" 2>/dev/null | grep -q "1"; then
+    if postgres_psql -tAc "SELECT 1 FROM information_schema.tables WHERE table_name='audit_log'" \
+            2>/dev/null | grep -q "1"; then
         log_pass "audit_log table exists and is queryable"
     else
         log_warn "audit_log table query failed"
