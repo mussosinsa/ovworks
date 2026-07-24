@@ -317,9 +317,21 @@ check_integrity_checksums() {
         if [ "$JAR_COUNT" -gt 0 ]; then
             log_pass "Found $JAR_COUNT engine JAR files"
 
-            # Generate checksums for verification
-            find "$ENGINE_LIB" -name "*.jar" -exec sha256sum {} \; > /tmp/ovirt-jar-checksums.txt 2>/dev/null
-            log_info "Generated checksums for $JAR_COUNT JAR files"
+            # Do not use a fixed /tmp path. A previous root-owned file at that
+            # path prevents the ovirt user from opening it and causes this
+            # otherwise read-only check to fail.
+            local checksum_file
+            if ! checksum_file=$(mktemp "${TMPDIR:-/tmp}/ovirt-jar-checksums.XXXXXX"); then
+                log_warn "Unable to create a temporary checksum file"
+                return
+            fi
+
+            if find "$ENGINE_LIB" -name "*.jar" -exec sha256sum {} \; > "$checksum_file" 2>/dev/null; then
+                log_info "Generated checksums for $JAR_COUNT JAR files"
+            else
+                log_warn "Unable to generate checksums for engine JAR files"
+            fi
+            rm -f "$checksum_file"
         else
             log_warn "No JAR files found in engine library"
         fi
