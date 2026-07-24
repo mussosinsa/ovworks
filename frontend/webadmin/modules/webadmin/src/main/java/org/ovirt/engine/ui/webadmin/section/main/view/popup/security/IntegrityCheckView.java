@@ -27,6 +27,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
@@ -34,6 +35,8 @@ import com.google.gwt.user.client.ui.Widget;
 
 public class IntegrityCheckView extends Composite {
     private static final int HISTORY_LIMIT = 10;
+    private static final int HISTORY_REFRESH_ATTEMPTS = 5;
+    private static final int HISTORY_REFRESH_DELAY_MILLIS = 1000;
     private static final DateTimeFormat HISTORY_TIME_FORMAT = DateTimeFormat.getFormat("yyyy-MM-dd HH:mm:ss"); //$NON-NLS-1$
 
     interface ViewUiBinder extends UiBinder<Widget, IntegrityCheckView> {
@@ -151,7 +154,7 @@ public class IntegrityCheckView extends Composite {
                             result
                     );
                 }
-                loadVerificationHistory();
+                refreshVerificationHistoryAfterExecution();
             }
         );
     }
@@ -175,7 +178,7 @@ public class IntegrityCheckView extends Composite {
                             result
                     );
                 }
-                loadVerificationHistory();
+                refreshVerificationHistoryAfterExecution();
             }
         );
     }
@@ -207,6 +210,21 @@ public class IntegrityCheckView extends Composite {
                     securityAuditHistoryLabel.setHTML(formatHistory(securityAuditHistory));
                     integrityVerificationHistoryLabel.setHTML(formatHistory(integrityVerificationHistory));
                 }));
+    }
+
+    private void refreshVerificationHistoryAfterExecution() {
+        new Timer() {
+            private int attempts;
+
+            @Override
+            public void run() {
+                loadVerificationHistory();
+                attempts++;
+                if (attempts < HISTORY_REFRESH_ATTEMPTS) {
+                    schedule(HISTORY_REFRESH_DELAY_MILLIS);
+                }
+            }
+        }.schedule(HISTORY_REFRESH_DELAY_MILLIS);
     }
 
     private boolean isSecurityAuditResult(AuditLogType logType) {
