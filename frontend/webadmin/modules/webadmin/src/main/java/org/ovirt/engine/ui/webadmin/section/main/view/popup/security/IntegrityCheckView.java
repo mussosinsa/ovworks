@@ -68,6 +68,8 @@ public class IntegrityCheckView extends Composite {
 
     public IntegrityCheckView() {
         initWidget(ViewUiBinder.uiBinder.createAndBindUi(this));
+        securityAuditHistoryLabel.setHTML(SafeHtmlUtils.fromString("실행 이력이 없습니다.").asString()); //$NON-NLS-1$
+        integrityVerificationHistoryLabel.setHTML(SafeHtmlUtils.fromString("실행 이력이 없습니다.").asString()); //$NON-NLS-1$
         initializeHandlers();
         loadVerificationHistory();
     }
