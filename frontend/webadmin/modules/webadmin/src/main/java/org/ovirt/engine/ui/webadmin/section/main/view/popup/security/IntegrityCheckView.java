@@ -240,11 +240,12 @@ public class IntegrityCheckView extends Composite {
             if (index > 0) {
                 result.append("<br/>"); //$NON-NLS-1$
             }
-            result.append(SafeHtmlUtils.fromString(String.format(
-                    "%s | %s | %s", //$NON-NLS-1$
-                    HISTORY_TIME_FORMAT.format(auditLog.getLogTime()),
-                    getHistoryStatus(auditLog.getLogType()),
-                    auditLog.getUserName())).asString());
+            String entry = HISTORY_TIME_FORMAT.format(auditLog.getLogTime())
+                    + " | " //$NON-NLS-1$
+                    + getHistoryStatus(auditLog.getLogType())
+                    + " | " //$NON-NLS-1$
+                    + auditLog.getUserName();
+            result.append(SafeHtmlUtils.fromString(entry).asString());
         }
         return result.toString();
     }
