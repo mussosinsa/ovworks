@@ -68,6 +68,14 @@ class Plugin(plugin.PluginBase):
                         '@JBOSS_AJP_PORT@': self.environment[
                             oengcommcons.ConfigEnv.JBOSS_AJP_PORT
                         ],
+                        '@CLIENT_CONTROL_REQUIRE_IPS@': '\n'.join(
+                            '            Require ip {address}'.format(
+                                address=address,
+                            )
+                            for address in self.environment[
+                                oenginecons.ClientControlEnv.ALLOWED_IPS
+                            ]
+                        ),
                     },
                 ),
                 modifiedList=self.environment[
