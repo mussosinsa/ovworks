@@ -62,6 +62,10 @@ class Plugin(plugin.PluginBase):
     )
     def _misc(self):
         self.environment[oengcommcons.ApacheEnv.NEED_RESTART] = True
+        allowed_ips = self.environment.get(
+            _ALLOWED_IPS_ENV,
+            ('127.0.0.1',),
+        ) or ('127.0.0.1',)
         self.environment[otopicons.CoreEnv.MAIN_TRANSACTION].append(
             filetransaction.FileTransaction(
                 name=self.environment[
@@ -80,9 +84,7 @@ class Plugin(plugin.PluginBase):
                             '            Require ip {address}'.format(
                                 address=address,
                             )
-                            for address in self.environment[
-                                _ALLOWED_IPS_ENV
-                            ]
+                            for address in allowed_ips
                         ),
                     },
                 ),
