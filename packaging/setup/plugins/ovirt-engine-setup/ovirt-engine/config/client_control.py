@@ -26,6 +26,24 @@ def _(m):
     return gettext.dgettext(message=m, domain='ovirt-engine-setup')
 
 
+_CLIENT_CONTROL_ENV = getattr(oenginecons, 'ClientControlEnv', None)
+_ALLOWED_IPS_ENV = getattr(
+    _CLIENT_CONTROL_ENV,
+    'ALLOWED_IPS',
+    'OVESETUP_CLIENT_CONTROL/allowedIps',
+)
+_SERIAL_NUMBER_ENV = getattr(
+    _CLIENT_CONTROL_ENV,
+    'SERIAL_NUMBER',
+    'OVESETUP_CLIENT_CONTROL/serialNumber',
+)
+_ENCRYPTOR_CONFIG_PATH = getattr(
+    oenginecons.FileLocations,
+    'OVIRT_ENGINE_ENCRYPTOR_CONFIG',
+    '/etc/ovirt-engine/encryptor/config.json',
+)
+
+
 @util.export
 class Plugin(plugin.PluginBase):
     """Collect and persist the client-control settings."""
@@ -46,16 +64,16 @@ class Plugin(plugin.PluginBase):
     )
     def _init(self):
         self.environment.setdefault(
-            oenginecons.ClientControlEnv.ALLOWED_IPS,
+            _ALLOWED_IPS_ENV,
             None,
         )
         self.environment.setdefault(
-            oenginecons.ClientControlEnv.SERIAL_NUMBER,
+            _SERIAL_NUMBER_ENV,
             None,
         )
 
     def _read_encryptor_config(self):
-        path = oenginecons.FileLocations.OVIRT_ENGINE_ENCRYPTOR_CONFIG
+        path = _ENCRYPTOR_CONFIG_PATH
         if not os.path.exists(path):
             return {}
         try:
@@ -110,10 +128,10 @@ class Plugin(plugin.PluginBase):
         encryptor_config = self._read_encryptor_config()
 
         if self.environment[
-            oenginecons.ClientControlEnv.SERIAL_NUMBER
+            _SERIAL_NUMBER_ENV
         ] is None:
             self.environment[
-                oenginecons.ClientControlEnv.SERIAL_NUMBER
+                _SERIAL_NUMBER_ENV
             ] = self.dialog.queryString(
                 name='OVESETUP_CLIENT_CONTROL_SERIAL_NUMBER',
                 note=_(
@@ -128,7 +146,7 @@ class Plugin(plugin.PluginBase):
             )
 
         serial_number = self.environment[
-            oenginecons.ClientControlEnv.SERIAL_NUMBER
+            _SERIAL_NUMBER_ENV
         ]
         if not self._SERIAL_PATTERN.match(serial_number):
             raise RuntimeError(
@@ -138,9 +156,9 @@ class Plugin(plugin.PluginBase):
                 )
             )
 
-        if self.environment[oenginecons.ClientControlEnv.ALLOWED_IPS] is None:
+        if self.environment[_ALLOWED_IPS_ENV] is None:
             self.environment[
-                oenginecons.ClientControlEnv.ALLOWED_IPS
+                _ALLOWED_IPS_ENV
             ] = self.dialog.queryString(
                 name='OVESETUP_CLIENT_CONTROL_ALLOWED_IPS',
                 note=_(
@@ -153,14 +171,14 @@ class Plugin(plugin.PluginBase):
             )
 
         allowed_ips = self.environment[
-            oenginecons.ClientControlEnv.ALLOWED_IPS
+            _ALLOWED_IPS_ENV
         ]
         if isinstance(allowed_ips, str):
             allowed_ips = self._normalize_allowed_ips(allowed_ips)
         else:
             allowed_ips = self._normalize_allowed_ips(','.join(allowed_ips))
         self.environment[
-            oenginecons.ClientControlEnv.ALLOWED_IPS
+            _ALLOWED_IPS_ENV
         ] = allowed_ips
 
     @plugin.event(
@@ -171,10 +189,10 @@ class Plugin(plugin.PluginBase):
         ),
     )
     def _misc(self):
-        path = oenginecons.FileLocations.OVIRT_ENGINE_ENCRYPTOR_CONFIG
+        path = _ENCRYPTOR_CONFIG_PATH
         config = self._read_encryptor_config()
         config['serialNum'] = self.environment[
-            oenginecons.ClientControlEnv.SERIAL_NUMBER
+            _SERIAL_NUMBER_ENV
         ]
         config_dir = os.path.dirname(path)
         if not os.path.isdir(config_dir):

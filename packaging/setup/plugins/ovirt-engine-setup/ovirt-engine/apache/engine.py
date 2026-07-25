@@ -28,6 +28,14 @@ def _(m):
     return gettext.dgettext(message=m, domain='ovirt-engine-setup')
 
 
+_CLIENT_CONTROL_ENV = getattr(oenginecons, 'ClientControlEnv', None)
+_ALLOWED_IPS_ENV = getattr(
+    _CLIENT_CONTROL_ENV,
+    'ALLOWED_IPS',
+    'OVESETUP_CLIENT_CONTROL/allowedIps',
+)
+
+
 @util.export
 class Plugin(plugin.PluginBase):
     """Apache ovirt-engine plugin."""
@@ -73,7 +81,7 @@ class Plugin(plugin.PluginBase):
                                 address=address,
                             )
                             for address in self.environment[
-                                oenginecons.ClientControlEnv.ALLOWED_IPS
+                                _ALLOWED_IPS_ENV
                             ]
                         ),
                     },
