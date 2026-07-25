@@ -12,14 +12,15 @@ import ipaddress
 import json
 import os
 import re
+import shutil
+import tempfile
 
-from otopi import constants as otopicons
-from otopi import filetransaction
 from otopi import plugin
 from otopi import util
 
 from ovirt_engine_setup import constants as osetupcons
 from ovirt_engine_setup.engine import constants as oenginecons
+from ovirt_engine_setup.engine_common import constants as oengcommcons
 
 
 def _(m):
@@ -181,32 +182,47 @@ class Plugin(plugin.PluginBase):
             _ALLOWED_IPS_ENV
         ] = allowed_ips
 
+    def _replace_encryptor_config(self, path, content):
+        config_dir = os.path.dirname(path)
+        if not os.path.isdir(config_dir):
+            os.makedirs(config_dir, mode=0o700)
+
+        descriptor, temporary_path = tempfile.mkstemp(
+            prefix='.config.json.',
+            dir=config_dir,
+            text=True,
+        )
+        try:
+            with os.fdopen(descriptor, 'w', encoding='utf-8') as config_file:
+                config_file.write(content)
+                config_file.flush()
+                os.fsync(config_file.fileno())
+            os.chmod(temporary_path, 0o600)
+            shutil.chown(
+                temporary_path,
+                user=self.environment[osetupcons.SystemEnv.USER_ENGINE],
+                group=self.environment[osetupcons.SystemEnv.GROUP_ENGINE],
+            )
+            os.replace(temporary_path, path)
+        finally:
+            if os.path.exists(temporary_path):
+                os.unlink(temporary_path)
+
     @plugin.event(
-        stage=plugin.Stages.STAGE_MISC,
+        stage=plugin.Stages.STAGE_CLOSEUP,
+        before=(oengcommcons.Stages.CORE_ENGINE_START,),
         condition=lambda self: (
             self.environment[oenginecons.CoreEnv.ENABLE] and
             not self.environment[osetupcons.CoreEnv.DEVELOPER_MODE]
         ),
     )
-    def _misc(self):
+    def _closeup(self):
         path = _ENCRYPTOR_CONFIG_PATH
         config = self._read_encryptor_config()
         config['serialNum'] = self.environment[
             _SERIAL_NUMBER_ENV
         ]
-        config_dir = os.path.dirname(path)
-        if not os.path.isdir(config_dir):
-            os.makedirs(config_dir, mode=0o700)
-
-        self.environment[otopicons.CoreEnv.MAIN_TRANSACTION].append(
-            filetransaction.FileTransaction(
-                name=path,
-                mode=0o600,
-                owner=self.environment[osetupcons.SystemEnv.USER_ENGINE],
-                enforcePermissions=True,
-                content=json.dumps(config, indent=4, sort_keys=True) + '\n',
-                modifiedList=self.environment[
-                    otopicons.CoreEnv.MODIFIED_FILES
-                ],
-            )
+        self._replace_encryptor_config(
+            path=path,
+            content=json.dumps(config, indent=4, sort_keys=True) + '\n',
         )
