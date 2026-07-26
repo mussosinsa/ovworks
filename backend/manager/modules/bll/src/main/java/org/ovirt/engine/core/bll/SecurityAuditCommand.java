@@ -29,8 +29,9 @@ import org.slf4j.LoggerFactory;
 public class SecurityAuditCommand<T extends ActionParametersBase> extends CommandBase<T> {
 
     private static final Logger log = LoggerFactory.getLogger(SecurityAuditCommand.class);
-    private static final String SECURITY_AUDIT_SCRIPT = "/usr/share/ovirt-engine/bin/ov-works-security_audit.sh"; //$NON-NLS-1$
-    private static final long SECURITY_AUDIT_TIMEOUT_MINUTES = 10;
+    private static final String SECURITY_AUDIT_RUNNER =
+            "/usr/share/ovirt-engine/bin/ovirt-engine-security-verification-runner.sh"; //$NON-NLS-1$
+    private static final long SECURITY_AUDIT_TIMEOUT_MINUTES = 11;
     private static final AtomicBoolean SECURITY_AUDIT_RUNNING = new AtomicBoolean();
 
     @Inject
@@ -65,19 +66,19 @@ public class SecurityAuditCommand<T extends ActionParametersBase> extends Comman
 
     private void executeSecurityAudit() {
         // Check if script exists and is executable
-        java.io.File scriptFile = new java.io.File(SECURITY_AUDIT_SCRIPT);
+        java.io.File scriptFile = new java.io.File(SECURITY_AUDIT_RUNNER);
         if (!scriptFile.exists()) {
-            String errorMsg = "보안 감사 스크립트를 찾을 수 없습니다: " + SECURITY_AUDIT_SCRIPT;
-            log.error("Security audit script not found: {}", SECURITY_AUDIT_SCRIPT);
-            logAuditEvent(AuditLogType.SECURITY_AUDIT_FAILED, "Security audit script not found: " + SECURITY_AUDIT_SCRIPT);
+            String errorMsg = "보안 감사 실행기를 찾을 수 없습니다: " + SECURITY_AUDIT_RUNNER;
+            log.error("Security audit runner not found: {}", SECURITY_AUDIT_RUNNER);
+            logAuditEvent(AuditLogType.SECURITY_AUDIT_FAILED, "Security audit runner not found: " + SECURITY_AUDIT_RUNNER);
             getReturnValue().getExecuteFailedMessages().add(errorMsg);
             setSucceeded(false);
             return;
         }
         if (!scriptFile.canExecute()) {
-            String errorMsg = "보안 감사 스크립트를 실행할 수 없습니다: " + SECURITY_AUDIT_SCRIPT;
-            log.error("Security audit script is not executable: {}", SECURITY_AUDIT_SCRIPT);
-            logAuditEvent(AuditLogType.SECURITY_AUDIT_FAILED, "Security audit script is not executable: " + SECURITY_AUDIT_SCRIPT);
+            String errorMsg = "보안 감사 실행기를 실행할 수 없습니다: " + SECURITY_AUDIT_RUNNER;
+            log.error("Security audit runner is not executable: {}", SECURITY_AUDIT_RUNNER);
+            logAuditEvent(AuditLogType.SECURITY_AUDIT_FAILED, "Security audit runner is not executable: " + SECURITY_AUDIT_RUNNER);
             getReturnValue().getExecuteFailedMessages().add(errorMsg);
             setSucceeded(false);
             return;
@@ -91,8 +92,7 @@ public class SecurityAuditCommand<T extends ActionParametersBase> extends Comman
                 // Execute the script directly so its bash shebang is honored. Invoking it through
                 // `sh` creates an unnecessary shell process and can run the bash-specific script
                 // with an incompatible shell.
-                ProcessBuilder processBuilder = new ProcessBuilder(SECURITY_AUDIT_SCRIPT);
-                processBuilder.environment().put("SECURITY_AUDIT_STRICT", "0");
+                ProcessBuilder processBuilder = new ProcessBuilder(SECURITY_AUDIT_RUNNER, "security", "webadmin");
                 processBuilder.redirectErrorStream(true);
                 processBuilder.redirectOutput(outputFile.toFile());
                 Process process = processBuilder.start();

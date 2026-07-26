@@ -932,6 +932,8 @@ cp "%{buildroot}%{engine_data}/services/ovirt-engine/ovirt-engine-security-audit
 cp "%{buildroot}%{engine_data}/services/ovirt-engine/ovirt-engine-security-audit.timer" \
 	"%{buildroot}%{_unitdir}/ovirt-engine-security-audit.timer"
 install -m 755 ov-works-security_audit.sh "%{buildroot}%{engine_data}/bin/ov-works-security_audit.sh"
+install -m 755 ovirt-engine-security-verification-runner.sh \
+	"%{buildroot}%{engine_data}/bin/ovirt-engine-security-verification-runner.sh"
 
 #
 # Package customization
@@ -1149,6 +1151,7 @@ fi
 %{_unitdir}/ovirt-engine-security-audit.service
 %{_unitdir}/ovirt-engine-security-audit.timer
 %{engine_data}/bin/ov-works-security_audit.sh
+%{engine_data}/bin/ovirt-engine-security-verification-runner.sh
 
 #
 # PKI

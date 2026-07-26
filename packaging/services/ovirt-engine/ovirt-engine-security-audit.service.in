@@ -2,14 +2,13 @@
 Description=oVirt Engine Security Audit
 Wants=network-online.target
 After=network-online.target @POSTGRESQL_SYSTEMD_SERVICE@
-ConditionPathExists=@ENGINE_USR@/bin/ov-works-security_audit.sh
+ConditionPathExists=@ENGINE_USR@/bin/ovirt-engine-security-verification-runner.sh
 
 [Service]
 Type=oneshot
 User=@ENGINE_USER@
 Group=@ENGINE_GROUP@
-RuntimeDirectory=ovirt-engine-security-audit
-ExecStart=/usr/bin/flock -n /run/ovirt-engine-security-audit/audit.lock @ENGINE_USR@/bin/ov-works-security_audit.sh
-TimeoutStartSec=10min
+ExecStart=@ENGINE_USR@/bin/ovirt-engine-security-verification-runner.sh all timer
+TimeoutStartSec=22min
 StandardOutput=append:@ENGINE_LOG@/security-audit-scheduled.log
 StandardError=append:@ENGINE_LOG@/security-audit-scheduled.log
