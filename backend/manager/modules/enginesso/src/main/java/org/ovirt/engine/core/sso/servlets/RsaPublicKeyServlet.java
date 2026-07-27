@@ -27,7 +27,7 @@ public class RsaPublicKeyServlet extends HttpServlet {
     private final PublicKeyReader publicKeyReader;
 
     public RsaPublicKeyServlet() {
-        this(SsoService::validateClientSerial, LoginEnvelopeCrypto::readRsaPublicKey);
+        this(SsoService::validateClientSerial, LoginEnvelopeCrypto::readRsaPublicKeyPem);
     }
 
     RsaPublicKeyServlet(ClientSerialValidator clientSerialValidator, PublicKeyReader publicKeyReader) {
