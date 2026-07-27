@@ -290,6 +290,16 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>RsaPublicKeyServlet</servlet-name>
+        <servlet-class>org.ovirt.engine.core.sso.servlets.RsaPublicKeyServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>RsaPublicKeyServlet</servlet-name>
+        <url-pattern>/oauth/public-key</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>OAuthTokenInfo</servlet-name>
         <servlet-class>org.ovirt.engine.core.sso.servlets.OAuthTokenInfoServlet</servlet-class>
     </servlet>
