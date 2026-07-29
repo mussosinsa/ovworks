@@ -66,7 +66,7 @@ public class IntegrityVerificationCommand<T extends ActionParametersBase> extend
                         "Integrity verification completed successfully");
                 setSucceeded(true);
             } else {
-                String errorMsg = "무결성 검사 실패 (종료 코드: " + exitCode + ")\n" + output.toString();
+                String errorMsg = "무결성 검사 실패 (종료 코드: " + exitCode + ")";
                 logAuditEvent(AuditLogType.INTEGRITY_VERIFICATION_FAILED,
                         "Integrity verification failed with exit code: " + exitCode);
                 getReturnValue().getExecuteFailedMessages().add(errorMsg);

@@ -123,7 +123,7 @@ public class SecurityAuditCommand<T extends ActionParametersBase> extends Comman
                     logAuditEvent(AuditLogType.SECURITY_AUDIT_COMPLETED, "Security audit completed successfully");
                     setSucceeded(true);
                 } else {
-                    String errorMsg = "보안 감사 실패 (종료 코드: " + exitCode + ")\n" + output.toString();
+                    String errorMsg = "보안 감사 실패 (종료 코드: " + exitCode + ")";
                     logAuditEvent(AuditLogType.SECURITY_AUDIT_FAILED,
                         "Security audit failed with exit code: " + exitCode);
                     getReturnValue().getExecuteFailedMessages().add(errorMsg);
