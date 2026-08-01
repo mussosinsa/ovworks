@@ -50,6 +50,15 @@
             margin-top: 10px;
             white-space: pre-wrap;
         }
+
+        .historyDetail {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            line-height: 1.6;
+        }
     </ui:style>
 
     <g:FlowPanel addStyleNames="{style.mainPanel}">
@@ -69,6 +78,8 @@
                          addStyleNames="{style.statusLabel}" />
             </g:HorizontalPanel>
             <g:HTML ui:field="securityAuditErrorLabel" addStyleNames="{style.errorDetail}" visible="false"/>
+            <g:Label text="최근 실행 히스토리 (최대 10건)" addStyleNames="{style.historyDetail}"/>
+            <g:HTML ui:field="securityAuditHistoryLabel" addStyleNames="{style.historyDetail}"/>
         </g:FlowPanel>
 
         <!-- Integrity Verification Section -->
@@ -87,6 +98,8 @@
                          addStyleNames="{style.statusLabel}" />
             </g:HorizontalPanel>
             <g:HTML ui:field="integrityVerificationErrorLabel" addStyleNames="{style.errorDetail}" visible="false"/>
+            <g:Label text="최근 실행 히스토리 (최대 10건)" addStyleNames="{style.historyDetail}"/>
+            <g:HTML ui:field="integrityVerificationHistoryLabel" addStyleNames="{style.historyDetail}"/>
         </g:FlowPanel>
     </g:FlowPanel>
 </ui:UiBinder>

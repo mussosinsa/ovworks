@@ -28,6 +28,14 @@ def _(m):
     return gettext.dgettext(message=m, domain='ovirt-engine-setup')
 
 
+_CLIENT_CONTROL_ENV = getattr(oenginecons, 'ClientControlEnv', None)
+_ALLOWED_IPS_ENV = getattr(
+    _CLIENT_CONTROL_ENV,
+    'ALLOWED_IPS',
+    'OVESETUP_CLIENT_CONTROL/allowedIps',
+)
+
+
 @util.export
 class Plugin(plugin.PluginBase):
     """Apache ovirt-engine plugin."""
@@ -54,6 +62,10 @@ class Plugin(plugin.PluginBase):
     )
     def _misc(self):
         self.environment[oengcommcons.ApacheEnv.NEED_RESTART] = True
+        allowed_ips = self.environment.get(
+            _ALLOWED_IPS_ENV,
+            ('127.0.0.1',),
+        ) or ('127.0.0.1',)
         self.environment[otopicons.CoreEnv.MAIN_TRANSACTION].append(
             filetransaction.FileTransaction(
                 name=self.environment[
@@ -68,6 +80,12 @@ class Plugin(plugin.PluginBase):
                         '@JBOSS_AJP_PORT@': self.environment[
                             oengcommcons.ConfigEnv.JBOSS_AJP_PORT
                         ],
+                        '@CLIENT_CONTROL_REQUIRE_IPS@': '\n'.join(
+                            '            Require ip {address}'.format(
+                                address=address,
+                            )
+                            for address in allowed_ips
+                        ),
                     },
                 ),
                 modifiedList=self.environment[

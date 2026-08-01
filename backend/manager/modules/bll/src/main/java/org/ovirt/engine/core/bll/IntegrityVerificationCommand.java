@@ -13,11 +13,10 @@ import org.ovirt.engine.core.common.AuditLogType;
 import org.ovirt.engine.core.common.VdcObjectType;
 import org.ovirt.engine.core.common.action.ActionParametersBase;
 import org.ovirt.engine.core.common.businessentities.ActionGroup;
+import org.ovirt.engine.core.common.businessentities.AuditLog;
 import org.ovirt.engine.core.compat.Guid;
-import org.ovirt.engine.core.dal.dbbroker.auditloghandling.AuditLogDirector;
-import org.ovirt.engine.core.dal.dbbroker.auditloghandling.AuditLogable;
-import org.ovirt.engine.core.dal.dbbroker.auditloghandling.AuditLogableImpl;
 import org.ovirt.engine.core.dao.AuditLogDao;
+import org.ovirt.engine.core.utils.transaction.TransactionSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,15 +26,11 @@ import org.slf4j.LoggerFactory;
 public class IntegrityVerificationCommand<T extends ActionParametersBase> extends CommandBase<T> {
 
     private static final Logger log = LoggerFactory.getLogger(IntegrityVerificationCommand.class);
-    private static final String SUDO_COMMAND = "/usr/bin/sudo"; //$NON-NLS-1$
-    private static final String INTEGRITY_CHECK_COMMAND = "/usr/sbin/aide"; //$NON-NLS-1$
-    private static final String INTEGRITY_CHECK_OPTION = "--check"; //$NON-NLS-1$
+    private static final String SECURITY_VERIFICATION_RUNNER =
+            "/usr/share/ovirt-engine/bin/ovirt-engine-security-verification-runner.sh"; //$NON-NLS-1$
 
     @Inject
     private AuditLogDao auditLogDao;
-
-    @Inject
-    private AuditLogDirector auditLogDirector;
 
     public IntegrityVerificationCommand(T parameters, CommandContext cmdContext) {
         super(parameters, cmdContext);
@@ -51,9 +46,8 @@ public class IntegrityVerificationCommand<T extends ActionParametersBase> extend
         logAuditEvent(AuditLogType.INTEGRITY_VERIFICATION_STARTED, "Integrity verification started");
 
         try {
-            // Use sudo to run AIDE with proper privileges to access protected files
             ProcessBuilder processBuilder = new ProcessBuilder(
-                    SUDO_COMMAND, "-n", INTEGRITY_CHECK_COMMAND, INTEGRITY_CHECK_OPTION); //$NON-NLS-1$
+                    SECURITY_VERIFICATION_RUNNER, "integrity", "webadmin"); //$NON-NLS-1$ //$NON-NLS-2$
             processBuilder.redirectErrorStream(true);
             Process process = processBuilder.start();
 
@@ -72,7 +66,7 @@ public class IntegrityVerificationCommand<T extends ActionParametersBase> extend
                         "Integrity verification completed successfully");
                 setSucceeded(true);
             } else {
-                String errorMsg = "무결성 검사 실패 (종료 코드: " + exitCode + ")\n" + output.toString();
+                String errorMsg = "무결성 검사 실패 (종료 코드: " + exitCode + ")";
                 logAuditEvent(AuditLogType.INTEGRITY_VERIFICATION_FAILED,
                         "Integrity verification failed with exit code: " + exitCode);
                 getReturnValue().getExecuteFailedMessages().add(errorMsg);
@@ -91,11 +85,15 @@ public class IntegrityVerificationCommand<T extends ActionParametersBase> extend
     }
 
     private void logAuditEvent(AuditLogType type, String message) {
-        AuditLogable logable = new AuditLogableImpl();
-        logable.setUserId(getCurrentUser().getId());
-        logable.setUserName(getCurrentUser().getLoginName());
-        logable.setCustomData(message);
-        auditLogDirector.log(logable, type);
+        AuditLog auditLog = new AuditLog(type, type.getSeverity());
+        auditLog.setUserId(getCurrentUser().getId());
+        auditLog.setUserName(getCurrentUser().getLoginName());
+        auditLog.setMessage(message);
+        auditLog.setCustomData(message);
+        TransactionSupport.executeInNewTransaction(() -> {
+            auditLogDao.save(auditLog);
+            return null;
+        });
     }
 
     @Override

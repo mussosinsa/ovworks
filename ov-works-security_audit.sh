@@ -6,12 +6,21 @@
 
 set -e
 
-# Color codes for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+# Colorize interactive terminal output only. Escape sequences make WebAdmin,
+# systemd journal, and persistent log output difficult to read.
+if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[1;33m'
+    BLUE='\033[0;34m'
+    NC='\033[0m'
+else
+    RED=''
+    GREEN=''
+    YELLOW=''
+    BLUE=''
+    NC=''
+fi
 
 # Audit result counters
 PASS_COUNT=0
@@ -22,6 +31,7 @@ WARN_COUNT=0
 AUDIT_LOG="/var/log/ovirt-engine/security-audit-$(date +%Y%m%d-%H%M%S).log"
 AUDIT_RESULTS="/tmp/ovirt-security-audit-results.json"
 INTEGRITY_BASELINE="/var/lib/ovirt-engine/security/integrity-baseline.sha256"
+AUDIT_LOCK="${AUDIT_LOCK:-/var/tmp/ov-works-security-audit.lock}"
 SESSION_TIMEOUT_TARGET=600
 ADMIN_NOTIFY_EMAIL="${ADMIN_NOTIFY_EMAIL:-root@localhost}"
 AUDIT_RETENTION_DAYS=365
@@ -56,8 +66,11 @@ log_warn() {
 check_file_permissions() {
     log_info "Checking critical file permissions..."
 
+    local checked=0
+
     # Check engine configuration files
     if [ -f "/etc/ovirt-engine/engine.conf" ]; then
+        checked=$((checked + 1))
         PERMS=$(stat -c "%a" /etc/ovirt-engine/engine.conf)
         if [ "$PERMS" == "600" ] || [ "$PERMS" == "640" ]; then
             log_pass "engine.conf has secure permissions ($PERMS)"
@@ -68,12 +81,17 @@ check_file_permissions() {
 
     # Check database password file
     if [ -f "/etc/ovirt-engine/.pgpass" ]; then
+        checked=$((checked + 1))
         PERMS=$(stat -c "%a" /etc/ovirt-engine/.pgpass)
         if [ "$PERMS" == "600" ]; then
             log_pass ".pgpass has secure permissions (600)"
         else
             log_fail ".pgpass has insecure permissions ($PERMS), must be 600"
         fi
+    fi
+
+    if [ "$checked" -eq 0 ]; then
+        log_warn "No critical permission targets found on this installation"
     fi
 }
 
@@ -109,16 +127,25 @@ check_database_security() {
 
     # Check PostgreSQL connection encryption
     if command -v psql &> /dev/null; then
-        DB_SSL=$(su - postgres -c "psql -d engine -c 'SHOW ssl;'" 2>/dev/null | grep -c "on" || echo 0)
-        if [ "$DB_SSL" -gt 0 ]; then
+        local db_ssl db_encrypt
+        if ! db_ssl=$(postgres_psql -tAc 'SHOW ssl;' 2>/dev/null); then
+            log_warn "Database security settings unavailable (non-interactive PostgreSQL access denied)"
+            return
+        fi
+        db_ssl=$(printf '%s\n' "$db_ssl" | awk 'NF { print tolower($1); exit }')
+        if [ "$db_ssl" = "on" ]; then
             log_pass "Database SSL is enabled"
         else
             log_warn "Database SSL is not enabled"
         fi
 
         # Check password encryption
-        DB_ENCRYPT=$(su - postgres -c "psql -d engine -c 'SHOW password_encryption;'" 2>/dev/null | grep -c "scram-sha-256" || echo 0)
-        if [ "$DB_ENCRYPT" -gt 0 ]; then
+        if ! db_encrypt=$(postgres_psql -tAc 'SHOW password_encryption;' 2>/dev/null); then
+            log_warn "Database password encryption setting unavailable"
+            return
+        fi
+        db_encrypt=$(printf '%s\n' "$db_encrypt" | awk 'NF { print tolower($1); exit }')
+        if [ "$db_encrypt" = "scram-sha-256" ]; then
             log_pass "Database password encryption is scram-sha-256"
         else
             log_warn "Database password encryption is not using scram-sha-256"
@@ -126,6 +153,18 @@ check_database_security() {
     else
         log_warn "psql command not available, skipping database checks"
     fi
+}
+
+# The engine runs this script as the ovirt user. `su - postgres` can prompt for
+# a password and wait forever because the web-admin action has no interactive
+# stdin. Use non-interactive sudo instead so unavailable database access is
+# reported as a warning rather than blocking the audit.
+postgres_psql() {
+    if ! command -v sudo >/dev/null 2>&1; then
+        return 127
+    fi
+
+    timeout 15s sudo -n -u postgres psql -d engine "$@"
 }
 
 check_network_security() {
@@ -183,7 +222,7 @@ check_authentication_settings() {
 check_auth_failure_controls() {
     log_info "Checking authentication failure controls (5-failure lockout/unlock)..."
 
-    local engine_log="/var/log/ovirt-engine/engine.log"
+    local engine_log="${ENGINE_LOG_OVERRIDE:-/var/log/ovirt-engine/engine.log}"
     if [ ! -f "$engine_log" ]; then
         log_warn "engine.log not found, cannot verify account lockout events"
         return
@@ -249,10 +288,17 @@ check_audit_query_capability() {
         return
     fi
 
-    if su - postgres -c "psql -d engine -tAc \"SELECT 1 FROM information_schema.tables WHERE table_name='audit_log'\"" 2>/dev/null | grep -q "1"; then
+    local audit_table
+    if ! audit_table=$(postgres_psql -tAc \
+            "SELECT 1 FROM information_schema.tables WHERE table_name='audit_log'" 2>/dev/null); then
+        log_warn "audit_log query unavailable (non-interactive PostgreSQL access denied)"
+        return
+    fi
+
+    if printf '%s\n' "$audit_table" | grep -qx "1"; then
         log_pass "audit_log table exists and is queryable"
     else
-        log_warn "audit_log table query failed"
+        log_warn "audit_log table was not found"
     fi
 }
 
@@ -304,9 +350,21 @@ check_integrity_checksums() {
         if [ "$JAR_COUNT" -gt 0 ]; then
             log_pass "Found $JAR_COUNT engine JAR files"
 
-            # Generate checksums for verification
-            find "$ENGINE_LIB" -name "*.jar" -exec sha256sum {} \; > /tmp/ovirt-jar-checksums.txt 2>/dev/null
-            log_info "Generated checksums for $JAR_COUNT JAR files"
+            # Do not use a fixed /tmp path. A previous root-owned file at that
+            # path prevents the ovirt user from opening it and causes this
+            # otherwise read-only check to fail.
+            local checksum_file
+            if ! checksum_file=$(mktemp "${TMPDIR:-/tmp}/ovirt-jar-checksums.XXXXXX"); then
+                log_warn "Unable to create a temporary checksum file"
+                return
+            fi
+
+            if find "$ENGINE_LIB" -name "*.jar" -exec sha256sum {} \; > "$checksum_file" 2>/dev/null; then
+                log_info "Generated checksums for $JAR_COUNT JAR files"
+            else
+                log_warn "Unable to generate checksums for engine JAR files"
+            fi
+            rm -f "$checksum_file"
         else
             log_warn "No JAR files found in engine library"
         fi
@@ -368,7 +426,7 @@ check_ip_block_audit_events() {
 
     local found=0
     for lf in "${log_candidates[@]}"; do
-        if [ -f "$lf" ] && grep -Eqi "DROP|REJECT|blocked|blacklist|ip block" "$lf"; then
+        if [ -r "$lf" ] && grep -Eqi "DROP|REJECT|blocked|blacklist|ip block" "$lf" 2>/dev/null; then
             log_pass "IP block-related events found in $(basename "$lf")"
             found=1
             break
@@ -461,13 +519,19 @@ check_audit_storage_capacity() {
 check_audit_write_failures() {
     log_info "Checking audit write failure signals..."
 
-    local engine_log="/var/log/ovirt-engine/engine.log"
+    local engine_log="${ENGINE_LOG_OVERRIDE:-/var/log/ovirt-engine/engine.log}"
     if [ ! -f "$engine_log" ]; then
         log_warn "engine.log missing, cannot inspect write failure patterns"
         return
     fi
 
-    if grep -Eqi "audit.*(fail|error)|disk.*(full|i/o)|insert.*audit.*failed" "$engine_log"; then
+    local failure_pattern recent_log
+    failure_pattern="failed to (persist|save|write).*(audit|event)|"\
+"audit(log)?dao.*(fail|error)|insert into audit_log.*(fail|error)|"\
+"audit[_ ]log.*(disk full|i/o error)"
+    recent_log=$(tail -n 20000 "$engine_log" 2>/dev/null || true)
+    if printf '%s\n' "$recent_log" | grep -Eiv \
+            "SECURITY_AUDIT_(FAILED|WARNING)|Security audit" | grep -Eqi "$failure_pattern"; then
         log_fail "Detected potential audit write failure indicators in engine.log"
     else
         log_pass "No audit write failure indicators detected in engine.log"
@@ -515,6 +579,12 @@ check_backup_configuration() {
 ###############################################################################
 
 main() {
+    exec 8>"$AUDIT_LOCK"
+    if ! flock -n 8; then
+        echo "Security audit is already running" >&2
+        exit 75
+    fi
+
     case "${1:-}" in
         --self-test)
             self_test_security_controls
@@ -613,5 +683,8 @@ EOF
     exit 0
 }
 
-# Run main function
-main "$@"
+# Run main function only when executed, allowing focused function tests to
+# source this file without starting a complete host audit.
+if [ "${BASH_SOURCE[0]}" = "$0" ]; then
+    main "$@"
+fi

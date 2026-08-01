@@ -927,6 +927,13 @@ install -dm 755 "%{buildroot}%{_unitdir}"
 for service in ovirt-engine ovirt-engine-notifier ovirt-fence-kdump-listener ovirt-websocket-proxy; do
 	cp "%{buildroot}%{engine_data}/services/${service}/${service}.systemd" "%{buildroot}%{_unitdir}/${service}.service"
 done
+cp "%{buildroot}%{engine_data}/services/ovirt-engine/ovirt-engine-security-audit.service" \
+	"%{buildroot}%{_unitdir}/ovirt-engine-security-audit.service"
+cp "%{buildroot}%{engine_data}/services/ovirt-engine/ovirt-engine-security-audit.timer" \
+	"%{buildroot}%{_unitdir}/ovirt-engine-security-audit.timer"
+install -m 755 ov-works-security_audit.sh "%{buildroot}%{engine_data}/bin/ov-works-security_audit.sh"
+install -m 755 ovirt-engine-security-verification-runner.sh \
+	"%{buildroot}%{engine_data}/bin/ovirt-engine-security-verification-runner.sh"
 
 #
 # Package customization
@@ -1141,6 +1148,10 @@ fi
 
 %{engine_data}/services/ovirt-engine
 %{_unitdir}/ovirt-engine.service
+%{_unitdir}/ovirt-engine-security-audit.service
+%{_unitdir}/ovirt-engine-security-audit.timer
+%{engine_data}/bin/ov-works-security_audit.sh
+%{engine_data}/bin/ovirt-engine-security-verification-runner.sh
 
 #
 # PKI
@@ -1224,6 +1235,7 @@ fi
 %{engine_data}/setup/ovirt_engine_setup/provisiondb/
 %{engine_data}/setup/plugins/*/ovirt-engine-common/
 %{engine_data}/firewalld/ovirt-common/
+%{engine_data}/encryptor/
 %{engine_data}/setup/ovirt_engine_setup/engine/
 %config %{_sysconfdir}/httpd/conf.d/ovirt-disable-http-trace.conf
 

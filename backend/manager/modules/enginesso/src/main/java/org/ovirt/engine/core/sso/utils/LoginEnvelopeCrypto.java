@@ -7,8 +7,10 @@ import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,6 +38,31 @@ public final class LoginEnvelopeCrypto {
             return null;
         }
         return unescapeJsonString(matcher.group(1)).trim();
+    }
+
+    public static String readRsaPublicKeyPem() throws IOException {
+        String configuredKey = readRsaPublicKey();
+        return formatRsaPublicKeyPem(configuredKey);
+    }
+
+    static String formatRsaPublicKeyPem(String configuredKey) throws IOException {
+        if (configuredKey == null || configuredKey.trim().isEmpty()) {
+            return configuredKey;
+        }
+
+        String base64Key = configuredKey
+                .replace("-----BEGIN PUBLIC KEY-----", "") //$NON-NLS-1$ //$NON-NLS-2$
+                .replace("-----END PUBLIC KEY-----", "") //$NON-NLS-1$ //$NON-NLS-2$
+                .replaceAll("\\s", ""); //$NON-NLS-1$ //$NON-NLS-2$
+        try {
+            byte[] encodedKey = Base64.getDecoder().decode(base64Key);
+            PublicKey publicKey = KeyFactory.getInstance("RSA") //$NON-NLS-1$
+                    .generatePublic(new X509EncodedKeySpec(encodedKey));
+            String pemBody = Base64.getMimeEncoder(64, new byte[] { '\n' }).encodeToString(publicKey.getEncoded());
+            return "-----BEGIN PUBLIC KEY-----\n" + pemBody + "\n-----END PUBLIC KEY-----"; //$NON-NLS-1$ //$NON-NLS-2$
+        } catch (GeneralSecurityException | IllegalArgumentException e) {
+            throw new IOException("rsaPublicKey is not a valid RSA X.509 public key", e); //$NON-NLS-1$
+        }
     }
 
     public static String decrypt(String encryptedText) throws GeneralSecurityException, IOException {

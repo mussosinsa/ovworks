@@ -12,7 +12,10 @@
 
 import gettext
 import os
+import re
 
+from otopi import constants as otopicons
+from otopi import filetransaction
 from otopi import plugin
 from otopi import util
 
@@ -28,6 +31,29 @@ def _(m):
 class Plugin(plugin.PluginBase):
     """Engine ACL and sudoers adjustments plugin."""
 
+    _AIDE_CONFIG_PATH = '/etc/aide.conf'
+    _AIDE_EXCLUSIONS_BEGIN = '# BEGIN OVIRT-ENGINE MANAGED EXCLUSIONS'
+    _AIDE_EXCLUSIONS_END = '# END OVIRT-ENGINE MANAGED EXCLUSIONS'
+    _AIDE_EXCLUSIONS = (
+        # Files modified by approved engine-setup client-control changes.
+        r'!/etc/httpd/conf\.d/z-ovirt-engine-proxy\.conf$',
+        r'!/etc/ovirt-engine/encryptor/config\.json$',
+        r'!/etc/ovirt-engine/engine\.conf\.d/99-limit-user-sessions\.conf$',
+        # Runtime, log, cache, and generated integrity data.
+        r'!/run/ovirt-engine(/.*)?$',
+        r'!/var/run/ovirt-engine(/.*)?$',
+        r'!/var/log/ovirt-engine(/.*)?$',
+        r'!/var/cache/ovirt-engine(/.*)?$',
+        r'!/var/tmp/ovirt-engine(/.*)?$',
+        r'!/var/lib/ovirt-engine/jboss_runtime(/.*)?$',
+        r'!/var/lib/ovirt-engine/timer-service-data(/.*)?$',
+        r'!/var/lib/ovirt-engine/security/integrity-baseline\.sha256$',
+        r'!/tmp/ovirt-integrity-check\.log$',
+        r'!/tmp/ovirt-security-audit-results\.json$',
+        r'!/tmp/ovirt-security-audit-.*$',
+        r'!/tmp/ovirt-jar-checksums\..*$',
+    )
+
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
 
@@ -36,6 +62,52 @@ class Plugin(plugin.PluginBase):
     )
     def _init(self):
         self.command.detect('setfacl')
+
+    def _aide_config_with_exclusions(self, content):
+        managed_block_pattern = re.compile(
+            r'\n?' + re.escape(self._AIDE_EXCLUSIONS_BEGIN) +
+            r'.*?' + re.escape(self._AIDE_EXCLUSIONS_END) + r'\n?',
+            re.DOTALL,
+        )
+        content = managed_block_pattern.sub('\n', content).rstrip()
+        managed_block = '\n'.join(
+            (self._AIDE_EXCLUSIONS_BEGIN,) +
+            self._AIDE_EXCLUSIONS +
+            (self._AIDE_EXCLUSIONS_END,)
+        )
+        return content + '\n\n' + managed_block + '\n'
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_MISC,
+        condition=lambda self: (
+            self.environment[oenginecons.CoreEnv.ENABLE] and
+            not self.environment[
+                osetupcons.CoreEnv.DEVELOPER_MODE
+            ]
+        ),
+    )
+    def _configure_aide_exclusions(self):
+        if not os.path.exists(self._AIDE_CONFIG_PATH):
+            self.logger.info(
+                _('Skipping AIDE exclusions; file is missing: %s'),
+                self._AIDE_CONFIG_PATH,
+            )
+            return
+
+        with open(self._AIDE_CONFIG_PATH, encoding='utf-8') as config_file:
+            content = config_file.read()
+        self.environment[otopicons.CoreEnv.MAIN_TRANSACTION].append(
+            filetransaction.FileTransaction(
+                name=self._AIDE_CONFIG_PATH,
+                mode=0o600,
+                owner='root',
+                enforcePermissions=True,
+                content=self._aide_config_with_exclusions(content),
+                modifiedList=self.environment[
+                    otopicons.CoreEnv.MODIFIED_FILES
+                ],
+            )
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
@@ -61,7 +133,7 @@ class Plugin(plugin.PluginBase):
             'engine.conf.d',
             '99-limit-user-sessions.conf',
         )
-        aide_conf = '/etc/aide.conf'
+        aide_conf = self._AIDE_CONFIG_PATH
 
         self._set_acl_if_exists(engine_proxy_conf, 'rw')
         self._set_acl_if_exists(session_limit_conf, 'rw')

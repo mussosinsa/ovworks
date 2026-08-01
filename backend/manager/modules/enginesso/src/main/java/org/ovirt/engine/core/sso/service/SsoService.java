@@ -214,6 +214,10 @@ public class SsoService {
     }
 
     public static void validateClientSerial(HttpServletRequest request) {
+        validateClientSerial(request, false);
+    }
+
+    private static void validateClientSerial(HttpServletRequest request, boolean allowAuthenticatedSelfRequest) {
         String clientSerial = request.getHeader("X-Client-Serial");
         if (StringUtils.isEmpty(clientSerial)) {
            throw new OAuthException(SsoConstants.ERR_CODE_UNAUTHORIZED_CLIENT,
@@ -229,7 +233,9 @@ public class SsoService {
            String localIp = localHost.getHostAddress(); // ex) 127.0.0.1
 
            // 자기 자신이 호출한 경우 예외 처리
-           if (remoteAddr.equals(localIp) || "127.0.0.1".equals(remoteAddr) || "0:0:0:0:0:0:0:1".equals(remoteAddr)) {
+           if (!allowAuthenticatedSelfRequest &&
+                   (remoteAddr.equals(localIp) || "127.0.0.1".equals(remoteAddr) ||
+                           "0:0:0:0:0:0:0:1".equals(remoteAddr))) {
                throw new OAuthException(SsoConstants.ERR_CODE_UNAUTHORIZED_CLIENT,
                    "Request from self is not allowed");
            }
@@ -255,6 +261,9 @@ public class SsoService {
         while (headerNames.hasMoreElements()) {
             String headerName = headerNames.nextElement();
             String headerValue = request.getHeader(headerName);
+            if (SsoConstants.HEADER_AUTHORIZATION.equalsIgnoreCase(headerName)) {
+                headerValue = "<redacted>";
+            }
             log.info(" headerName: {}, headerValue: {} ", headerName, headerValue);
         }
             StringBuffer requestURL = request.getRequestURL();
@@ -262,17 +271,36 @@ public class SsoService {
             String fullURL = (queryString == null) ? requestURL.toString() : requestURL.append('?').append(queryString).toString();
             log.info(" headerURL: {} ", fullURL);
 
+        String[] retVal = getClientIdClientSecretFromHeader(request);
         if (request != null && request.getHeader("X-Client-Serial") != null) {
-              validateClientSerial(request); // 추가된 검증 로직
+            validateClientSerial(request, hasValidTrustedClientCredentials(request, retVal));
         }
 
-        String[] retVal = getClientIdClientSecretFromHeader(request);
         if (retVal != null &&
                 StringUtils.isNotEmpty(retVal[0]) &&
                 getSsoContext(request).getClienInfo(retVal[0]) != null) {
             clientId = retVal[0];
         }
         return clientId;
+    }
+
+    private static boolean hasValidTrustedClientCredentials(HttpServletRequest request, String[] clientCredentials) {
+        if (clientCredentials == null || StringUtils.isEmpty(clientCredentials[0]) ||
+                StringUtils.isEmpty(clientCredentials[1])) {
+            return false;
+        }
+
+        ClientInfo clientInfo = getSsoContext(request).getClienInfo(clientCredentials[0]);
+        if (clientInfo == null || !clientInfo.isTrusted()) {
+            return false;
+        }
+
+        try {
+            return EnvelopePBE.check(clientInfo.getClientSecret(), clientCredentials[1]);
+        } catch (Exception ex) {
+            log.warn("Unable to validate internal SSO client credentials", ex);
+            return false;
+        }
     }
 
     public static String[] getClientIdClientSecretFromHeader(HttpServletRequest request) {

@@ -53,6 +53,12 @@ class FileLocations(object):
         'bin',
     )
 
+    OVIRT_ENGINE_ENCRYPTOR_CONFIG = os.path.join(
+        OVIRT_ENGINE_SYSCONFDIR,
+        'encryptor',
+        'config.json',
+    )
+
     OVIRT_ENGINE_DB_DIR = os.path.join(
         OVIRT_ENGINE_DATADIR,
         'dbscripts',
@@ -767,6 +773,32 @@ class RPMDistroEnv(object):
 class ApacheEnv(object):
 
     HTTPD_CONF_OVIRT_ENGINE = 'OVESETUP_APACHE/configFileOvirtEngine'
+
+
+@util.export
+@util.codegen
+@osetupattrsclass
+class ClientControlEnv(object):
+
+    @osetupattrs(
+        answerfile=True,
+        description=_(
+            'Client source IP addresses allowed to access the engine'
+        ),
+        reconfigurable=True,
+        summary=True,
+    )
+    def ALLOWED_IPS(self):
+        return 'OVESETUP_CLIENT_CONTROL/allowedIps'
+
+    @osetupattrs(
+        answerfile=True,
+        description=_('Client serial number used for authentication'),
+        reconfigurable=True,
+        summary=True,
+    )
+    def SERIAL_NUMBER(self):
+        return 'OVESETUP_CLIENT_CONTROL/serialNumber'
 
 
 @util.export

@@ -19,6 +19,7 @@ from . import aaakerbldap
 from . import aaaupgrade
 from . import appmode
 from . import ca
+from . import client_control
 from . import database
 from . import domain_type
 from . import fapolicyd
@@ -49,6 +50,7 @@ def createPlugins(context):
     domain_type.Plugin(context=context)
     firewall.Plugin(context=context)
     ca.Plugin(context=context)
+    client_control.Plugin(context=context)
     options.Plugin(context=context)
     tools.Plugin(context=context)
     public_glance_repository.Plugin(context=context)

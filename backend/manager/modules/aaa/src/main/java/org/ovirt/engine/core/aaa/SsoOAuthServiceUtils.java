@@ -47,6 +47,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SsoOAuthServiceUtils {
+    private static final String HEADER_CREDENTIALS_ENCRYPTION = "X-OVirt-Credentials-Encryption";
+    private static final String CREDENTIALS_ENCRYPTION_RSA_OAEP_SHA256 = "RSA-OAEP-SHA256";
     private static final Logger log = LoggerFactory.getLogger(SsoOAuthServiceUtils.class);
 
     private static final String authzSearchScope = "ovirt-ext=token-info:authz-search";
@@ -345,18 +347,23 @@ public class SsoOAuthServiceUtils {
         }
     }
 
-    private static String[] getUserCredentialsFromHeader(HttpServletRequest request) {
+    private static String[] getUserCredentialsFromHeader(HttpServletRequest request) throws Exception {
         String header = request.getHeader("Authorization");
         String userName = "";
         String passwd = "";
-        String Serial = request.getHeader("X-Client-Serial");
         if (StringUtils.isNotEmpty(header) && header.startsWith("Basic")) {
             String[] creds = new String(
                     Base64.decodeBase64(header.substring("Basic".length())),
                     StandardCharsets.UTF_8
             ).split(":", 2);
-            userName = creds.length >= 1 ? creds[0] : "";
-            passwd = creds.length >= 2 ? creds[1] : "";
+            if (CREDENTIALS_ENCRYPTION_RSA_OAEP_SHA256.equals(
+                    request.getHeader(HEADER_CREDENTIALS_ENCRYPTION))) {
+                userName = creds.length >= 1 ? RsaCredentialsDecryptor.decryptUsername(creds[0]) : "";
+                passwd = creds.length >= 2 ? RsaCredentialsDecryptor.decrypt(creds[1]) : "";
+            } else {
+                userName = creds.length >= 1 ? creds[0] : "";
+                passwd = creds.length >= 2 ? creds[1] : "";
+            }
         }
         return new String[] {userName, passwd};
     }
