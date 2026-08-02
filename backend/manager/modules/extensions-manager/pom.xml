@@ -17,6 +17,10 @@
   <name>Extensions manager</name>
   <dependencies>
     <dependency>
+      <groupId>org.ovirt.engine.core</groupId>
+      <artifactId>uutils</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.ovirt.engine.api</groupId>
       <artifactId>ovirt-engine-extensions-api</artifactId>
     </dependency>

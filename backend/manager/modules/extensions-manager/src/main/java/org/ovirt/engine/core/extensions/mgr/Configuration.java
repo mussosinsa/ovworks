@@ -1,7 +1,6 @@
 package org.ovirt.engine.core.extensions.mgr;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationHandler;
@@ -16,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.ovirt.engine.core.uutils.config.EncryptedConfigFile;
+
 public abstract class Configuration {
     /**
      * Load the configuration from a properties file.
@@ -25,7 +26,7 @@ public abstract class Configuration {
      */
     public static Configuration loadFile(File file) throws IOException {
         Properties properties = new Properties();
-        try (InputStream in = new FileInputStream(file)) {
+        try (InputStream in = EncryptedConfigFile.open(file)) {
             properties.load(in);
         }
         return new Root(file, properties);
@@ -449,4 +450,3 @@ public abstract class Configuration {
         }
     }
 }
-

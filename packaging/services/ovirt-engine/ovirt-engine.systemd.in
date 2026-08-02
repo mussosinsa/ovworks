@@ -6,6 +6,8 @@ After=network.target @POSTGRESQL_SYSTEMD_SERVICE@
 Type=notify
 User=@ENGINE_USER@
 Group=@ENGINE_GROUP@
+RuntimeDirectory=ovirt-engine
+RuntimeDirectoryMode=0700
 LimitNOFILE=65535
 ExecStart=@ENGINE_USR@/services/ovirt-engine/ovirt-engine.py --redirect-output --systemd=notify $EXTRA_ARGS start
 EnvironmentFile=-/etc/sysconfig/ovirt-engine

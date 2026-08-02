@@ -8,6 +8,8 @@
 
 import gettext
 import glob
+import importlib.util
+import io
 import os
 import re
 
@@ -26,6 +28,8 @@ class ConfigFile(base.Base):
 
     _EMPTY_LINE = re.compile(r'^\s*(#.*|)$')
     _KEY_VALUE_EXPRESSION = re.compile(r'^\s*(?P<key>\w+)=(?P<value>.*)$')
+    _ENCRYPTOR_PATH = '/usr/share/ovirt-engine/encryptor/encryptor.py'
+    _ENCRYPTED_MAGIC = b'OVENC001'
 
     @property
     def values(self):
@@ -63,7 +67,7 @@ class ConfigFile(base.Base):
             self.logger.debug("loading config '%s'", file)
             index = 0
             try:
-                with open(file, 'r') as f:
+                with self._openFile(file) as f:
                     for line in f:
                         index += 1
                         self._loadLine(line)
@@ -82,6 +86,34 @@ class ConfigFile(base.Base):
                         error=e
                     )
                 )
+
+    def _openFile(self, file):
+        with open(file, 'rb') as stream:
+            encrypted = stream.read(len(self._ENCRYPTED_MAGIC)) == self._ENCRYPTED_MAGIC
+        if not encrypted:
+            return io.open(file, 'r', encoding='utf-8')
+        spec = importlib.util.spec_from_file_location(
+            'ovirt_engine_config_encryptor',
+            self._ENCRYPTOR_PATH,
+        )
+        if spec is None or spec.loader is None:
+            raise RuntimeError('Unable to load OVENC001 decryptor')
+        encryptor = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(encryptor)
+        encryptor.validate_ovirt_path(file)
+        config = encryptor._load_crypto_config(encryptor.DEFAULT_CONFIG)
+        passphrase = encryptor.obtain_passphrase(config)
+        try:
+            with open(file, 'rb') as stream:
+                plaintext = encryptor.decrypt_bytes(
+                    stream.read(),
+                    passphrase,
+                    config,
+                    deny_legacy_cbc=True,
+                )
+            return io.StringIO(plaintext.decode('utf-8'))
+        finally:
+            passphrase = None
 
     def expandString(self, value):
         ret = ""

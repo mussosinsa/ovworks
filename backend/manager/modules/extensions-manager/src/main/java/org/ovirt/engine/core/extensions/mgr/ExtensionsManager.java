@@ -1,7 +1,6 @@
 package org.ovirt.engine.core.extensions.mgr;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,6 +26,7 @@ import org.ovirt.engine.api.extensions.Base;
 import org.ovirt.engine.api.extensions.ExtKey;
 import org.ovirt.engine.api.extensions.ExtMap;
 import org.ovirt.engine.api.extensions.Extension;
+import org.ovirt.engine.core.uutils.config.EncryptedConfigFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -143,7 +143,7 @@ public class ExtensionsManager extends Observable {
 
     public String load(File file) {
         try (
-            InputStream is = new FileInputStream(file);
+            InputStream is = EncryptedConfigFile.open(file);
             Reader reader = new InputStreamReader(is, StandardCharsets.UTF_8)
         ) {
             Properties props = new Properties();
@@ -178,6 +178,19 @@ public class ExtensionsManager extends Observable {
     }
 
     private synchronized String loadImpl(Properties props, File confFile) {
+        String datasource = props.getProperty("config.datasource.file");
+        if (datasource != null && !datasource.isEmpty()) {
+            File datasourceFile = new File(datasource);
+            try {
+                if (EncryptedConfigFile.isEncrypted(datasourceFile)) {
+                    props.setProperty(
+                            "config.datasource.file",
+                            EncryptedConfigFile.materialize(datasourceFile).getAbsolutePath());
+                }
+            } catch (IOException exception) {
+                throw new ConfigurationException("Can't decrypt extension datasource configuration", exception);
+            }
+        }
         ExtensionEntry entry = new ExtensionEntry(props, confFile);
         if (!entry.enabled) {
             return null;
