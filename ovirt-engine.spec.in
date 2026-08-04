@@ -1152,6 +1152,8 @@ fi
 %{_unitdir}/ovirt-engine-security-audit.timer
 %{engine_data}/bin/ov-works-security_audit.sh
 %{engine_data}/bin/ovirt-engine-security-verification-runner.sh
+%{engine_data}/bin/all-backup.sh
+%{engine_data}/bin/engine-backup-root.sh
 
 #
 # PKI

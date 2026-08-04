@@ -374,7 +374,7 @@
 │  │   ┌─────────────────────────────────────────────────────────────┐  │   │
 │  │   │  백업 저장 위치                                              │  │   │
 │  │   │  ┌───────────────────────────────────────────────────────┐  │  │   │
-│  │   │  │ /backup/engine                                        │  │  │   │
+│  │   │  │ /var/lib/ovirt-engine-backup/engine                                        │  │  │   │
 │  │   │  └───────────────────────────────────────────────────────┘  │  │   │
 │  │   │    ▲                                                        │  │   │
 │  │   │    └── engine-backup 출력 파일 저장 경로                      │  │   │
@@ -402,14 +402,14 @@
 │   engine-backup 출력 파일을 저장할 경로를 입력합니다.                          │
 │                                                                             │
 │   백업 저장 위치  ┌─────────────────────────────────────┐                  │
-│                 │ /backup/engine                       │                  │
+│                 │ /var/lib/ovirt-engine-backup/engine                       │                  │
 │                 └─────────────────────────────────────┘                  │
 │                                                                             │
 │   입력 예시:                                                                 │
 │   ┌─────────────────────────────────────────────────────────────────────┐  │
-│   │  • /backup/engine                                                   │  │
-│   │  • /var/backup/ovirt-engine                                         │  │
-│   │  • /mnt/backup/engine-$(date +%Y%m%d)                               │  │
+│   │  • /var/lib/ovirt-engine-backup/engine                                                   │  │
+│   │  • /var/lib/ovirt-engine-backup/manual                                         │  │
+│   │  • /mnt/var/lib/ovirt-engine-backup/engine-$(date +%Y%m%d)                               │  │
 │   └─────────────────────────────────────────────────────────────────────┘  │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -425,8 +425,8 @@
 │   실행되는 명령어:                                                            │
 │   ┌─────────────────────────────────────────────────────────────────────┐  │
 │   │  /usr/bin/engine-backup --mode=backup                               │  │
-│   │    --file=/backup/engine/engine_backup.tar.gz                       │  │
-│   │    --log=/backup/engine/engine_backup.log                           │  │
+│   │    --file=/var/lib/ovirt-engine-backup/engine/engine_backup.tar.gz                       │  │
+│   │    --log=/var/lib/ovirt-engine-backup/engine/engine_backup.log                           │  │
 │   └─────────────────────────────────────────────────────────────────────┘  │
 │                                                                             │
 │   백업 범위:                                                                 │
@@ -456,8 +456,8 @@
 │   │   └───────────────────────────────────────────────────────────┘    │  │
 │   │                                                                     │  │
 │   │   생성된 파일:                                                      │  │
-│   │   • /backup/engine/engine_backup.tar.gz (백업 파일)                │  │
-│   │   • /backup/engine/engine_backup.log (로그 파일)                   │  │
+│   │   • /var/lib/ovirt-engine-backup/engine/engine_backup.tar.gz (백업 파일)                │  │
+│   │   • /var/lib/ovirt-engine-backup/engine/engine_backup.log (로그 파일)                   │  │
 │   │                                                                     │  │
 │   │   감사 로그: ENGINE_BACKUP_COMPLETED (9025)                         │  │
 │   │                                                                     │  │
@@ -782,7 +782,7 @@
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
 │  │  • all-backup.sh: sudo 권한 (디렉토리 생성, 로그 읽기)               │   │
 │  │  • rsyslog.conf: sudo 권한 (파일 수정, 서비스 재시작)               │   │
-│  │  • engine-backup: engine 사용자 또는 root 권한                     │   │
+│  │  • engine-backup: root 권한 전용 래퍼를 통해서만 실행                     │   │
 │  └─────────────────────────────────────────────────────────────────────┘   │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -1037,7 +1037,7 @@
 | 스크립트 | 경로 | 용도 |
 |----------|------|------|
 | all-backup.sh | /usr/share/ovirt-engine/bin/all-backup.sh | 전체 로그 압축 |
-| engine-backup | /usr/bin/engine-backup | 엔진 백업 도구 |
+| engine-backup-root.sh | /usr/share/ovirt-engine/bin/engine-backup-root.sh | root 전용 엔진 백업 래퍼 |
 
 ### 5.4 설정 파일
 
@@ -1106,6 +1106,19 @@
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
+
+### 5.6 root 전용 백업 실행 통제
+
+WebAdmin에서 감사기록 전체 백업 또는 가용성 확보 엔진 백업을 요청하더라도 Engine 프로세스의 `ovirt` 계정으로 백업 명령을 직접 실행하지 않는다.
+
+* 전체 로그 백업은 `/usr/bin/sudo -n -- /usr/share/ovirt-engine/bin/all-backup.sh <경로>`로 실행한다.
+* 엔진 백업은 `/usr/bin/sudo -n -- /usr/share/ovirt-engine/bin/engine-backup-root.sh <경로>`로 실행한다.
+* 두 래퍼는 실행 UID가 0이 아니면 즉시 실패하며, 실제 `tar`와 `engine-backup`은 root로 실행된다.
+* `/etc/sudoers.d/ovirt-backup`은 `ovirt` 계정에 위 두 root 소유 래퍼만 비대화형으로 실행할 권한을 부여한다. `/bin/tar`, `/usr/bin/engine-backup` 또는 임의 셸에 대한 포괄적인 sudo 권한은 부여하지 않는다.
+* 백업 경로는 `/var/lib/ovirt-engine-backup` 내부로 제한한다. `readlink -f` 검증으로 심볼릭 링크를 이용한 허용 디렉터리 이탈을 차단하고, 생성된 목적 디렉터리는 `root:root`, 권한 `0700`, 생성 파일은 `umask 077`로 보호한다.
+* 래퍼는 정확히 하나의 경로 인자만 허용하고 내부에서 고정된 명령 옵션을 구성하므로 WebAdmin 입력값으로 임의 명령 옵션을 주입할 수 없다.
+
+운영자는 별도 마운트에 백업을 보관해야 하는 경우 `/var/lib/ovirt-engine-backup` 자체를 승인된 백업 파일시스템의 마운트 지점으로 구성해야 하며, 하위 경로를 외부 디렉터리로 연결하는 심볼릭 링크를 사용하면 안 된다.
 
 ---
 

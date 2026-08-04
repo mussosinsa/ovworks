@@ -2,8 +2,8 @@
 
 set -eu
 
-DEST_DIR="${1:-}"
 BACKUP_ROOT="/var/lib/ovirt-engine-backup"
+DEST_DIR="${1:-}"
 
 if [ "$#" -ne 1 ]; then
     echo "FAIL: 저장 위치 인자는 하나만 허용됩니다." 1>&2
@@ -11,7 +11,7 @@ if [ "$#" -ne 1 ]; then
 fi
 
 if [ "$(id -u)" -ne 0 ]; then
-    echo "FAIL: 전체 로그 백업은 root 권한으로 실행해야 합니다." 1>&2
+    echo "FAIL: 엔진 백업은 root 권한으로 실행해야 합니다." 1>&2
     exit 1
 fi
 
@@ -41,18 +41,7 @@ esac
 chown root:root -- "${resolved_dir}"
 chmod 0700 -- "${resolved_dir}"
 
-timestamp="$(date +%Y%m%d%H%M%S)"
-archive="${resolved_dir%/}/${timestamp}.tar.gz"
-
-if /bin/tar --ignore-failed-read -czf "${archive}" -C /var/log ovirt-engine; then
-    echo "SUCCESS: ${archive}"
-    exit 0
-fi
-
-if [ -f "${archive}" ]; then
-    echo "SUCCESS (with warnings): ${archive}"
-    exit 0
-fi
-
-echo "FAIL: ${archive}"
-exit 1
+exec /usr/bin/engine-backup \
+    --mode=backup \
+    --file="${resolved_dir}/engine_backup.tar.gz" \
+    --log="${resolved_dir}/engine_backup.log"

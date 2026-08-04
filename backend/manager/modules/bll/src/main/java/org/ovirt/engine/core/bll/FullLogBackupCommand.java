@@ -2,7 +2,6 @@ package org.ovirt.engine.core.bll;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -22,6 +21,7 @@ import org.slf4j.LoggerFactory;
 public class FullLogBackupCommand extends CommandBase<AuditLogBackupParameters> {
 
     private static final Logger log = LoggerFactory.getLogger(FullLogBackupCommand.class);
+    private static final String SUDO_COMMAND = "/usr/bin/sudo"; //$NON-NLS-1$
     private static final String BACKUP_SCRIPT = "/usr/share/ovirt-engine/bin/all-backup.sh"; //$NON-NLS-1$
     public FullLogBackupCommand(AuditLogBackupParameters parameters, CommandContext cmdContext) {
         super(parameters, cmdContext);
@@ -37,17 +37,8 @@ public class FullLogBackupCommand extends CommandBase<AuditLogBackupParameters> 
         }
 
         Path directory = Paths.get(backupPath.trim());
-        try {
-            Files.createDirectories(directory);
-        } catch (Exception e) {
-            log.error("Failed to create backup directory {}", directory, e);
-            getReturnValue().getExecuteFailedMessages().add("저장 위치를 생성할 수 없습니다: " + e.getMessage()); //$NON-NLS-1$
-            setSucceeded(false);
-            return;
-        }
-
         CommandResult result = runCommand(Arrays.asList(
-                BACKUP_SCRIPT, directory.toString())); //$NON-NLS-1$
+                SUDO_COMMAND, "-n", "--", BACKUP_SCRIPT, directory.toString())); //$NON-NLS-1$ //$NON-NLS-2$
         getReturnValue().setActionReturnValue(""); //$NON-NLS-1$
         if (result.exitCode == 0) {
             setSucceeded(true);
