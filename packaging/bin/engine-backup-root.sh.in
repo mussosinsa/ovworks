@@ -2,7 +2,6 @@
 
 set -eu
 
-BACKUP_ROOT="/var/lib/ovirt-engine-backup"
 DEST_DIR="${1:-}"
 
 if [ "$#" -ne 1 ]; then
@@ -21,27 +20,35 @@ if [ -z "${DEST_DIR}" ]; then
 fi
 
 case "${DEST_DIR}" in
-    "${BACKUP_ROOT}"|"${BACKUP_ROOT}"/*) ;;
+    /*) ;;
     *)
-        echo "FAIL: 저장 위치는 ${BACKUP_ROOT} 내부여야 합니다." 1>&2
+        echo "FAIL: 저장 위치는 절대 경로여야 합니다." 1>&2
         exit 1
         ;;
 esac
+
+if [ "${DEST_DIR}" = "/" ]; then
+    echo "FAIL: 루트 디렉터리는 저장 위치로 사용할 수 없습니다." 1>&2
+    exit 1
+fi
 
 umask 077
 mkdir -p -- "${DEST_DIR}"
 resolved_dir="$(readlink -f -- "${DEST_DIR}")"
-case "${resolved_dir}" in
-    "${BACKUP_ROOT}"|"${BACKUP_ROOT}"/*) ;;
-    *)
-        echo "FAIL: 심볼릭 링크를 통한 백업 경로 이탈이 감지되었습니다." 1>&2
-        exit 1
-        ;;
-esac
-chown root:root -- "${resolved_dir}"
-chmod 0700 -- "${resolved_dir}"
+[ "${resolved_dir}" != "/" ] || {
+    echo "FAIL: 루트 디렉터리는 저장 위치로 사용할 수 없습니다." 1>&2
+    exit 1
+}
 
-exec /usr/bin/engine-backup \
+work_dir="$(mktemp -d "${resolved_dir%/}/.engine-backup.XXXXXX")"
+trap 'rm -rf -- "${work_dir}"' EXIT HUP INT TERM
+
+/usr/bin/engine-backup \
     --mode=backup \
-    --file="${resolved_dir}/engine_backup.tar.gz" \
-    --log="${resolved_dir}/engine_backup.log"
+    --file="${work_dir}/engine_backup.tar.gz" \
+    --log="${work_dir}/engine_backup.log"
+
+mv -f -- "${work_dir}/engine_backup.tar.gz" "${resolved_dir}/engine_backup.tar.gz"
+mv -f -- "${work_dir}/engine_backup.log" "${resolved_dir}/engine_backup.log"
+trap - EXIT HUP INT TERM
+rmdir -- "${work_dir}"

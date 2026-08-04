@@ -3,7 +3,6 @@
 set -eu
 
 DEST_DIR="${1:-}"
-BACKUP_ROOT="/var/lib/ovirt-engine-backup"
 
 if [ "$#" -ne 1 ]; then
     echo "FAIL: 저장 위치 인자는 하나만 허용됩니다." 1>&2
@@ -21,35 +20,49 @@ if [ -z "${DEST_DIR}" ]; then
 fi
 
 case "${DEST_DIR}" in
-    "${BACKUP_ROOT}"|"${BACKUP_ROOT}"/*) ;;
+    /*) ;;
     *)
-        echo "FAIL: 저장 위치는 ${BACKUP_ROOT} 내부여야 합니다." 1>&2
+        echo "FAIL: 저장 위치는 절대 경로여야 합니다." 1>&2
         exit 1
         ;;
 esac
+
+if [ "${DEST_DIR}" = "/" ]; then
+    echo "FAIL: 루트 디렉터리는 저장 위치로 사용할 수 없습니다." 1>&2
+    exit 1
+fi
 
 umask 077
 mkdir -p -- "${DEST_DIR}"
 resolved_dir="$(readlink -f -- "${DEST_DIR}")"
-case "${resolved_dir}" in
-    "${BACKUP_ROOT}"|"${BACKUP_ROOT}"/*) ;;
-    *)
-        echo "FAIL: 심볼릭 링크를 통한 백업 경로 이탈이 감지되었습니다." 1>&2
-        exit 1
-        ;;
-esac
-chown root:root -- "${resolved_dir}"
-chmod 0700 -- "${resolved_dir}"
+[ "${resolved_dir}" != "/" ] || {
+    echo "FAIL: 루트 디렉터리는 저장 위치로 사용할 수 없습니다." 1>&2
+    exit 1
+}
 
 timestamp="$(date +%Y%m%d%H%M%S)"
 archive="${resolved_dir%/}/${timestamp}.tar.gz"
+temporary_archive="$(mktemp "${resolved_dir%/}/.${timestamp}.XXXXXX")"
+trap 'rm -f -- "${temporary_archive}"' EXIT HUP INT TERM
 
-if /bin/tar --ignore-failed-read -czf "${archive}" -C /var/log ovirt-engine; then
+if /bin/tar --ignore-failed-read -czf "${temporary_archive}" -C /var/log ovirt-engine; then
+    if [ -e "${archive}" ] || [ -L "${archive}" ]; then
+        echo "FAIL: 동일 시각의 백업 파일이 이미 존재합니다: ${archive}" 1>&2
+        exit 1
+    fi
+    mv -- "${temporary_archive}" "${archive}"
+    trap - EXIT HUP INT TERM
     echo "SUCCESS: ${archive}"
     exit 0
 fi
 
-if [ -f "${archive}" ]; then
+if [ -s "${temporary_archive}" ]; then
+    if [ -e "${archive}" ] || [ -L "${archive}" ]; then
+        echo "FAIL: 동일 시각의 백업 파일이 이미 존재합니다: ${archive}" 1>&2
+        exit 1
+    fi
+    mv -- "${temporary_archive}" "${archive}"
+    trap - EXIT HUP INT TERM
     echo "SUCCESS (with warnings): ${archive}"
     exit 0
 fi
