@@ -3,15 +3,49 @@
 set -eu
 
 DEST_DIR="${1:-}"
+SECRET_FILE=""
 
-if [ "$#" -ne 1 ]; then
-    echo "FAIL: 저장 위치 인자는 하나만 허용됩니다." 1>&2
+if [ "$#" -eq 3 ] && [ "$2" = "--credential-file" ]; then
+    SECRET_FILE="$3"
+elif [ "$#" -ne 1 ]; then
+    echo "FAIL: 저장 위치와 선택적 credential 인자만 허용됩니다." 1>&2
     exit 1
 fi
 
 if [ "$(id -u)" -ne 0 ]; then
     echo "FAIL: 엔진 백업은 root 권한으로 실행해야 합니다." 1>&2
     exit 1
+fi
+
+if [ -n "${SECRET_FILE}" ]; then
+    case "${SECRET_FILE}" in
+        /run/credentials/*/ovirt-encryptor-passphrase|/etc/ovirt-engine/encryptor/*) ;;
+        *)
+            echo "FAIL: 허용되지 않은 암호화 credential 경로입니다." 1>&2
+            exit 1
+            ;;
+    esac
+    resolved_secret="$(readlink -f -- "${SECRET_FILE}" 2>/dev/null || true)"
+    case "${resolved_secret}" in
+        /run/credentials/*/ovirt-encryptor-passphrase|/etc/ovirt-engine/encryptor/*) ;;
+        *)
+            echo "FAIL: credential의 실제 경로가 허용된 디렉터리 밖입니다." 1>&2
+            exit 1
+            ;;
+    esac
+    if [ -L "${SECRET_FILE}" ] || [ ! -f "${resolved_secret}" ]; then
+        echo "FAIL: 암호화 credential은 일반 파일이어야 합니다." 1>&2
+        exit 1
+    fi
+    secret_mode="$(stat -c '%a' -- "${resolved_secret}")"
+    case "${secret_mode}" in
+        400|600) ;;
+        *)
+            echo "FAIL: 암호화 credential 권한은 0400 또는 0600이어야 합니다." 1>&2
+            exit 1
+            ;;
+    esac
+    export OVIRT_ENCRYPTOR_SECRET_FILE="${resolved_secret}"
 fi
 
 if [ -z "${DEST_DIR}" ]; then

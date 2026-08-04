@@ -6,7 +6,11 @@
 #
 
 # Clean the environment, see bz 1172191
-[ -z "${BACKUP_ENV_CLEAN}" ] && exec -c env -i PATH="${PATH}" TMPDIR="${TMPDIR}" BACKUP_ENV_CLEAN=1 "$0" "$@"
+[ -z "${BACKUP_ENV_CLEAN}" ] && exec -c env -i \
+	PATH="${PATH}" \
+	TMPDIR="${TMPDIR}" \
+	OVIRT_ENCRYPTOR_SECRET_FILE="${OVIRT_ENCRYPTOR_SECRET_FILE:-}" \
+	BACKUP_ENV_CLEAN=1 "$0" "$@"
 
 # Instead of loading prolog here, like the other scripts, we included its
 # content here, slightly modified, to allow it to work without engine
@@ -36,9 +40,16 @@ load_base_config() {
 	done
 }
 
+is_encrypted_config_file() {
+	local conf="$1"
+	[ -r "${conf}" ] || return 1
+	[ "$(head -c 8 "${conf}" 2>/dev/null || true)" = "OVENC001" ]
+}
+
 is_sourceable_config_file() {
 	local conf="$1"
 	[ -r "${conf}" ] || return 1
+	! is_encrypted_config_file "${conf}" || return 1
 	bash -n "${conf}" >/dev/null 2>&1 || return 1
 	return 0
 }
@@ -124,6 +135,19 @@ __DECRYPT_RESTORE_FILES__
 	DECRYPT_RESTORE_FILES=""
 }
 
+run_encryptor_decrypt() {
+	local python_bin="$1"
+	local mode="$2"
+	local conf="$3"
+
+	if [ -n "${OVIRT_ENCRYPTOR_SECRET_FILE:-}" ]; then
+		"${python_bin}" "${ENCRYPTOR_TOOL}" "${mode}" \
+			--secret-file "${OVIRT_ENCRYPTOR_SECRET_FILE}" "${conf}"
+	else
+		"${python_bin}" "${ENCRYPTOR_TOOL}" "${mode}" "${conf}"
+	fi
+}
+
 decrypt_config_if_allowed() {
 	local conf="$1"
 	local base="${conf##*/}"
@@ -152,18 +176,21 @@ decrypt_config_if_allowed() {
 		return 0
 	}
 
-	if "${python_bin}" "${ENCRYPTOR_TOOL}" --decrypt "${conf}" >/dev/null 2>&1; then
+	if run_encryptor_decrypt "${python_bin}" --decrypt "${conf}" >/dev/null 2>&1; then
 		register_decrypt_restore_file "${conf}" "${restore}"
 		return 0
 	fi
 	cp -a "${restore}" "${conf}" >/dev/null 2>&1 || true
 
-	if "${python_bin}" "${ENCRYPTOR_TOOL}" -d "${conf}" >/dev/null 2>&1; then
+	if run_encryptor_decrypt "${python_bin}" -d "${conf}" >/dev/null 2>&1; then
 		register_decrypt_restore_file "${conf}" "${restore}"
 		return 0
 	fi
 	cp -a "${restore}" "${conf}" >/dev/null 2>&1 || true
 	rm -f "${restore}"
+	if is_encrypted_config_file "${conf}"; then
+		die "Cannot decrypt OVENC001 configuration file ${conf}: backup credential is unavailable or invalid"
+	fi
 
 	return 0
 }

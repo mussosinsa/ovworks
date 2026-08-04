@@ -2,8 +2,10 @@ package org.ovirt.engine.core.bll;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -39,8 +41,14 @@ public class EngineBackupCommand extends CommandBase<AuditLogBackupParameters> {
         }
 
         Path directory = Paths.get(backupPath.trim());
-        CommandResult result = runCommand(Arrays.asList(
+        List<String> command = new ArrayList<>(Arrays.asList(
                 SUDO_COMMAND, "-n", "--", ENGINE_BACKUP_WRAPPER, directory.toString())); //$NON-NLS-1$ //$NON-NLS-2$
+        String credentialFile = getEncryptorCredentialFile();
+        if (credentialFile != null) {
+            command.add("--credential-file"); //$NON-NLS-1$
+            command.add(credentialFile);
+        }
+        CommandResult result = runCommand(command);
         getReturnValue().setActionReturnValue(result.output);
         if (result.exitCode == 0) {
             setSucceeded(true);
@@ -54,6 +62,18 @@ public class EngineBackupCommand extends CommandBase<AuditLogBackupParameters> {
             }
             setSucceeded(false);
         }
+    }
+
+    private String getEncryptorCredentialFile() {
+        String credentialsDirectory = System.getenv("CREDENTIALS_DIRECTORY"); //$NON-NLS-1$
+        if (credentialsDirectory != null && !credentialsDirectory.isEmpty()) {
+            Path credential = Paths.get(credentialsDirectory, "ovirt-encryptor-passphrase"); //$NON-NLS-1$
+            if (Files.isRegularFile(credential)) {
+                return credential.toString();
+            }
+        }
+        String secretFile = System.getenv("OVIRT_ENCRYPTOR_SECRET_FILE"); //$NON-NLS-1$
+        return secretFile == null || secretFile.isEmpty() ? null : secretFile;
     }
 
     @Override

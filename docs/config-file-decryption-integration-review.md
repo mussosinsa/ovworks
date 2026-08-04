@@ -201,3 +201,18 @@ config.datasource.file=/etc/ovirt-engine/aaa/internal.properties
 | Java `Configuration.java` | 적용 완료 | 암호화 properties 일반 읽기 |
 
 결론적으로 두 DB 접속암호 파일에는 Python과 Java 메모리 reader가 적용되었다. `internal.properties`는 ExtensionsManager가 권한 0600 runtime 파일로 materialize하여 외부 AAA JDBC extension에 전달한다. 운영 전에는 systemd credential과 Engine/SSO/AAA 통합시험을 완료해야 한다.
+
+## 8. WebAdmin 엔진 백업의 OVENC001 credential 전달
+
+WebAdmin의 가용성 확보 기능은 `ovirt` Engine 프로세스에서 `sudo -n` root 래퍼를 거쳐 `engine-backup`을 실행한다. 이 경계에서는 sudo의 환경 초기화와 `engine-backup` 자체의 clean environment 재실행 때문에 Engine 서비스가 사용하던 `CREDENTIALS_DIRECTORY` 또는 `OVIRT_ENCRYPTOR_SECRET_FILE`이 사라질 수 있었다. 그 결과 OVENC001 파일을 평문 셸 설정으로 오인하여 source하면 바이너리 내용에 대한 `command not found`와 `syntax error`가 발생했다.
+
+보강된 실행 흐름은 다음과 같다.
+
+1. `EngineBackupCommand`가 Engine 서비스의 systemd credential 경로 또는 `OVIRT_ENCRYPTOR_SECRET_FILE` 경로를 확인한다.
+2. 비밀 값 자체가 아니라 credential **파일 경로만** root 래퍼의 `--credential-file` 인자로 전달한다.
+3. root 래퍼는 `/run/credentials/*/ovirt-encryptor-passphrase` 또는 `/etc/ovirt-engine/encryptor/` 아래의 일반 파일만 허용하고, 심볼릭 링크와 `0400`/`0600` 이외 권한을 거부한다.
+4. `engine-backup`의 clean environment에 검증된 `OVIRT_ENCRYPTOR_SECRET_FILE` 경로를 명시적으로 유지한다.
+5. 복호화 도구에는 `--secret-file`로 credential을 전달하고, 작업 종료 시 기존 암호문 복원 절차를 수행한다.
+6. 설정 파일의 첫 8바이트가 `OVENC001`이면 `bash -n` 결과와 관계없이 암호문으로 판정한다. credential 누락·오류 또는 인증 태그 실패 시 암호문을 source하지 않고 명확한 치명 오류로 종료한다.
+
+직접 패스프레이즈 환경변수인 `OVIRT_ENCRYPTOR_PASSPHRASE`는 sudo 명령행이나 프로세스 목록에 비밀이 노출될 수 있으므로 root 래퍼로 전달하지 않는다. WebAdmin 백업을 사용하려면 systemd credential 또는 권한 `0600`의 `secret_file` 방식을 구성해야 한다.
