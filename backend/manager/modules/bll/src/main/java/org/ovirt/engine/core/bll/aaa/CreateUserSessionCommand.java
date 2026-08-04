@@ -135,22 +135,29 @@ public class CreateUserSessionCommand<T extends CreateUserSessionParameters> ext
                     true) == null) {
                 setActionReturnValue(CreateUserSessionsError.USER_NOT_AUTHORIZED);
                 setSucceeded(false);
-            } else if (maxUserSessions != UNLIMITED_SESSIONS
-                    && sessionDataContainer.getNumUserSessions(user) >= maxUserSessions) {
-                setActionReturnValue(CreateUserSessionsError.NUM_OF_SESSIONS_EXCEEDED);
-                setSucceeded(false);
             } else {
-                String engineSessionId = sessionDataContainer.generateEngineSessionId();
-                sessionDataContainer.setSourceIp(engineSessionId, getParameters().getSourceIp());
-                sessionDataContainer.setUser(engineSessionId, user);
-                sessionDataContainer.refresh(engineSessionId);
-                sessionDataContainer.setProfile(engineSessionId, profile);
-                sessionDataContainer.setPrincipalName(engineSessionId, getParameters().getPrincipalName());
-                sessionDataContainer.setSsoAccessToken(engineSessionId, getParameters().getSsoToken());
-                sessionDataContainer.setSsoOvirtAppApiScope(engineSessionId, getParameters().getAppScope());
-                getReturnValue().setActionReturnValue(engineSessionId);
-                setSucceeded(true);
-                sessionId = engineSessionId;
+                // All entry points (WebAdmin and REST API, including different browsers on the same client) use this
+                // container. Serialize the limit check and registration so simultaneous logins can't each observe a
+                // free slot and exceed the shared per-user limit.
+                synchronized (sessionDataContainer) {
+                    if (maxUserSessions != UNLIMITED_SESSIONS
+                            && sessionDataContainer.getNumUserSessions(user) >= maxUserSessions) {
+                        setActionReturnValue(CreateUserSessionsError.NUM_OF_SESSIONS_EXCEEDED);
+                        setSucceeded(false);
+                    } else {
+                        String engineSessionId = sessionDataContainer.generateEngineSessionId();
+                        sessionDataContainer.setSourceIp(engineSessionId, getParameters().getSourceIp());
+                        sessionDataContainer.setUser(engineSessionId, user);
+                        sessionDataContainer.refresh(engineSessionId);
+                        sessionDataContainer.setProfile(engineSessionId, profile);
+                        sessionDataContainer.setPrincipalName(engineSessionId, getParameters().getPrincipalName());
+                        sessionDataContainer.setSsoAccessToken(engineSessionId, getParameters().getSsoToken());
+                        sessionDataContainer.setSsoOvirtAppApiScope(engineSessionId, getParameters().getAppScope());
+                        getReturnValue().setActionReturnValue(engineSessionId);
+                        setSucceeded(true);
+                        sessionId = engineSessionId;
+                    }
+                }
             }
         }
     }

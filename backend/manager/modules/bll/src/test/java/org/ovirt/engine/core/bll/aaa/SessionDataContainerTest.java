@@ -23,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.ovirt.engine.core.common.businessentities.aaa.DbUser;
 import org.ovirt.engine.core.common.config.ConfigValues;
+import org.ovirt.engine.core.compat.Guid;
 import org.ovirt.engine.core.dao.EngineSessionDao;
 import org.ovirt.engine.core.utils.MockConfigDescriptor;
 import org.ovirt.engine.core.utils.MockConfigExtension;
@@ -93,6 +94,26 @@ public class SessionDataContainerTest {
         assertEquals(user, container.getUser(TEST_SESSION_ID, false),
                 "Get should return the value with a given session");
         clearSession();
+    }
+
+    @Test
+    public void testUserSessionCountIsSharedAcrossSourcesAndScopes() {
+        clearSession();
+        Guid userId = Guid.newGuid();
+        DbUser webAdminUser = mock(DbUser.class);
+        DbUser restApiUser = mock(DbUser.class);
+        when(webAdminUser.getId()).thenReturn(userId);
+        when(restApiUser.getId()).thenReturn(userId);
+
+        container.setSourceIp("chrome-session", "192.0.2.10");
+        container.setUser("chrome-session", webAdminUser);
+        container.setSsoOvirtAppApiScope("chrome-session", "ovirt-app-admin");
+        container.setSourceIp("rest-session", "198.51.100.20");
+        container.setUser("rest-session", restApiUser);
+        container.setSsoOvirtAppApiScope("rest-session", "ovirt-app-api");
+
+        assertEquals(2, container.getNumUserSessions(webAdminUser),
+                "Sessions for the same user must be combined regardless of client source or application scope");
     }
 
     /* Tests for session management */
