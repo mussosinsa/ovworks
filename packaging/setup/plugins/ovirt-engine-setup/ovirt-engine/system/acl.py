@@ -127,16 +127,6 @@ class Plugin(plugin.PluginBase):
             sudoers_file.write(sudoers_content)
         os.chmod(sudoers_path, 0o440)
 
-        backup_sudoers_path = '/etc/sudoers.d/ovirt-backup'
-        backup_sudoers_content = (
-            'ovirt ALL=(root) NOPASSWD: '
-            '/usr/share/ovirt-engine/bin/all-backup.sh *, '
-            '/usr/share/ovirt-engine/bin/engine-backup-root.sh *\n'
-        )
-        with open(backup_sudoers_path, 'w', encoding='utf-8') as sudoers_file:
-            sudoers_file.write(backup_sudoers_content)
-        os.chmod(backup_sudoers_path, 0o440)
-
         engine_proxy_conf = oenginecons.FileLocations.HTTPD_CONF_OVIRT_ENGINE
         session_limit_conf = os.path.join(
             oenginecons.FileLocations.OVIRT_ENGINE_SYSCONFDIR,

@@ -1113,6 +1113,7 @@ WebAdmin에서 감사기록 전체 백업 또는 가용성 확보 엔진 백업�
 * 엔진 백업은 `/usr/bin/sudo -n -- /usr/share/ovirt-engine/bin/engine-backup-root.sh <경로>`로 실행한다.
 * 두 래퍼는 실행 UID가 0이 아니면 즉시 실패하며, 실제 `tar`와 `engine-backup`은 root로 실행된다.
 * `/etc/sudoers.d/ovirt-backup`은 `ovirt` 계정에 위 두 root 소유 래퍼만 비대화형으로 실행할 권한을 부여한다. `/bin/tar`, `/usr/bin/engine-backup` 또는 임의 셸에 대한 포괄적인 sudo 권한은 부여하지 않는다.
+* sudoers 정책은 RPM과 개발 설치 모두에서 `/etc/sudoers.d/ovirt-backup`에 권한 `0440`으로 설치된다. 따라서 패키지 갱신 직후 별도의 `engine-setup` 재실행 없이도 `sudo -n`이 비밀번호를 요청하지 않는다.
 * 저장 위치는 루트(`/`) 이외의 절대 경로를 허용한다. root 래퍼가 대상 디렉터리를 생성하므로 기존 디렉터리 권한과 관계없이 로컬 디스크 또는 마운트된 백업 볼륨에 저장할 수 있다. 출력은 목적 디렉터리 안의 임시 파일에 먼저 기록한 후 최종 파일명으로 이동하며 `umask 077`을 적용한다.
 * 래퍼는 정확히 하나의 경로 인자만 허용하고 내부에서 고정된 명령 옵션을 구성하므로 WebAdmin 입력값으로 임의 명령 옵션을 주입할 수 없다.
 

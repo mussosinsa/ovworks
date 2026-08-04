@@ -478,6 +478,7 @@ install-packaging-files: \
 		$(GENERATED) \
 		$(NULL)
 	$(MAKE) copy-recursive SOURCEDIR=packaging/sys-etc TARGETDIR="$(DESTDIR)$(SYSCONF_DIR)" EXCLUDE_GEN="$(GENERATED)"
+	chmod 0440 "$(DESTDIR)$(SYSCONF_DIR)/sudoers.d/ovirt-backup"
 	$(MAKE) copy-recursive SOURCEDIR=packaging/etc TARGETDIR="$(DESTDIR)$(PKG_SYSCONF_DIR)" EXCLUDE_GEN="$(GENERATED)"
 	$(MAKE) copy-recursive SOURCEDIR=packaging/pki TARGETDIR="$(DESTDIR)$(PKG_PKI_DIR)" EXCLUDE_GEN="$(GENERATED)"
 	for d in bin conf files firewalld services cinderlib ansible-runner-service-project selinux encryptor; do \

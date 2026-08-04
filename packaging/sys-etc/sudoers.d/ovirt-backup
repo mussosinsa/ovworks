@@ -1,0 +1,4 @@
+# Managed by ovirt-engine. Local changes should be made in a separate sudoers file.
+Cmnd_Alias OVIRT_ENGINE_BACKUP = /usr/share/ovirt-engine/bin/all-backup.sh *, \
+    /usr/share/ovirt-engine/bin/engine-backup-root.sh *
+ovirt ALL=(root) NOPASSWD: OVIRT_ENGINE_BACKUP
