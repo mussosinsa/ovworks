@@ -7,12 +7,14 @@
 
 """Client serial number and source IP access-control setup plugin."""
 
+import base64
 import gettext
 import ipaddress
 import json
 import os
 import re
 import shutil
+import subprocess
 import tempfile
 
 from otopi import plugin
@@ -43,6 +45,26 @@ _ENCRYPTOR_CONFIG_PATH = getattr(
     'OVIRT_ENGINE_ENCRYPTOR_CONFIG',
     '/etc/ovirt-engine/encryptor/config.json',
 )
+
+_ENCRYPTOR_TOOL_PATH = '/usr/share/ovirt-engine/encryptor/encrypt_conf_files.py'
+_ENCRYPTOR_SECRET_FILE = '/etc/ovirt-engine/encryptor/passphrase'
+_ENCRYPTOR_DEFAULT_CONFIG = {
+    'encrypt_flag': 'NO',
+    'iterations': 200000,
+    'watch_path': [
+        '/etc/ovirt-engine',
+        '/etc/ovirt-engine-dwh',
+    ],
+    'allowed_files': [
+        '10-setup-database.conf',
+        '10-setup-dwh-database.conf',
+        'internal.properties',
+    ],
+    'secret_file': _ENCRYPTOR_SECRET_FILE,
+    'legacy_cbc': {
+        'enabled': False,
+    },
+}
 
 
 @util.export
@@ -182,6 +204,54 @@ class Plugin(plugin.PluginBase):
             _ALLOWED_IPS_ENV
         ] = allowed_ips
 
+    def _merge_encryptor_defaults(self, config):
+        merged = dict(_ENCRYPTOR_DEFAULT_CONFIG)
+        merged.update(config)
+        merged.setdefault('serialNum', self._DEFAULT_SERIAL_NUMBER)
+        return merged
+
+    def _ensure_encryptor_secret_file(self, config):
+        secret_file = config.get('secret_file', _ENCRYPTOR_SECRET_FILE)
+        secret_dir = os.path.dirname(secret_file)
+        if not os.path.isdir(secret_dir):
+            os.makedirs(secret_dir, mode=0o700)
+        if not os.path.exists(secret_file):
+            descriptor = os.open(
+                secret_file,
+                os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+                0o600,
+            )
+            try:
+                secret = base64.urlsafe_b64encode(os.urandom(48))
+                os.write(descriptor, secret + b'\n')
+            finally:
+                os.close(descriptor)
+        os.chmod(secret_file, 0o600)
+
+    def _encrypt_configuration_files(self, config_path):
+        if not os.path.exists(_ENCRYPTOR_TOOL_PATH):
+            raise RuntimeError(
+                _('Encryptor tool not found: %s') % _ENCRYPTOR_TOOL_PATH
+            )
+        completed = subprocess.run(
+            [
+                '/usr/bin/python3',
+                _ENCRYPTOR_TOOL_PATH,
+                '--config',
+                config_path,
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+            check=False,
+        )
+        if completed.returncode != 0:
+            output = (completed.stderr or completed.stdout).strip()
+            raise RuntimeError(
+                _('Configuration encryption failed: %s') % output
+            )
+        self.logger.info(completed.stdout.strip())
+
     def _replace_encryptor_config(self, path, content):
         config_dir = os.path.dirname(path)
         if not os.path.isdir(config_dir):
@@ -218,11 +288,15 @@ class Plugin(plugin.PluginBase):
     )
     def _closeup(self):
         path = _ENCRYPTOR_CONFIG_PATH
-        config = self._read_encryptor_config()
+        config = self._merge_encryptor_defaults(
+            self._read_encryptor_config()
+        )
         config['serialNum'] = self.environment[
             _SERIAL_NUMBER_ENV
         ]
+        self._ensure_encryptor_secret_file(config)
         self._replace_encryptor_config(
             path=path,
             content=json.dumps(config, indent=4, sort_keys=True) + '\n',
         )
+        self._encrypt_configuration_files(path)
