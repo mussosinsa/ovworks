@@ -28,6 +28,8 @@ public class SetTerminalAuthCommand extends CommandBase<TerminalAuthParameters> 
             setSucceeded(true);
         } catch (IOException ex) {
             log.error("Failed to update terminal auth serial number", ex); //$NON-NLS-1$
+            getReturnValue().getExecuteFailedMessages().add(ex.getMessage());
+            addCustomValue("CustomData", ex.getMessage()); //$NON-NLS-1$
             setSucceeded(false);
         }
     }
@@ -41,6 +43,8 @@ public class SetTerminalAuthCommand extends CommandBase<TerminalAuthParameters> 
 
     @Override
     public AuditLogType getAuditLogTypeValue() {
-        return AuditLogType.UNASSIGNED;
+        return getSucceeded()
+                ? AuditLogType.TERMINAL_AUTH_CONFIG_UPDATED
+                : AuditLogType.TERMINAL_AUTH_CONFIG_UPDATE_FAILED;
     }
 }

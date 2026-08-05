@@ -25,10 +25,12 @@ public class SetTerminalIpAuthCommand extends CommandBase<TerminalIpAuthParamete
     protected void executeCommand() {
         try {
             TerminalIpConfigUtils.updateRequireIp(getParameters().getIpAddress());
+            addCustomValue("CustomData", "IP: " + getParameters().getIpAddress()); //$NON-NLS-1$ //$NON-NLS-2$
             setSucceeded(true);
         } catch (IOException ex) {
             log.error("Failed to update terminal IP auth config", ex); //$NON-NLS-1$
             getReturnValue().getExecuteFailedMessages().add(ex.getMessage());
+            addCustomValue("CustomData", ex.getMessage()); //$NON-NLS-1$
             setSucceeded(false);
         }
     }
@@ -42,6 +44,8 @@ public class SetTerminalIpAuthCommand extends CommandBase<TerminalIpAuthParamete
 
     @Override
     public AuditLogType getAuditLogTypeValue() {
-        return AuditLogType.UNASSIGNED;
+        return getSucceeded()
+                ? AuditLogType.TERMINAL_IP_AUTH_CONFIG_UPDATED
+                : AuditLogType.TERMINAL_IP_AUTH_CONFIG_UPDATE_FAILED;
     }
 }
