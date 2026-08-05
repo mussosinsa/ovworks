@@ -227,6 +227,11 @@ class Plugin(plugin.PluginBase):
             finally:
                 os.close(descriptor)
         os.chmod(secret_file, 0o600)
+        shutil.chown(
+            secret_file,
+            user=self.environment[osetupcons.SystemEnv.USER_ENGINE],
+            group=self.environment[osetupcons.SystemEnv.GROUP_ENGINE],
+        )
 
     def _encrypt_configuration_files(self, config_path):
         if not os.path.exists(_ENCRYPTOR_TOOL_PATH):

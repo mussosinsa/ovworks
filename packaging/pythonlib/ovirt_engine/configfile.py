@@ -8,6 +8,7 @@
 
 import gettext
 import glob
+import importlib.util
 import os
 import re
 
@@ -16,6 +17,25 @@ from . import base
 
 def _(m):
     return gettext.dgettext(message=m, domain='ovirt-engine')
+
+_ENCRYPTOR_PATH = '/usr/share/ovirt-engine/encryptor/encryptor.py'
+_ENCRYPTOR_CONFIG_PATH = '/etc/ovirt-engine/encryptor/config.json'
+_ENCRYPTED_CONFIG_BASENAMES = frozenset((
+    '10-setup-database.conf',
+    '10-setup-dwh-database.conf',
+    'internal.properties',
+))
+_ENCRYPTED_MAGIC = b'OVENC001'
+
+
+def _load_encryptor_module():
+    spec = importlib.util.spec_from_file_location(
+        'ovirt_engine_config_encryptor',
+        _ENCRYPTOR_PATH,
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 class ConfigFile(base.Base):
@@ -41,6 +61,25 @@ class ConfigFile(base.Base):
                 keyValueMatch.group('value')
             )
 
+    def _loadFileContent(self, file):
+        with open(file, 'rb') as f:
+            content = f.read()
+        if (
+            os.path.basename(file) in _ENCRYPTED_CONFIG_BASENAMES and
+            content.startswith(_ENCRYPTED_MAGIC)
+        ):
+            if not os.path.exists(_ENCRYPTOR_PATH):
+                raise RuntimeError(
+                    _('Encryptor tool is missing: {path}').format(
+                        path=_ENCRYPTOR_PATH,
+                    )
+                )
+            encryptor = _load_encryptor_module()
+            config = encryptor._load_crypto_config(_ENCRYPTOR_CONFIG_PATH)
+            passphrase = encryptor.obtain_passphrase(config)
+            content = encryptor.decrypt_bytes(content, passphrase, config)
+        return content.decode('utf-8')
+
     def __init__(self, files=[]):
         super(ConfigFile, self).__init__()
 
@@ -63,10 +102,9 @@ class ConfigFile(base.Base):
             self.logger.debug("loading config '%s'", file)
             index = 0
             try:
-                with open(file, 'r') as f:
-                    for line in f:
-                        index += 1
-                        self._loadLine(line)
+                for line in self._loadFileContent(file).splitlines():
+                    index += 1
+                    self._loadLine(line)
             except Exception as e:
                 self.logger.error(
                     "File '%s' index %d error" % (file, index),
