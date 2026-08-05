@@ -20,9 +20,11 @@ import tempfile
 from otopi import plugin
 from otopi import util
 
+from ovirt_engine import util as outil
 from ovirt_engine_setup import constants as osetupcons
 from ovirt_engine_setup.engine import constants as oenginecons
 from ovirt_engine_setup.engine_common import constants as oengcommcons
+from ovirt_engine_setup.engine_common import database
 
 
 def _(m):
@@ -50,6 +52,7 @@ _ENCRYPTOR_TOOL_PATH = '/usr/share/ovirt-engine/encryptor/encrypt_conf_files.py'
 _ENCRYPTOR_FILE_TOOL_PATH = '/usr/share/ovirt-engine/encryptor/encryptor.py'
 _ENCRYPTED_MAGIC = b'OVENC001'
 _ENCRYPTOR_SECRET_FILE = '/etc/ovirt-engine/encryptor/passphrase'
+_AAA_JDBC_SCHEMA = 'aaa_jdbc'
 _ENCRYPTOR_DEFAULT_CONFIG = {
     'encrypt_flag': 'NO',
     'iterations': 200000,
@@ -274,6 +277,50 @@ class Plugin(plugin.PluginBase):
             )
         self.logger.info(completed.stdout.strip())
 
+    def _write_aaa_jdbc_config_plaintext_from_environment(self):
+        path = oenginecons.FileLocations.AAA_JDBC_CONFIG_DB
+        directory = os.path.dirname(path)
+        if not os.path.isdir(directory):
+            os.makedirs(directory, mode=0o700)
+        content = (
+            'config.datasource.jdbcurl={jdbcUrl}\n'
+            'config.datasource.dbuser={user}\n'
+            'config.datasource.dbpassword={password}\n'
+            'config.datasource.jdbcdriver=org.postgresql.Driver\n'
+            'config.datasource.schemaname={schemaName}\n'
+        ).format(
+            jdbcUrl=database.OvirtUtils(
+                plugin=self,
+                dbenvkeys=oenginecons.Const.ENGINE_DB_ENV_KEYS,
+            ).getJdbcUrl(),
+            user=self.environment[oenginecons.EngineDBEnv.USER],
+            password=outil.escape(
+                self.environment[oenginecons.EngineDBEnv.PASSWORD],
+                '"\\$',
+            ),
+            schemaName=_AAA_JDBC_SCHEMA,
+        )
+        descriptor, temporary_path = tempfile.mkstemp(
+            prefix='.internal.properties.',
+            dir=directory,
+            text=True,
+        )
+        try:
+            with os.fdopen(descriptor, 'w', encoding='utf-8') as config_file:
+                config_file.write(content)
+                config_file.flush()
+                os.fsync(config_file.fileno())
+            os.chmod(temporary_path, 0o600)
+            shutil.chown(
+                temporary_path,
+                user=self.environment[osetupcons.SystemEnv.USER_ENGINE],
+                group=self.environment[osetupcons.SystemEnv.GROUP_ENGINE],
+            )
+            os.replace(temporary_path, path)
+        finally:
+            if os.path.exists(temporary_path):
+                os.unlink(temporary_path)
+
     def _ensure_aaa_jdbc_config_plaintext(self, config_path):
         path = oenginecons.FileLocations.AAA_JDBC_CONFIG_DB
         if not os.path.exists(path) or not self._is_encrypted_file(path):
@@ -298,13 +345,25 @@ class Plugin(plugin.PluginBase):
         )
         if completed.returncode != 0:
             output = (completed.stderr or completed.stdout).strip()
-            raise RuntimeError(
-                _('AAA JDBC configuration decryption failed: %s') % output
+            self.logger.warning(
+                _(
+                    'AAA JDBC configuration decryption failed; rewriting '
+                    'plaintext configuration from setup database values: %s'
+                ) % output
             )
-        self.logger.info(
+            self._write_aaa_jdbc_config_plaintext_from_environment()
+        else:
+            self.logger.info(
+                _(
+                    'Kept AAA JDBC internal configuration readable for '
+                    'the AAA JDBC extension: %s'
+                ) % path
+            )
+            return
+        self.logger.warning(
             _(
-                'Kept AAA JDBC internal configuration readable for '
-                'the AAA JDBC extension: %s'
+                'Recreated AAA JDBC internal configuration as plaintext '
+                'for the AAA JDBC extension: %s'
             ) % path
         )
 
