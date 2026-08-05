@@ -26,7 +26,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 public class ClientManagementView extends Composite {
     private static final String IPV4_REGEX =
-            "^((25[0-5]|2[0-4]\\\\d|1\\\\d\\\\d|[1-9]?\\\\d)\\\\.){3}(25[0-5]|2[0-4]\\\\d|1\\\\d\\\\d|[1-9]?\\\\d)$"; //$NON-NLS-1$
+            "^((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.){3}(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)$"; //$NON-NLS-1$
 
     interface ViewUiBinder extends UiBinder<Widget, ClientManagementView> {
         ViewUiBinder uiBinder = GWT.create(ViewUiBinder.class);
