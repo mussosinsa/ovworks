@@ -59,7 +59,7 @@ public class AvailabilityTabView extends Composite {
         String backupFile = buildPath(backupPath, "engine_backup.tar.gz"); //$NON-NLS-1$
         String logFile = buildPath(backupPath, "engine_backup.log"); //$NON-NLS-1$
         return "처리날짜 : " + currentTimestamp() + " - 정상저장\n" //$NON-NLS-1$ //$NON-NLS-2$
-                + "실행 명령: engine-backup --mode=backup --file=" + backupFile //$NON-NLS-1$
+                + "실행 명령: sudo -n /usr/bin/engine-backup --mode=backup --file=" + backupFile //$NON-NLS-1$
                 + " --log=" + logFile; //$NON-NLS-1$
     }
 

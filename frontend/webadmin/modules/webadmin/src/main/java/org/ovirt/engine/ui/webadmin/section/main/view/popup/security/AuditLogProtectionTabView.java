@@ -144,7 +144,7 @@ public class AuditLogProtectionTabView extends Composite {
 
     private String buildSuccessMessage(String backupPath) {
         return "처리날짜 : " + currentTimestamp() + " - 정상저장\n" //$NON-NLS-1$ //$NON-NLS-2$
-                + "실행 명령: /usr/share/ovirt-engine/bin/all-backup.sh " + backupPath; //$NON-NLS-1$
+                + "실행 명령: sudo -n /usr/share/ovirt-engine/bin/all-backup.sh " + backupPath; //$NON-NLS-1$
     }
 
     private String currentTimestamp() {
