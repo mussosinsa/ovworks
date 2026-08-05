@@ -1383,6 +1383,7 @@ fi
 %{_bindir}/engine-backup
 %{_mandir}/man8/engine-backup.*
 %{engine_data}/bin/engine-backup.sh
+%{engine_data}/bin/engine-backup-root.sh
 
 %{engine_data}/bin/engine-migrate-he.*
 %{engine_data}/bin/__pycache__/engine-migrate-he.*

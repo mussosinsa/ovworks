@@ -23,7 +23,7 @@ public class EngineBackupCommand extends CommandBase<AuditLogBackupParameters> {
 
     private static final Logger log = LoggerFactory.getLogger(EngineBackupCommand.class);
     private static final String SUDO_COMMAND = "/usr/bin/sudo"; //$NON-NLS-1$
-    private static final String ENGINE_BACKUP_COMMAND = "/usr/bin/engine-backup"; //$NON-NLS-1$
+    private static final String ENGINE_BACKUP_COMMAND = "/usr/share/ovirt-engine/bin/engine-backup-root.sh"; //$NON-NLS-1$
 
     public EngineBackupCommand(AuditLogBackupParameters parameters, CommandContext cmdContext) {
         super(parameters, cmdContext);

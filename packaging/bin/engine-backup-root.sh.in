@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# ovirt-engine-backup root wrapper
+#
+# Copyright oVirt Authors
+# SPDX-License-Identifier: Apache-2.0
+#
+
+set -eu
+
+exec /usr/bin/engine-backup "$@"
