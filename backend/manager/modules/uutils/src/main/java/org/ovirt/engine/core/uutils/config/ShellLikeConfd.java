@@ -136,16 +136,15 @@ public class ShellLikeConfd {
     }
 
     private boolean isEncryptedConfigFile(File file) throws IOException {
-        if (!ENCRYPTED_CONFIG_BASENAMES.contains(file.getName())) {
-            return false;
-        }
         byte[] prefix = new byte[ENCRYPTED_CONFIG_MAGIC.length];
         try (FileInputStream stream = new FileInputStream(file)) {
             if (stream.read(prefix) != ENCRYPTED_CONFIG_MAGIC.length) {
                 return false;
             }
         }
-        return Arrays.equals(prefix, ENCRYPTED_CONFIG_MAGIC);
+        return Arrays.equals(prefix, ENCRYPTED_CONFIG_MAGIC) && (
+                ENCRYPTED_CONFIG_BASENAMES.contains(file.getName()) ||
+                file.getParentFile() != null && "engine.conf.d".equals(file.getParentFile().getName()));
     }
 
     /**
