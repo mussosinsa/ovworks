@@ -85,6 +85,15 @@ class Plugin(plugin.PluginBase):
         self.environment[oenginecons.EngineDBEnv.NEED_DBMSUPGRADE] = False
         self.environment[oenginecons.EngineDBEnv.JUST_RESTORED] = False
 
+    def _load_engine_config(self):
+        # ConfigFile performs in-memory decryption for approved encrypted
+        # configuration basenames, so the setup DB connection path never
+        # rewrites encrypted credentials as plaintext on disk.
+        return configfile.ConfigFile([
+            oenginecons.FileLocations.OVIRT_ENGINE_SERVICE_CONFIG_DEFAULTS,
+            oenginecons.FileLocations.OVIRT_ENGINE_SERVICE_CONFIG,
+        ])
+
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -99,10 +108,7 @@ class Plugin(plugin.PluginBase):
             dbenvkeys=oenginecons.Const.ENGINE_DB_ENV_KEYS,
         )
         dbovirtutils.detectCommands()
-        config = configfile.ConfigFile([
-            oenginecons.FileLocations.OVIRT_ENGINE_SERVICE_CONFIG_DEFAULTS,
-            oenginecons.FileLocations.OVIRT_ENGINE_SERVICE_CONFIG
-        ])
+        config = self._load_engine_config()
         if config.get('ENGINE_DB_PASSWORD'):
             try:
                 dbenv = {}
