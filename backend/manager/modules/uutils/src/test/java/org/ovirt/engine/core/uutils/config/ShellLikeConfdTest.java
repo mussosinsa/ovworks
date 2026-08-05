@@ -8,6 +8,8 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -47,5 +49,20 @@ public class ShellLikeConfdTest {
         assertEquals("value0", config.getProperty("key00", "non_existent", false));
         assertEquals("suffixed val", config.getProperty("key01", "suffixed", false));
         assertThrows(IllegalArgumentException.class, () -> config.getProperty("non_existent", "non_existent", false));
+    }
+
+    @Test
+    public void testEncryptedSensitiveConfigFileIsSkipped() throws Exception {
+        Path directory = Files.createTempDirectory("shell-like-confd");
+        Path vars = directory.resolve("engine.conf");
+        Path varsDirectory = directory.resolve("engine.conf.d");
+        Files.createDirectories(varsDirectory);
+        Files.writeString(vars, "key00=value0\n", StandardCharsets.UTF_8);
+        Files.write(varsDirectory.resolve("10-setup-database.conf"), "OVENC001encrypted".getBytes(StandardCharsets.US_ASCII));
+
+        ShellLikeConfd localConfig = new ShellLikeConfd();
+        localConfig.loadConfig(null, vars.toString());
+
+        assertEquals("value0", localConfig.getProperty("key00"));
     }
 }
