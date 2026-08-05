@@ -65,6 +65,7 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
+        name='osetup.db.connection.transaction_setup',
     )
     def _setup(self):
         self.environment[otopicons.CoreEnv.MAIN_TRANSACTION].append(
