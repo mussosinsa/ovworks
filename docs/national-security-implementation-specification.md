@@ -104,3 +104,9 @@ WebAdmin이 `serialNum`을 `/etc/ovirt-engine/encryptor/config.json`에 읽고 �
 DB 접속설정 2개 파일의 인증된 암호화와 사설 CA 기반 SSL 적용 흐름은 소스로 확인된다. WebAdmin PW 보호는 built-in AAA와 TLS 구성에 대해 확인되지만 외부 AAA의 저장 방식은 별도 확인이 필요하다. 단말 IP 제어는 Apache에서 강제되지만 serial number는 관리 설정만 확인되므로, 검사기관 제출서에 이를 인증 완료로 표기해서는 안 된다.
 
 서버 공통보안 요구사항 9개 항목의 적합성, 소스 근거, 제한사항 및 현장 증적 요건은 `docs/nis-server-common-security-requirements-compliance.md`를 참조한다.
+
+시험·인증기관 추가 제출 문서, 위협 모델, 상세 시험 및 증적관리 양식은 다음 문서를 참조한다.
+
+* `docs/security-certification-submission-package-guide.md`
+* `docs/security-architecture-threat-model.md`
+* `docs/security-test-evidence-plan.md`
