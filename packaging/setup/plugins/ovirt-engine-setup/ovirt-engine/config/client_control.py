@@ -47,6 +47,8 @@ _ENCRYPTOR_CONFIG_PATH = getattr(
 )
 
 _ENCRYPTOR_TOOL_PATH = '/usr/share/ovirt-engine/encryptor/encrypt_conf_files.py'
+_ENCRYPTOR_FILE_TOOL_PATH = '/usr/share/ovirt-engine/encryptor/encryptor.py'
+_ENCRYPTED_MAGIC = b'OVENC001'
 _ENCRYPTOR_SECRET_FILE = '/etc/ovirt-engine/encryptor/passphrase'
 _ENCRYPTOR_DEFAULT_CONFIG = {
     'encrypt_flag': 'NO',
@@ -58,7 +60,6 @@ _ENCRYPTOR_DEFAULT_CONFIG = {
     'allowed_files': [
         '10-setup-database.conf',
         '10-setup-dwh-database.conf',
-        'internal.properties',
     ],
     'secret_file': _ENCRYPTOR_SECRET_FILE,
     'legacy_cbc': {
@@ -207,8 +208,24 @@ class Plugin(plugin.PluginBase):
     def _merge_encryptor_defaults(self, config):
         merged = dict(_ENCRYPTOR_DEFAULT_CONFIG)
         merged.update(config)
+        allowed_files = merged.get('allowed_files', [])
+        if 'internal.properties' in allowed_files:
+            # The AAA JDBC extension loads this file directly and fails to
+            # start if setup leaves it in the OVENC001 encrypted format.
+            allowed_files = [
+                name for name in allowed_files
+                if name != 'internal.properties'
+            ]
+        merged['allowed_files'] = allowed_files
         merged.setdefault('serialNum', self._DEFAULT_SERIAL_NUMBER)
         return merged
+
+    def _is_encrypted_file(self, path):
+        try:
+            with open(path, 'rb') as candidate:
+                return candidate.read(len(_ENCRYPTED_MAGIC)) == _ENCRYPTED_MAGIC
+        except OSError:
+            return False
 
     def _ensure_encryptor_secret_file(self, config):
         secret_file = config.get('secret_file', _ENCRYPTOR_SECRET_FILE)
@@ -256,6 +273,40 @@ class Plugin(plugin.PluginBase):
                 _('Configuration encryption failed: %s') % output
             )
         self.logger.info(completed.stdout.strip())
+
+    def _ensure_aaa_jdbc_config_plaintext(self, config_path):
+        path = oenginecons.FileLocations.AAA_JDBC_CONFIG_DB
+        if not os.path.exists(path) or not self._is_encrypted_file(path):
+            return
+        if not os.path.exists(_ENCRYPTOR_FILE_TOOL_PATH):
+            raise RuntimeError(
+                _('Encryptor tool not found: %s') % _ENCRYPTOR_FILE_TOOL_PATH
+            )
+        completed = subprocess.run(
+            [
+                '/usr/bin/python3',
+                _ENCRYPTOR_FILE_TOOL_PATH,
+                '--decrypt',
+                '--config',
+                config_path,
+                path,
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+            check=False,
+        )
+        if completed.returncode != 0:
+            output = (completed.stderr or completed.stdout).strip()
+            raise RuntimeError(
+                _('AAA JDBC configuration decryption failed: %s') % output
+            )
+        self.logger.info(
+            _(
+                'Kept AAA JDBC internal configuration readable for '
+                'the AAA JDBC extension: %s'
+            ) % path
+        )
 
     def _replace_encryptor_config(self, path, content):
         config_dir = os.path.dirname(path)
@@ -305,3 +356,4 @@ class Plugin(plugin.PluginBase):
             content=json.dumps(config, indent=4, sort_keys=True) + '\n',
         )
         self._encrypt_configuration_files(path)
+        self._ensure_aaa_jdbc_config_plaintext(path)
