@@ -40,8 +40,8 @@ decrypt_conf.py --deny-legacy-cbc SOURCE OUTPUT
 encrypt_conf_files.py
 ```
 
-`encrypt_conf_files.py` processes only `10-setup-database.conf`,
-`10-setup-dwh-database.conf`, and `internal.properties` below approved oVirt
+`encrypt_conf_files.py` processes only `10-setup-database.conf` and
+`10-setup-dwh-database.conf` below approved oVirt
 directories. It does not follow symbolic links. Already-versioned files are
 skipped.
 

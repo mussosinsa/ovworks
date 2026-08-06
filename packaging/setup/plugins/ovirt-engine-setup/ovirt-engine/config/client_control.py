@@ -7,20 +7,24 @@
 
 """Client serial number and source IP access-control setup plugin."""
 
+import base64
 import gettext
 import ipaddress
 import json
 import os
 import re
 import shutil
+import subprocess
 import tempfile
 
 from otopi import plugin
 from otopi import util
 
+from ovirt_engine import util as outil
 from ovirt_engine_setup import constants as osetupcons
 from ovirt_engine_setup.engine import constants as oenginecons
 from ovirt_engine_setup.engine_common import constants as oengcommcons
+from ovirt_engine_setup.engine_common import database
 
 
 def _(m):
@@ -43,6 +47,28 @@ _ENCRYPTOR_CONFIG_PATH = getattr(
     'OVIRT_ENGINE_ENCRYPTOR_CONFIG',
     '/etc/ovirt-engine/encryptor/config.json',
 )
+
+_ENCRYPTOR_TOOL_PATH = '/usr/share/ovirt-engine/encryptor/encrypt_conf_files.py'
+_ENCRYPTOR_FILE_TOOL_PATH = '/usr/share/ovirt-engine/encryptor/encryptor.py'
+_ENCRYPTED_MAGIC = b'OVENC001'
+_ENCRYPTOR_SECRET_FILE = '/etc/ovirt-engine/encryptor/passphrase'
+_AAA_JDBC_SCHEMA = 'aaa_jdbc'
+_ENCRYPTOR_DEFAULT_CONFIG = {
+    'encrypt_flag': 'NO',
+    'iterations': 200000,
+    'watch_path': [
+        '/etc/ovirt-engine',
+        '/etc/ovirt-engine-dwh',
+    ],
+    'allowed_files': [
+        '10-setup-database.conf',
+        '10-setup-dwh-database.conf',
+    ],
+    'secret_file': _ENCRYPTOR_SECRET_FILE,
+    'legacy_cbc': {
+        'enabled': False,
+    },
+}
 
 
 @util.export
@@ -182,6 +208,165 @@ class Plugin(plugin.PluginBase):
             _ALLOWED_IPS_ENV
         ] = allowed_ips
 
+    def _merge_encryptor_defaults(self, config):
+        merged = dict(_ENCRYPTOR_DEFAULT_CONFIG)
+        merged.update(config)
+        allowed_files = merged.get('allowed_files', [])
+        if 'internal.properties' in allowed_files:
+            # The AAA JDBC extension loads this file directly and fails to
+            # start if setup leaves it in the OVENC001 encrypted format.
+            allowed_files = [
+                name for name in allowed_files
+                if name != 'internal.properties'
+            ]
+        merged['allowed_files'] = allowed_files
+        merged.setdefault('serialNum', self._DEFAULT_SERIAL_NUMBER)
+        return merged
+
+    def _is_encrypted_file(self, path):
+        try:
+            with open(path, 'rb') as candidate:
+                return candidate.read(len(_ENCRYPTED_MAGIC)) == _ENCRYPTED_MAGIC
+        except OSError:
+            return False
+
+    def _ensure_encryptor_secret_file(self, config):
+        secret_file = config.get('secret_file', _ENCRYPTOR_SECRET_FILE)
+        secret_dir = os.path.dirname(secret_file)
+        if not os.path.isdir(secret_dir):
+            os.makedirs(secret_dir, mode=0o700)
+        if not os.path.exists(secret_file):
+            descriptor = os.open(
+                secret_file,
+                os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+                0o600,
+            )
+            try:
+                secret = base64.urlsafe_b64encode(os.urandom(48))
+                os.write(descriptor, secret + b'\n')
+            finally:
+                os.close(descriptor)
+        os.chmod(secret_file, 0o600)
+        shutil.chown(
+            secret_file,
+            user=self.environment[osetupcons.SystemEnv.USER_ENGINE],
+            group=self.environment[osetupcons.SystemEnv.GROUP_ENGINE],
+        )
+
+    def _encrypt_configuration_files(self, config_path):
+        if not os.path.exists(_ENCRYPTOR_TOOL_PATH):
+            raise RuntimeError(
+                _('Encryptor tool not found: %s') % _ENCRYPTOR_TOOL_PATH
+            )
+        completed = subprocess.run(
+            [
+                '/usr/bin/python3',
+                _ENCRYPTOR_TOOL_PATH,
+                '--config',
+                config_path,
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+            check=False,
+        )
+        if completed.returncode != 0:
+            output = (completed.stderr or completed.stdout).strip()
+            raise RuntimeError(
+                _('Configuration encryption failed: %s') % output
+            )
+        self.logger.info(completed.stdout.strip())
+
+    def _write_aaa_jdbc_config_plaintext_from_environment(self):
+        path = oenginecons.FileLocations.AAA_JDBC_CONFIG_DB
+        directory = os.path.dirname(path)
+        if not os.path.isdir(directory):
+            os.makedirs(directory, mode=0o700)
+        content = (
+            'config.datasource.jdbcurl={jdbcUrl}\n'
+            'config.datasource.dbuser={user}\n'
+            'config.datasource.dbpassword={password}\n'
+            'config.datasource.jdbcdriver=org.postgresql.Driver\n'
+            'config.datasource.schemaname={schemaName}\n'
+        ).format(
+            jdbcUrl=database.OvirtUtils(
+                plugin=self,
+                dbenvkeys=oenginecons.Const.ENGINE_DB_ENV_KEYS,
+            ).getJdbcUrl(),
+            user=self.environment[oenginecons.EngineDBEnv.USER],
+            password=outil.escape(
+                self.environment[oenginecons.EngineDBEnv.PASSWORD],
+                '"\\$',
+            ),
+            schemaName=_AAA_JDBC_SCHEMA,
+        )
+        descriptor, temporary_path = tempfile.mkstemp(
+            prefix='.internal.properties.',
+            dir=directory,
+            text=True,
+        )
+        try:
+            with os.fdopen(descriptor, 'w', encoding='utf-8') as config_file:
+                config_file.write(content)
+                config_file.flush()
+                os.fsync(config_file.fileno())
+            os.chmod(temporary_path, 0o600)
+            shutil.chown(
+                temporary_path,
+                user=self.environment[osetupcons.SystemEnv.USER_ENGINE],
+                group=self.environment[osetupcons.SystemEnv.GROUP_ENGINE],
+            )
+            os.replace(temporary_path, path)
+        finally:
+            if os.path.exists(temporary_path):
+                os.unlink(temporary_path)
+
+    def _ensure_aaa_jdbc_config_plaintext(self, config_path):
+        path = oenginecons.FileLocations.AAA_JDBC_CONFIG_DB
+        if not os.path.exists(path) or not self._is_encrypted_file(path):
+            return
+        if not os.path.exists(_ENCRYPTOR_FILE_TOOL_PATH):
+            raise RuntimeError(
+                _('Encryptor tool not found: %s') % _ENCRYPTOR_FILE_TOOL_PATH
+            )
+        completed = subprocess.run(
+            [
+                '/usr/bin/python3',
+                _ENCRYPTOR_FILE_TOOL_PATH,
+                '--decrypt',
+                '--config',
+                config_path,
+                path,
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+            check=False,
+        )
+        if completed.returncode != 0:
+            output = (completed.stderr or completed.stdout).strip()
+            self.logger.warning(
+                _(
+                    'AAA JDBC configuration decryption failed; rewriting '
+                    'plaintext configuration from setup database values: %s'
+                ) % output
+            )
+            self._write_aaa_jdbc_config_plaintext_from_environment()
+        else:
+            self.logger.info(
+                _(
+                    'Kept AAA JDBC internal configuration readable for '
+                    'the AAA JDBC extension: %s'
+                ) % path
+            )
+            return
+        self.logger.warning(
+            _(
+                'Recreated AAA JDBC internal configuration as plaintext '
+                'for the AAA JDBC extension: %s'
+            ) % path
+        )
+
     def _replace_encryptor_config(self, path, content):
         config_dir = os.path.dirname(path)
         if not os.path.isdir(config_dir):
@@ -218,11 +403,16 @@ class Plugin(plugin.PluginBase):
     )
     def _closeup(self):
         path = _ENCRYPTOR_CONFIG_PATH
-        config = self._read_encryptor_config()
+        config = self._merge_encryptor_defaults(
+            self._read_encryptor_config()
+        )
         config['serialNum'] = self.environment[
             _SERIAL_NUMBER_ENV
         ]
+        self._ensure_encryptor_secret_file(config)
         self._replace_encryptor_config(
             path=path,
             content=json.dumps(config, indent=4, sort_keys=True) + '\n',
         )
+        self._encrypt_configuration_files(path)
+        self._ensure_aaa_jdbc_config_plaintext(path)

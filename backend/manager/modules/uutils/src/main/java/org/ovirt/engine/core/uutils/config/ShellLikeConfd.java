@@ -46,6 +46,11 @@ public class ShellLikeConfd {
     private static final Logger log = LoggerFactory.getLogger(ShellLikeConfd.class);
 
     private static final String SENSITIVE_KEYS = "SENSITIVE_KEYS";
+    private static final byte[] ENCRYPTED_CONFIG_MAGIC = "OVENC001".getBytes(StandardCharsets.US_ASCII);
+    private static final List<String> ENCRYPTED_CONFIG_BASENAMES = Arrays.asList(
+            "10-setup-database.conf",
+            "10-setup-dwh-database.conf",
+            "internal.properties");
 
     // Compile regular expressions:
     private static final Pattern EMPTY_LINE = Pattern.compile("^\\s*(#.*)?$");
@@ -130,6 +135,18 @@ public class ShellLikeConfd {
         }
     }
 
+    private boolean isEncryptedConfigFile(File file) throws IOException {
+        byte[] prefix = new byte[ENCRYPTED_CONFIG_MAGIC.length];
+        try (FileInputStream stream = new FileInputStream(file)) {
+            if (stream.read(prefix) != ENCRYPTED_CONFIG_MAGIC.length) {
+                return false;
+            }
+        }
+        return Arrays.equals(prefix, ENCRYPTED_CONFIG_MAGIC) && (
+                ENCRYPTED_CONFIG_BASENAMES.contains(file.getName()) ||
+                file.getParentFile() != null && "engine.conf.d".equals(file.getParentFile().getName()));
+    }
+
     /**
      * Load the contents of the properties file located by the given environment
      * variable or file.
@@ -141,6 +158,10 @@ public class ShellLikeConfd {
         // Do nothing if the file doesn't exist or isn't readable:
         if (!file.canRead()) {
             log.info("The file '{}' doesn't exist or isn't readable. Will return an empty set of properties.", file.getAbsolutePath());
+            return;
+        }
+        if (isEncryptedConfigFile(file)) {
+            log.info("The file '{}' is encrypted and is skipped by the Java local config loader.", file.getAbsolutePath());
             return;
         }
 

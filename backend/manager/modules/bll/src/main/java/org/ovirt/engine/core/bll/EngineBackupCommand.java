@@ -2,9 +2,6 @@ package org.ovirt.engine.core.bll;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -22,7 +19,8 @@ import org.slf4j.LoggerFactory;
 public class EngineBackupCommand extends CommandBase<AuditLogBackupParameters> {
 
     private static final Logger log = LoggerFactory.getLogger(EngineBackupCommand.class);
-    private static final String ENGINE_BACKUP_COMMAND = "/usr/bin/engine-backup"; //$NON-NLS-1$
+    private static final String SUDO_COMMAND = "/usr/bin/sudo"; //$NON-NLS-1$
+    private static final String ENGINE_BACKUP_COMMAND = "/usr/share/ovirt-engine/bin/engine-backup-root.sh"; //$NON-NLS-1$
 
     public EngineBackupCommand(AuditLogBackupParameters parameters, CommandContext cmdContext) {
         super(parameters, cmdContext);
@@ -37,21 +35,8 @@ public class EngineBackupCommand extends CommandBase<AuditLogBackupParameters> {
             return;
         }
 
-        Path directory = Paths.get(backupPath.trim());
-        try {
-            Files.createDirectories(directory);
-        } catch (Exception e) {
-            log.error("Failed to create backup directory {}", directory, e);
-            getReturnValue().getExecuteFailedMessages().add("저장 위치를 생성할 수 없습니다: " + e.getMessage()); //$NON-NLS-1$
-            setSucceeded(false);
-            return;
-        }
-
-        Path backupFile = directory.resolve("engine_backup.tar.gz"); //$NON-NLS-1$
-        Path logFile = directory.resolve("engine_backup.log"); //$NON-NLS-1$
         CommandResult result = runCommand(Arrays.asList(
-                ENGINE_BACKUP_COMMAND, "--mode=backup", //$NON-NLS-1$
-                "--file=" + backupFile, "--log=" + logFile)); //$NON-NLS-1$ //$NON-NLS-2$
+                SUDO_COMMAND, "-n", ENGINE_BACKUP_COMMAND, backupPath.trim())); //$NON-NLS-1$
         getReturnValue().setActionReturnValue(result.output);
         if (result.exitCode == 0) {
             setSucceeded(true);

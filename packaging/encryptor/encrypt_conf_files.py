@@ -76,6 +76,7 @@ def main(argv=None):
             encrypt_tree(path, passphrase, config, excluded)
             for path in _watch_paths(config)
         )
+        config["encrypt_flag"] = "YES"
         config["active_format"] = encryptor.MAGIC.decode("ascii")
         config["format_version"] = encryptor.VERSION
         config["pbkdf2_iterations"] = encryptor.PBKDF2_ITERATIONS

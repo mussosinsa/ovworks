@@ -96,6 +96,31 @@
 | 감사기록원격백업 | RemoteBackup (2108) | rsyslog 원격 전송 설정 | rsyslog.conf 수정 |
 | 가용성 확보 | EngineBackup (2109) | 엔진 전체 백업 | engine_backup.tar.gz |
 
+### 1.4 감사기록 복구 처리
+
+감사기록 복구는 `RestoreAuditLogBackup` action이 root 권한의
+`/usr/share/ovirt-engine/bin/audit-log-backup.py restore` helper를 호출하여 수행한다.
+이전 구현은 Engine의 `ovirt` 사용자 권한으로 `/var/log/ovirt-engine`을 직접 `tar` 처리했기
+때문에 읽기·쓰기 또는 `/` 추출 권한이 없어 내부 오류가 발생할 수 있었다.
+
+복구는 다음 순서를 보장한다.
+
+1. 선택 파일이 지정 저장 디렉터리 바로 아래의 실제 `.tar.gz` 일반 파일인지 확인한다.
+2. archive의 절대경로, `..`, 링크, 특수파일, 감사기록 외 경로, 중복 경로 및 과도한
+   복구 크기·항목 수를 거부한다.
+3. 현재 `/var/log/ovirt-engine` 내용을
+   `pre-restore-current-audit-<timestamp>.tar.gz`로 먼저 백업한다. 이 단계가 실패하면
+   선택 archive를 복구하지 않는다.
+4. 선택 archive를 임시 staging 디렉터리에 일반 파일로만 풀고 검증이 끝난 후
+   `/var/log/ovirt-engine/restored/<archive>-<timestamp>/`로 원자적으로 이동한다.
+5. 현재 동작 중인 감사기록은 덮어쓰거나 삭제하지 않는다. 복구본은 조회·비교·별도
+   이관을 위한 격리 영역으로 제공한다.
+6. 성공·실패를 각각 `AUDIT_LOG_RESTORE_COMPLETED` 또는
+   `AUDIT_LOG_RESTORE_FAILED` 감사 이벤트로 기록한다.
+
+운영자는 성공 메시지의 `CURRENT_BACKUP`과 `RESTORED_TO` 경로를 모두 확인하고,
+복구본의 파일 수·SHA-256·대상 기간을 원 archive의 manifest와 대조해야 한다.
+
 ---
 
 ## 2. 사용자 메뉴얼

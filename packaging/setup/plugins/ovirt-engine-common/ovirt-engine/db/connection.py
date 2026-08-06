@@ -11,8 +11,6 @@
 
 
 import gettext
-import os
-
 from otopi import plugin
 from otopi import util
 
@@ -87,98 +85,15 @@ class Plugin(plugin.PluginBase):
         self.environment[oenginecons.EngineDBEnv.NEED_DBMSUPGRADE] = False
         self.environment[oenginecons.EngineDBEnv.JUST_RESTORED] = False
 
+    def _load_engine_config(self):
+        # ConfigFile performs in-memory decryption for approved encrypted
+        # configuration basenames, so the setup DB connection path never
+        # rewrites encrypted credentials as plaintext on disk.
+        return configfile.ConfigFile([
+            oenginecons.FileLocations.OVIRT_ENGINE_SERVICE_CONFIG_DEFAULTS,
+            oenginecons.FileLocations.OVIRT_ENGINE_SERVICE_CONFIG,
+        ])
 
-    _ENCRYPTOR_PATH = '/usr/share/ovirt-engine/encryptor/encryptor.py'
-    _DECRYPT_ALLOWED_FILES = frozenset((
-        'internal.properties',
-        '10-setup-database.conf',
-        '10-setup-dwh-database.conf',
-    ))
-
-    def _decryptConfigFile(self, configPath):
-        if os.path.basename(configPath) not in self._DECRYPT_ALLOWED_FILES:
-            self.logger.debug(
-                'Skipping decrypt for unsupported config file %s',
-                configPath,
-            )
-            return
-
-        if not os.path.exists(configPath):
-            return
-
-        if not os.path.exists(self._ENCRYPTOR_PATH):
-            self.logger.debug(
-                'Encryptor tool not found at %s, skipping decryption of %s',
-                self._ENCRYPTOR_PATH,
-                configPath,
-            )
-            return
-
-        originalContent = None
-        try:
-            with open(configPath, 'rb') as f:
-                originalContent = f.read()
-        except Exception:
-            self.logger.warning(
-                'Cannot read %s before decryption attempt',
-                configPath,
-                exc_info=True,
-            )
-            return
-
-        python = self.command.get('python3', optional=True)
-        if python is None:
-            python = '/usr/bin/python3'
-
-        def _restore_original_content():
-            with open(configPath, 'wb') as f:
-                f.write(originalContent)
-
-        for args in (
-            ('--decrypt', configPath),
-            ('-d', configPath),
-        ):
-            rc, stdout, stderr = self.execute(
-                (python, self._ENCRYPTOR_PATH) + args,
-                raiseOnError=False,
-            )
-            if rc != 0:
-                self.logger.debug(
-                    'Decrypt attempt failed for %s using %s %s (rc=%s). '
-                    'Restoring original content and trying next mode',
-                    configPath,
-                    self._ENCRYPTOR_PATH,
-                    ' '.join(args),
-                    rc,
-                )
-                _restore_original_content()
-                continue
-
-            if os.path.basename(configPath) == '10-setup-database.conf':
-                decryptedConfig = configfile.ConfigFile([configPath])
-                if not decryptedConfig.get('ENGINE_DB_PASSWORD'):
-                    self.logger.debug(
-                        'Decryption command succeeded but %s has no ENGINE_DB_PASSWORD; '
-                        'restoring original content',
-                        configPath,
-                    )
-                    _restore_original_content()
-                    continue
-
-            self.logger.debug(
-                'Decrypted config %s using %s %s',
-                configPath,
-                self._ENCRYPTOR_PATH,
-                ' '.join(args),
-            )
-            return
-
-        _restore_original_content()
-        self.logger.warning(
-            'Failed to decrypt %s with %s; using original content',
-            configPath,
-            self._ENCRYPTOR_PATH,
-        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -193,21 +108,7 @@ class Plugin(plugin.PluginBase):
             dbenvkeys=oenginecons.Const.ENGINE_DB_ENV_KEYS,
         )
         dbovirtutils.detectCommands()
-        self.command.detect('python3')
-        self._decryptConfigFile(
-            oenginecons.FileLocations.OVIRT_ENGINE_SERVICE_CONFIG_DATABASE
-        )
-        self._decryptConfigFile(
-            oenginecons.FileLocations.OVIRT_ENGINE_SERVICE_CONFIG_DWH_DATABASE
-        )
-        self._decryptConfigFile(
-            oenginecons.FileLocations.AAA_JDBC_CONFIG_DB
-        )
-
-        config = configfile.ConfigFile([
-            oenginecons.FileLocations.OVIRT_ENGINE_SERVICE_CONFIG_DEFAULTS,
-            oenginecons.FileLocations.OVIRT_ENGINE_SERVICE_CONFIG
-        ])
+        config = self._load_engine_config()
         if config.get('ENGINE_DB_PASSWORD'):
             try:
                 dbenv = {}

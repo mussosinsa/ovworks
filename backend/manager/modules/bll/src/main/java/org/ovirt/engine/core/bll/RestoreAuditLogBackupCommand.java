@@ -2,11 +2,6 @@ package org.ovirt.engine.core.bll;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -21,7 +16,8 @@ import org.ovirt.engine.core.compat.Guid;
 
 public class RestoreAuditLogBackupCommand extends CommandBase<AuditLogBackupParameters> {
 
-    private static final String AUDIT_LOG_DIR = "/var/log/ovirt-engine"; //$NON-NLS-1$
+    private static final String SUDO_COMMAND = "/usr/bin/sudo"; //$NON-NLS-1$
+    private static final String BACKUP_HELPER = "/usr/share/ovirt-engine/bin/audit-log-backup.py"; //$NON-NLS-1$
 
     public RestoreAuditLogBackupCommand(AuditLogBackupParameters parameters, CommandContext cmdContext) {
         super(parameters, cmdContext);
@@ -43,36 +39,20 @@ public class RestoreAuditLogBackupCommand extends CommandBase<AuditLogBackupPara
             return;
         }
 
-        Path directory = Paths.get(backupPath.trim()).normalize();
-        Path restoreArchive = directory.resolve(selectedBackupFile).normalize();
-        if (!restoreArchive.startsWith(directory) || !Files.isRegularFile(restoreArchive)) {
-            getReturnValue().getExecuteFailedMessages().add("복구 파일을 찾을 수 없습니다: " + restoreArchive); //$NON-NLS-1$
-            setSucceeded(false);
-            return;
-        }
-
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")); //$NON-NLS-1$
-        Path currentBackup = directory.resolve("pre-restore-current-audit-" + timestamp + ".tar.gz"); //$NON-NLS-1$ //$NON-NLS-2$
-
-        CommandResult currentBackupResult = runCommand(Arrays.asList(
-                "tar", "-czf", currentBackup.toString(), AUDIT_LOG_DIR)); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        if (currentBackupResult.exitCode != 0) {
-            getReturnValue().getExecuteFailedMessages().add(
-                    "현재 감사기록 백업 실패: " + currentBackupResult.output); //$NON-NLS-1$
-            setSucceeded(false);
-            return;
-        }
-
         CommandResult restoreResult = runCommand(Arrays.asList(
-                "tar", "-xzf", restoreArchive.toString(), "-C", "/")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                SUDO_COMMAND,
+                "-n", //$NON-NLS-1$
+                BACKUP_HELPER,
+                "restore", //$NON-NLS-1$
+                backupPath.trim(),
+                selectedBackupFile.trim()));
         if (restoreResult.exitCode != 0) {
             getReturnValue().getExecuteFailedMessages().add("감사기록 복구 실패: " + restoreResult.output); //$NON-NLS-1$
             setSucceeded(false);
             return;
         }
 
-        getReturnValue().setActionReturnValue(
-                "현재 감사기록 백업: " + currentBackup + "\n복구 완료: " + restoreArchive); //$NON-NLS-1$ //$NON-NLS-2$
+        getReturnValue().setActionReturnValue(restoreResult.output);
         setSucceeded(true);
     }
 
@@ -84,7 +64,9 @@ public class RestoreAuditLogBackupCommand extends CommandBase<AuditLogBackupPara
 
     @Override
     public AuditLogType getAuditLogTypeValue() {
-        return AuditLogType.UNASSIGNED;
+        return getSucceeded()
+                ? AuditLogType.AUDIT_LOG_RESTORE_COMPLETED
+                : AuditLogType.AUDIT_LOG_RESTORE_FAILED;
     }
 
     private CommandResult runCommand(List<String> command) {

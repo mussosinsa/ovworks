@@ -158,31 +158,35 @@ class Plugin(plugin.PluginBase):
             },
         )
 
+    def _getDatasourceConfigContent(self):
+        return (
+            'config.datasource.jdbcurl={jdbcUrl}\n'
+            'config.datasource.dbuser={user}\n'
+            'config.datasource.dbpassword={password}\n'
+            'config.datasource.jdbcdriver=org.postgresql.Driver\n'
+            'config.datasource.schemaname={schemaName}\n'
+        ).format(
+            jdbcUrl=database.OvirtUtils(
+                plugin=self,
+                dbenvkeys=oenginecons.Const.ENGINE_DB_ENV_KEYS,
+            ).getJdbcUrl(),
+            user=self.environment[oenginecons.EngineDBEnv.USER],
+            password=outil.escape(
+                self.environment[oenginecons.EngineDBEnv.PASSWORD],
+                '"\\$',
+            ),
+            schemaName=self._AAA_JDBC_SCHEMA
+        )
+
     def _setupAuth(self):
+        datasourceConfig = self._getDatasourceConfigContent()
         self.environment[otopicons.CoreEnv.MAIN_TRANSACTION].append(
             filetransaction.FileTransaction(
                 name=oenginecons.FileLocations.AAA_JDBC_CONFIG_DB,
                 mode=0o600,
                 owner=self.environment[osetupcons.SystemEnv.USER_ENGINE],
                 enforcePermissions=True,
-                content=(
-                    'config.datasource.jdbcurl={jdbcUrl}\n'
-                    'config.datasource.dbuser={user}\n'
-                    'config.datasource.dbpassword={password}\n'
-                    'config.datasource.jdbcdriver=org.postgresql.Driver\n'
-                    'config.datasource.schemaname={schemaName}\n'
-                ).format(
-                    jdbcUrl=database.OvirtUtils(
-                        plugin=self,
-                        dbenvkeys=oenginecons.Const.ENGINE_DB_ENV_KEYS,
-                    ).getJdbcUrl(),
-                    user=self.environment[oenginecons.EngineDBEnv.USER],
-                    password=outil.escape(
-                        self.environment[oenginecons.EngineDBEnv.PASSWORD],
-                        '"\\$',
-                    ),
-                    schemaName=self._AAA_JDBC_SCHEMA
-                ),
+                content=datasourceConfig,
                 visibleButUnsafe=True,
                 modifiedList=self.environment[
                     otopicons.CoreEnv.MODIFIED_FILES
@@ -221,14 +225,15 @@ class Plugin(plugin.PluginBase):
 
                     'ovirt.engine.aaa.authn.profile.name = {profile}\n'
                     'ovirt.engine.aaa.authn.authz.plugin = {authzName}\n'
-                    'config.datasource.file = {dbConfigFile}\n'
+                    '{datasourceConfig}'
                 ).format(
                     profile=profile,
                     authzName=self.environment[
                         oenginecons.ConfigEnv.ADMIN_USER_AUTHZ_NAME
                     ],
-                    dbConfigFile=oenginecons.FileLocations.AAA_JDBC_CONFIG_DB,
+                    datasourceConfig=datasourceConfig,
                 ),
+                visibleButUnsafe=True,
                 modifiedList=self.environment[
                     otopicons.CoreEnv.MODIFIED_FILES
                 ],
@@ -259,13 +264,14 @@ class Plugin(plugin.PluginBase):
                     'ovirt.engine.extension.provides = '
                     'org.ovirt.engine.api.extensions.aaa.Authz\n'
 
-                    'config.datasource.file = {dbConfigFile}\n'
+                    '{datasourceConfig}'
                 ).format(
                     authzName=self.environment[
                         oenginecons.ConfigEnv.ADMIN_USER_AUTHZ_NAME
                     ],
-                    dbConfigFile=oenginecons.FileLocations.AAA_JDBC_CONFIG_DB,
+                    datasourceConfig=datasourceConfig,
                 ),
+                visibleButUnsafe=True,
                 modifiedList=self.environment[
                     otopicons.CoreEnv.MODIFIED_FILES
                 ],

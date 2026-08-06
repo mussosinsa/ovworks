@@ -56,18 +56,8 @@ public class AvailabilityTabView extends Composite {
     }
 
     private String buildSuccessMessage(String backupPath) {
-        String backupFile = buildPath(backupPath, "engine_backup.tar.gz"); //$NON-NLS-1$
-        String logFile = buildPath(backupPath, "engine_backup.log"); //$NON-NLS-1$
         return "처리날짜 : " + currentTimestamp() + " - 정상저장\n" //$NON-NLS-1$ //$NON-NLS-2$
-                + "실행 명령: engine-backup --mode=backup --file=" + backupFile //$NON-NLS-1$
-                + " --log=" + logFile; //$NON-NLS-1$
-    }
-
-    private String buildPath(String basePath, String filename) {
-        if (basePath.endsWith("/")) { //$NON-NLS-1$
-            return basePath + filename;
-        }
-        return basePath + "/" + filename; //$NON-NLS-1$
+                + "실행 명령: sudo -n /usr/share/ovirt-engine/bin/engine-backup-root.sh " + backupPath; //$NON-NLS-1$
     }
 
     private String currentTimestamp() {
