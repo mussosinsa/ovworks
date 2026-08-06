@@ -23,7 +23,7 @@ public class FullLogBackupCommand extends CommandBase<AuditLogBackupParameters> 
 
     private static final Logger log = LoggerFactory.getLogger(FullLogBackupCommand.class);
     private static final String SUDO_COMMAND = "/usr/bin/sudo"; //$NON-NLS-1$
-    private static final String BACKUP_SCRIPT = "/usr/share/ovirt-engine/bin/all-backup.sh"; //$NON-NLS-1$
+    private static final String BACKUP_SCRIPT = "/usr/share/ovirt-engine/bin/audit-log-backup.py"; //$NON-NLS-1$
     public FullLogBackupCommand(AuditLogBackupParameters parameters, CommandContext cmdContext) {
         super(parameters, cmdContext);
     }
@@ -48,7 +48,7 @@ public class FullLogBackupCommand extends CommandBase<AuditLogBackupParameters> 
         }
 
         CommandResult result = runCommand(Arrays.asList(
-                SUDO_COMMAND, "-n", BACKUP_SCRIPT, directory.toString())); //$NON-NLS-1$
+                SUDO_COMMAND, "-n", BACKUP_SCRIPT, "backup", directory.toString())); //$NON-NLS-1$ //$NON-NLS-2$
         getReturnValue().setActionReturnValue(""); //$NON-NLS-1$
         if (result.exitCode == 0) {
             setSucceeded(true);
@@ -69,7 +69,9 @@ public class FullLogBackupCommand extends CommandBase<AuditLogBackupParameters> 
 
     @Override
     public AuditLogType getAuditLogTypeValue() {
-        return AuditLogType.UNASSIGNED;
+        return getSucceeded()
+                ? AuditLogType.AUDIT_LOG_BACKUP_COMPLETED
+                : AuditLogType.AUDIT_LOG_BACKUP_FAILED;
     }
 
     private CommandResult runCommand(List<String> command) {
