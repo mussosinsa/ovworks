@@ -87,7 +87,7 @@ public class AuditLogProtectionTabView extends Composite {
             fullLogBackupResultLabel.setText("복구 처리 중..."); //$NON-NLS-1$
             Frontend.getInstance().runAction(ActionType.RestoreAuditLogBackup, parameters, result -> {
                 handleResult(result,
-                        "복구 완료\n현재 감사기록을 백업한 후 선택한 파일을 별도 복구 영역에 안전하게 복구했습니다.", //$NON-NLS-1$
+                        "복구 완료\n현재 감사기록을 백업한 후 선택한 파일을 저장 위치에 안전하게 압축 해제했습니다.", //$NON-NLS-1$
                         fullLogBackupResultLabel);
                 refreshBackupList();
             });

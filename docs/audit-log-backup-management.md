@@ -111,10 +111,10 @@
 3. 현재 `/var/log/ovirt-engine` 내용을
    `pre-restore-current-audit-<timestamp>.tar.gz`로 먼저 백업한다. 이 단계가 실패하면
    선택 archive를 복구하지 않는다.
-4. 선택 archive를 임시 staging 디렉터리에 일반 파일로만 풀고 검증이 끝난 후
-   `/var/log/ovirt-engine/restored/<archive>-<timestamp>/`로 원자적으로 이동한다.
+4. 선택 archive를 저장 위치의 임시 staging 디렉터리에 일반 파일로만 풀고 검증이
+   끝난 후 `<저장 위치>/<archive>-restored-<timestamp>/`로 원자적으로 이동한다.
 5. 현재 동작 중인 감사기록은 덮어쓰거나 삭제하지 않는다. 복구본은 조회·비교·별도
-   이관을 위한 격리 영역으로 제공한다.
+   이관을 위해 사용자가 지정한 저장 위치의 격리 디렉터리로 제공한다.
 6. 성공·실패를 각각 `AUDIT_LOG_RESTORE_COMPLETED` 또는
    `AUDIT_LOG_RESTORE_FAILED` 감사 이벤트로 기록한다.
 

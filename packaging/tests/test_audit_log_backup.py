@@ -49,6 +49,8 @@ class AuditLogBackupTest(unittest.TestCase):
         self.assertTrue(current_backup.is_file())
         self.assertEqual("new current\n", (self.audit_dir / "engine.log").read_text(encoding="utf-8"))
         self.assertEqual("current\n", (restored / "engine.log").read_text(encoding="utf-8"))
+        self.assertEqual(self.backup_dir, restored.parent)
+        self.assertTrue(restored.name.startswith(archive.name[:-7] + "-restored-"))
 
     def test_restore_rejects_path_traversal_member_before_current_backup(self):
         archive = self.backup_dir / "malicious.tar.gz"

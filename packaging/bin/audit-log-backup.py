@@ -2,8 +2,8 @@
 """Create and safely restore oVirt audit-log archives.
 
 This helper is intended to run as root through the narrowly scoped sudo rule
-installed by engine-setup. Restores are placed below the audit log directory in
-an isolated directory; active audit logs are never overwritten.
+installed by engine-setup. Restores are placed in an isolated directory below
+the configured backup directory; active audit logs are never overwritten.
 """
 
 import argparse
@@ -155,10 +155,10 @@ def restore_backup(directory, filename):
     # This must complete before any selected archive data is restored.
     current_backup = create_backup(directory, prefix="pre-restore-current-audit-")
 
-    restored_root = AUDIT_LOG_DIR / "restored"
+    restored_root = directory
     restored_root.mkdir(mode=0o750, parents=True, exist_ok=True)
     staging = Path(tempfile.mkdtemp(prefix=".restore-", dir=str(restored_root)))
-    final = restored_root / (archive.name[:-7] + "-" + _timestamp())
+    final = restored_root / (archive.name[:-7] + "-restored-" + _timestamp())
     try:
         _extract_to_staging(archive, members, staging)
         os.replace(str(staging), str(final))
