@@ -130,6 +130,7 @@ class Plugin(plugin.PluginBase):
         backup_sudoers_path = '/etc/sudoers.d/ovirt-backup'
         backup_sudoers_content = (
             'ovirt ALL=(root) NOPASSWD: '
+            '/usr/share/ovirt-engine/bin/all-backup.sh *, '
             '/usr/share/ovirt-engine/bin/audit-log-backup.py backup *, '
             '/usr/share/ovirt-engine/bin/audit-log-backup.py restore *, '
             '/usr/share/ovirt-engine/bin/engine-backup-root.sh *\n'
