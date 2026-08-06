@@ -80,14 +80,33 @@ public class AuditLogProtectionTabView extends Composite {
             }
 
             String selectedFile = backupFileListBox.getSelectedValue();
-            AuditLogBackupParameters parameters = new AuditLogBackupParameters();
-            parameters.setBackupPath(backupPath);
-            parameters.setSelectedBackupFile(selectedFile);
+            restoreSelectedBackupAfterLookup(backupPath, selectedFile);
+        });
+    }
 
-            fullLogBackupResultLabel.setText("복구 처리 중..."); //$NON-NLS-1$
-            Frontend.getInstance().runAction(ActionType.RestoreAuditLogBackup, parameters, result -> {
-                handleResult(result,
-                        "복구 완료\n현재 감사기록을 백업한 후 선택한 파일을 저장 위치에 안전하게 압축 해제했습니다.", //$NON-NLS-1$
+    private void restoreSelectedBackupAfterLookup(String backupPath, String selectedFile) {
+        AuditLogBackupParameters listParameters = new AuditLogBackupParameters();
+        listParameters.setBackupPath(backupPath);
+        fullLogBackupResultLabel.setText("복구 전 감사기록 목록 조회 중..."); //$NON-NLS-1$
+
+        Frontend.getInstance().runAction(ActionType.ListAuditLogBackups, listParameters, listResult -> {
+            List<String> files = getBackupFiles(listResult);
+            if (files == null) {
+                handleResult(listResult, "", fullLogBackupResultLabel); //$NON-NLS-1$
+                return;
+            }
+            if (!files.contains(selectedFile)) {
+                fullLogBackupResultLabel.setText("선택한 감사기록 백업 파일을 저장 위치에서 찾을 수 없습니다. 목록을 다시 조회해 주세요."); //$NON-NLS-1$
+                return;
+            }
+
+            AuditLogBackupParameters restoreParameters = new AuditLogBackupParameters();
+            restoreParameters.setBackupPath(backupPath);
+            restoreParameters.setSelectedBackupFile(selectedFile);
+            fullLogBackupResultLabel.setText("감사기록 목록 조회 완료. 복구 처리 중..."); //$NON-NLS-1$
+            Frontend.getInstance().runAction(ActionType.RestoreAuditLogBackup, restoreParameters, restoreResult -> {
+                handleResult(restoreResult,
+                        "복구 완료\n현재 감사기록을 백업한 후 선택한 전체 로그 백업 파일을 저장 위치에 안전하게 압축 해제했습니다.", //$NON-NLS-1$
                         fullLogBackupResultLabel);
                 refreshBackupList();
             });
@@ -110,15 +129,7 @@ public class AuditLogProtectionTabView extends Composite {
             backupFileListBox.clear();
 
             if (result != null && result.getReturnValue() != null && result.getReturnValue().getSucceeded()) {
-                Object value = result.getReturnValue().getActionReturnValue();
-                List<String> files = new ArrayList<>();
-                if (value instanceof List<?>) {
-                    for (Object item : (List<?>) value) {
-                        if (item != null) {
-                            files.add(item.toString());
-                        }
-                    }
-                }
+                List<String> files = getBackupFiles(result);
                 if (files.isEmpty()) {
                     details.append("조회된 감사기록 백업 파일이 없습니다."); //$NON-NLS-1$
                 } else {
@@ -140,6 +151,23 @@ public class AuditLogProtectionTabView extends Composite {
             }
             fullLogBackupResultLabel.setHTML(formatHtml(details.toString().trim()));
         });
+    }
+
+    private List<String> getBackupFiles(FrontendActionAsyncResult result) {
+        if (result == null || result.getReturnValue() == null || !result.getReturnValue().getSucceeded()) {
+            return null;
+        }
+
+        Object value = result.getReturnValue().getActionReturnValue();
+        List<String> files = new ArrayList<>();
+        if (value instanceof List<?>) {
+            for (Object item : (List<?>) value) {
+                if (item != null) {
+                    files.add(item.toString());
+                }
+            }
+        }
+        return files;
     }
 
     private String buildSuccessMessage(String backupPath) {
