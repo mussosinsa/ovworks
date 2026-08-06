@@ -280,6 +280,7 @@ generated-files:	$(GENERATED)
 	chmod a+x packaging/bin/engine-backup.sh
 	chmod a+x packaging/bin/engine-backup-root.sh
 	chmod a+x packaging/bin/all-backup.sh
+	chmod a+x packaging/bin/configure-audit-log-remote.py
 	chmod a+x packaging/bin/engine-host-update.py
 	chmod a+x packaging/bin/engine-migrate-he.py
 	chmod a+x packaging/bin/vdsm_to_network_name_map

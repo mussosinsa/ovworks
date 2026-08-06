@@ -57,7 +57,7 @@
         <g:FlowPanel addStyleNames="{style.sectionPanel}">
             <g:HTML addStyleNames="{style.sectionTitle}">감사기록 원격 백업</g:HTML>
             <g:HTML addStyleNames="{style.sectionDescription}">
-                원격 주소는 /etc/rsyslog.conf 설정 후 작동합니다.
+                원격 서버 주소를 입력하면 rsyslog 설정을 검증·적용하고 서비스를 재시작합니다.
             </g:HTML>
             <g:HorizontalPanel addStyleNames="{style.inputRow}">
                 <g:Label addStyleNames="{style.inputLabel}">원격 서버 주소</g:Label>
@@ -65,7 +65,7 @@
             </g:HorizontalPanel>
             <g:HorizontalPanel addStyleNames="{style.buttonPanel}">
                 <b:Button ui:field="remoteBackupButton"
-                          text="원격 주소(/etc/rsyslog.conf)"
+                          text="원격 백업 설정"
                           type="PRIMARY"
                           addStyleNames="{style.actionButton}" />
             </g:HorizontalPanel>

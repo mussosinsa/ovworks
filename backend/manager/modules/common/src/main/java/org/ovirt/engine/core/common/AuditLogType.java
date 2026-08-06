@@ -1671,6 +1671,8 @@ public enum AuditLogType {
     AUDIT_LOG_BACKUP_FAILED(13625, AuditLogSeverity.ERROR),
     AUDIT_LOG_RESTORE_COMPLETED(13626),
     AUDIT_LOG_RESTORE_FAILED(13627, AuditLogSeverity.ERROR),
+    AUDIT_LOG_REMOTE_BACKUP_CONFIGURED(13628),
+    AUDIT_LOG_REMOTE_BACKUP_CONFIGURATION_FAILED(13629, AuditLogSeverity.ERROR),
 
     // A generic error message to log validation failure events
     GENERIC_ERROR_MESSAGE(14001, AuditLogSeverity.ERROR);

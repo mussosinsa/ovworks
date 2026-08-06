@@ -58,8 +58,7 @@ public class AuditLogRemoteBackupTabView extends Composite {
     private String buildSuccessMessage(String remoteAddress) {
         return "처리날짜 : " + currentTimestamp() + " - 정상저장\n" //$NON-NLS-1$ //$NON-NLS-2$
                 + "원격 서버 주소: " + remoteAddress + "\n" //$NON-NLS-1$ //$NON-NLS-2$
-                + "rsyslog.conf에 원격 서버 주소 입력 후\n" //$NON-NLS-1$
-                + "sudo systemctl restart rsyslog"; //$NON-NLS-1$
+                + "rsyslog 설정 검증·적용 및 서비스 재시작 완료"; //$NON-NLS-1$
     }
 
     private String currentTimestamp() {
