@@ -20,10 +20,8 @@ public class RemoteBackupCommand extends CommandBase<AuditLogBackupParameters> {
 
     private static final Logger log = LoggerFactory.getLogger(RemoteBackupCommand.class);
     private static final String SUDO_COMMAND = "/usr/bin/sudo"; //$NON-NLS-1$
-    private static final String SH_COMMAND = "/bin/sh"; //$NON-NLS-1$
-    private static final String SYSTEMCTL_COMMAND = "/bin/systemctl"; //$NON-NLS-1$
-    private static final String RSYSLOG_CONF = "/etc/rsyslog.conf"; //$NON-NLS-1$
-    private static final String RSYSLOG_MARKER = "# ov-works audit log remote backup"; //$NON-NLS-1$
+    private static final String REMOTE_BACKUP_HELPER =
+            "/usr/share/ovirt-engine/bin/configure-audit-log-remote.py"; //$NON-NLS-1$
 
     public RemoteBackupCommand(AuditLogBackupParameters parameters, CommandContext cmdContext) {
         super(parameters, cmdContext);
@@ -38,41 +36,17 @@ public class RemoteBackupCommand extends CommandBase<AuditLogBackupParameters> {
             return;
         }
 
-        String block = RSYSLOG_MARKER + "\n" //$NON-NLS-1$
-                + "module(load=\"imfile\")\n" //$NON-NLS-1$
-                + "input(type=\"imfile\" File=\"/var/log/ovirt-engine/*.log\" Tag=\"ovirt-engine\" " //$NON-NLS-1$
-                + "Severity=\"info\" Facility=\"local0\")\n" //$NON-NLS-1$
-                + "local0.* @@"+ remoteAddress.trim() + "\n"; //$NON-NLS-1$ //$NON-NLS-2$
-
-        String escapedBlock = escapeForSingleQuotes(block);
-        String addCommand = "grep -Fq '" + RSYSLOG_MARKER + "' " + RSYSLOG_CONF //$NON-NLS-1$ //$NON-NLS-2$
-                + " || printf '%s' '" + escapedBlock + "' >> " + RSYSLOG_CONF; //$NON-NLS-1$ //$NON-NLS-2$
-
-        CommandResult addResult = runCommand(Arrays.asList(
-                SUDO_COMMAND, "-n", SH_COMMAND, "-c", addCommand)); //$NON-NLS-1$ //$NON-NLS-2$
-        if (addResult.exitCode != 0) {
-            if (isSudoPasswordRequired(addResult.output)) {
-                getReturnValue().getExecuteFailedMessages().add("rsyslog.conf 갱신을 위한 sudo 권한이 필요합니다."); //$NON-NLS-1$
-            } else {
-                getReturnValue().getExecuteFailedMessages().add("rsyslog.conf 갱신 실패 (종료 코드: " //$NON-NLS-1$
-                        + addResult.exitCode + ")\n" + addResult.output); //$NON-NLS-1$
-            }
-            getReturnValue().setActionReturnValue(addResult.output);
-            setSucceeded(false);
-            return;
-        }
-
-        CommandResult restartResult = runCommand(Arrays.asList(
-                SUDO_COMMAND, "-n", SYSTEMCTL_COMMAND, "restart", "rsyslog")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        getReturnValue().setActionReturnValue(combineOutput(addResult.output, restartResult.output));
-        if (restartResult.exitCode == 0) {
+        CommandResult result = runCommand(Arrays.asList(
+                SUDO_COMMAND, "-n", REMOTE_BACKUP_HELPER, remoteAddress.trim())); //$NON-NLS-1$
+        getReturnValue().setActionReturnValue(result.output);
+        if (result.exitCode == 0) {
             setSucceeded(true);
         } else {
-            if (isSudoPasswordRequired(restartResult.output)) {
-                getReturnValue().getExecuteFailedMessages().add("rsyslog 재시작을 위한 sudo 권한이 필요합니다."); //$NON-NLS-1$
+            if (isSudoPasswordRequired(result.output)) {
+                getReturnValue().getExecuteFailedMessages().add("원격 백업 설정을 위한 sudo 권한이 필요합니다."); //$NON-NLS-1$
             } else {
-                getReturnValue().getExecuteFailedMessages().add("rsyslog 재시작 실패 (종료 코드: " //$NON-NLS-1$
-                        + restartResult.exitCode + ")\n" + restartResult.output); //$NON-NLS-1$
+                getReturnValue().getExecuteFailedMessages().add("원격 백업 설정 실패 (종료 코드: " //$NON-NLS-1$
+                        + result.exitCode + ")\n" + result.output); //$NON-NLS-1$
             }
             setSucceeded(false);
         }
@@ -86,21 +60,9 @@ public class RemoteBackupCommand extends CommandBase<AuditLogBackupParameters> {
 
     @Override
     public AuditLogType getAuditLogTypeValue() {
-        return AuditLogType.UNASSIGNED;
-    }
-
-    private String escapeForSingleQuotes(String value) {
-        return value.replace("'", "'\"'\"'"); //$NON-NLS-1$ //$NON-NLS-2$
-    }
-
-    private String combineOutput(String first, String second) {
-        if (first == null || first.isEmpty()) {
-            return second == null ? "" : second; //$NON-NLS-1$
-        }
-        if (second == null || second.isEmpty()) {
-            return first;
-        }
-        return first + "\n" + second; //$NON-NLS-1$
+        return getSucceeded()
+                ? AuditLogType.AUDIT_LOG_REMOTE_BACKUP_CONFIGURED
+                : AuditLogType.AUDIT_LOG_REMOTE_BACKUP_CONFIGURATION_FAILED;
     }
 
     private CommandResult runCommand(List<String> command) {

@@ -1385,6 +1385,7 @@ fi
 %{engine_data}/bin/engine-backup.sh
 %{engine_data}/bin/engine-backup-root.sh
 %{engine_data}/bin/audit-log-backup.py
+%{engine_data}/bin/configure-audit-log-remote.py
 
 %{engine_data}/bin/engine-migrate-he.*
 %{engine_data}/bin/__pycache__/engine-migrate-he.*

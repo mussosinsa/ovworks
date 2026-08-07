@@ -54,6 +54,7 @@ build/helptag-oneline-check.py
 build/python-check.sh
 build/shell-check.sh
 packaging/bin/engine-backup.sh
+packaging/bin/engine-backup-root.sh
 packaging/bin/all-backup.sh
 packaging/bin/engine-host-update.py
 packaging/bin/engine-migrate-he.py
