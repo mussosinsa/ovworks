@@ -63,11 +63,42 @@ def normalize_target(value):
 
 
 def render_config(target):
-    return ("# Managed by OV Works - audit log remote backup\n"
-            "module(load=\"imfile\")\n"
-            "input(type=\"imfile\" File=\"/var/log/ovirt-engine/*.log\" "
-            "Tag=\"ovirt-engine\" Severity=\"info\" Facility=\"local0\")\n"
-            "local0.* @@%s\n" % target)
+    host, port = target_host_and_port(target)
+    return ("module(load=\"imfile\")\n"
+            "input(\n"
+            "type=\"imfile\"\n"
+            "File=\"/var/log/ovirt-engine/*.log\"\n"
+            "Tag=\"ovirt-engine:\"\n"
+            "Facility=\"local0\"\n"
+            "Severity=\"info\"\n"
+            "PersistStateInterval=\"100\"\n"
+            "reopenOnTruncate=\"on\"\n"
+            "freshStartTail=\"on\"\n"
+            "addMetadata=\"on\"\n"
+            ")\n"
+            "action(\n"
+            "type=\"omfwd\"\n"
+            "Target=\"%s\"\n"
+            "Port=\"%s\"\n"
+            "Protocol=\"tcp\"\n"
+            "KeepAlive=\"on\"\n"
+            "Action.ResumeRetryCount=\"-1\"\n"
+            "queue.type=\"LinkedList\"\n"
+            "queue.filename=\"ovirt_remote\"\n"
+            "queue.maxdiskspace=\"2g\"\n"
+            "queue.saveonshutdown=\"on\"\n"
+            ")\n" % (host, port))
+
+
+def target_host_and_port(target):
+    if target.startswith("["):
+        closing = target.index("]")
+        host = target[1:closing]
+        remainder = target[closing + 1:]
+        return host, remainder[1:] if remainder else "514"
+    if target.count(":") == 1:
+        return tuple(target.rsplit(":", 1))
+    return target, "514"
 
 
 def unlink_if_exists(path):
